@@ -1,0 +1,35 @@
+name: pro_miniaudio
+description: "A new Flutter FFI plugin project."
+version: 0.0.1
+
+
+environment:
+  sdk: ^3.5.4
+  flutter: '>=3.3.0'
+
+dependencies:
+  equatable: ^2.0.5
+  ffi: ^2.1.3
+  flutter:
+    sdk: flutter
+  plugin_platform_interface: ^2.1.8
+
+dev_dependencies:
+  ffigen: ^15.0.0
+  flutter_test:
+    sdk: flutter
+  pro_lints: ^2.0.4
+
+flutter:
+  plugin:
+    platforms:
+      android:
+        ffiPlugin: true
+      ios:
+        ffiPlugin: true
+      linux:
+        ffiPlugin: true
+      macos:
+        ffiPlugin: true
+      windows:
+        ffiPlugin: true

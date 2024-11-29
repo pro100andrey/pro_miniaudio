@@ -1,0 +1,31 @@
+# Run with `dart run ffigen --config ffigen.yaml`.
+name: ProMiniaudioBindings
+description: |
+  Bindings for `src/pro_miniaudio.h`.
+
+  Regenerate bindings with `dart run ffigen --config ffigen.yaml`.
+output: 'lib/src/generated/bindings.dart'
+headers:
+  entry-points:
+    - 'src/pro_miniaudio.h'
+    - 'src/logger.h'
+  include-directives:
+    - 'src/pro_miniaudio.h'
+    - 'src/logger.h'
+
+preamble: |
+  // ignore_for_file: always_specify_types
+  // ignore_for_file: camel_case_types
+  // ignore_for_file: non_constant_identifier_names
+comments:
+  style: doxygen
+  length: brief
+
+# functions:
+#   leaf:
+#     include:
+#       - '.*'
+#     exclude:
+#       - 'dispose'
+
+silence-enum-warning: true
