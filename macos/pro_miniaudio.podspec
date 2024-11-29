@@ -24,9 +24,8 @@ A new Flutter FFI plugin project.
   s.platform = :osx, '10.11'
   s.pod_target_xcconfig = {
     'DEFINES_MODULE' => 'YES',
-    'OTHER_CFLAGS' => '-Wno-strict-prototypes -Wno-implicit-function-declaration'
   }
-  
+
   s.swift_version = '5.0'
-  s.frameworks = 'CoreAudio', 'AudioToolbox'
+  s.frameworks = 'Foundation', 'CoreAudio', 'AudioToolbox'
 end

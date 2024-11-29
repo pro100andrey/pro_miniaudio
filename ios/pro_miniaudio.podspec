@@ -11,7 +11,7 @@ A new Flutter FFI plugin project.
                        DESC
   s.homepage         = 'http://example.com'
   s.license          = { :file => '../LICENSE' }
-  s.author           = { 'Your Company' => 'email@example.com' }
+  s.author           = { 'Pro100Andrey' => 'this.andrey@gmail.comcom' }
 
   # This will ensure the source files in Classes/ are included in the native
   # builds of apps using this FFI plugin. Podspec does not support relative
@@ -24,5 +24,6 @@ A new Flutter FFI plugin project.
 
   # Flutter.framework does not contain a i386 slice.
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386' }
+  s.frameworks = 'Foundation','CoreAudio', 'AudioToolbox', 'AVFoundation'
   s.swift_version = '5.0'
 end

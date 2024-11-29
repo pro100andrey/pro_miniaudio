@@ -74,7 +74,7 @@ static result_t result_from_ptr(void *pointer) {
     };
 }
 
-static result_t result_error(int errorCode, const char *format, ...) {
+static result_t result_error(error_code_t errorCode, const char *format, ...) {
     va_list args;
     va_start(args, format);
 
@@ -104,10 +104,16 @@ result_t audio_context_create(void) {
             "Failed to allocate memory for AudioContext");
     }
 
+    ma_context_config contextConfig = ma_context_config_init();
+    contextConfig.coreaudio.sessionCategory = ma_ios_session_category_play_and_record;
+
+    contextConfig.coreaudio.sessionCategoryOptions = ma_ios_session_category_option_allow_bluetooth |
+                                                     ma_ios_session_category_option_mix_with_others;
+
     ma_result contextInitResult =
         ma_context_init(NULL,
                         0,
-                        NULL,
+                        &contextConfig,
                         &context->maContext);
 
     if (contextInitResult != MA_SUCCESS) {

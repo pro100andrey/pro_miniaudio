@@ -16,9 +16,6 @@ class AudioController extends ChangeNotifier {
 
   ({List<DeviceInfo> capture, List<DeviceInfo> playback})? _deviceInfos;
 
-  DeviceInfo get defaultPlaybackDevice =>
-      devicesInfos.playback.firstWhere((device) => device.isDefault);
-
   DeviceInfo? _selectedPlaybackDevice;
   DeviceInfo? get selectedPlaybackDevice => _selectedPlaybackDevice;
 
@@ -30,11 +27,6 @@ class AudioController extends ChangeNotifier {
 
   SupportedFormat? _selectedCaptureFormat;
   SupportedFormat? get selectedCaptureFormat => _selectedCaptureFormat;
-
-  DeviceInfo get defaultCaptureDevice =>
-      devicesInfos.capture.firstWhere((device) => device.isDefault);
-
-
 
   void refreshDevices() {
     final result = _context.refreshAndReturnDevices();
@@ -54,12 +46,14 @@ class AudioController extends ChangeNotifier {
 
     _deviceInfos = result;
 
-    _selectedPlaybackDevice ??= result.playback.firstWhereOrNull(
+    _selectedPlaybackDevice ??= result.playback.firstWhere(
       (device) => device.isDefault,
+      orElse: () => result.playback.first,
     );
 
-    _selectedCaptureDevice ??= result.capture.firstWhereOrNull(
+    _selectedCaptureDevice ??= result.capture.firstWhere(
       (device) => device.isDefault,
+      orElse: () => result.capture.first,
     );
 
     _selectedCaptureFormat ??=
