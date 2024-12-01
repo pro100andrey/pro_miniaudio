@@ -1,28 +1,28 @@
 {
-    "version": "2.0.0",
-    "configurations": [
+  "version": "2.0.0",
+  "configurations": [
 
-        {
-            "name": "C/C++: main",
-            "type": "cppdbg",
-            "request": "launch",
-            "program": "${workspaceFolder}/build/main",
-            "args": [],
-            "stopAtEntry": false,
-            "cwd": "${workspaceFolder}",
-            "environment": [],
-            "externalConsole": false,
-            "MIMode": "lldb",
-            "preLaunchTask": "clang build"
-        },
-        {
-            "name": "Example flutter",
-            "request": "launch",
-            "type": "dart",
-            "program": "lib/main.dart",
-            "args": [],
-            "cwd": "${workspaceFolder}/example",
-            "env": {}
-        }
-    ]
+    {
+      "name": "C/C++ bin/main",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/main",
+      "args": [],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}",
+      "environment": [],
+      "externalConsole": false,
+      "MIMode": "lldb",
+      "preLaunchTask": "clang build"
+    },
+    {
+      "name": "example (Flutter)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "args": [],
+      "cwd": "${workspaceFolder}/example",
+      "env": {}
+    },
+  ]
 }
