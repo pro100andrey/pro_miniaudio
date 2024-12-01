@@ -32,7 +32,7 @@ final class Library {
       );
     }
 
-    final bindings = ProMiniaudioBindings(dylib)..resource_manager_free_all();
+    final bindings = ProMiniaudioBindings(dylib)..resource_manager_clear();
 
     return bindings;
   }

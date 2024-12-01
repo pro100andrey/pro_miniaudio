@@ -79,7 +79,13 @@
     "C_Cpp_Runner.msvcSecureNoWarnings": false,
     "files.associations": {
         "*.arb": "json",
-        "pro_miniaudio.h": "c",
-        "string.h": "c"
+        "cstdarg": "c",
+        "error_code.h": "c",
+        "device_id.h": "c",
+        "logger.h": "c",
+        "stdlib.h": "c",
+        "miniaudio.h": "c",
+        "resource_manager.h": "c",
+        "waveform.h": "c"
     }
 }

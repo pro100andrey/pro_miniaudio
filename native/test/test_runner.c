@@ -1,5 +1,10 @@
-#include "pro_miniaudio.h"
-#include "unity.h"
+#include "../include/audio_context.h"
+#include "../include/error_code.h"
+#include "../include/playback_device.h"
+#include "../include/resource_manager.h"
+#include "../include/result.h"
+#include "../include/waveform.h"
+#include "unity/unity.h"
 
 void setUp(void) {}
 void tearDown(void) {}
@@ -35,7 +40,7 @@ void test_resource_manager_free_all(void) {
     result_t result = audio_context_create();
     TEST_ASSERT_EQUAL_INT(error_code_none, result.code);
 
-    resource_manager_free_all();
+    resource_manager_clear();
 }
 
 void test_audio_context_refresh_devices(void) {
@@ -137,7 +142,7 @@ void test_resource_manager_with_multiple_contexts(void) {
 
     TEST_ASSERT_EQUAL_INT(error_code_none, result3.code);
 
-    resource_manager_free_all();
+    resource_manager_clear();
 }
 
 int main(void) {

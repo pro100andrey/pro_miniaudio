@@ -27,17 +27,6 @@ class ProMiniaudioBindings {
           lookup)
       : _lookup = lookup;
 
-  /// Frees all resources registered in the resource manager.
-  void resource_manager_free_all() {
-    return _resource_manager_free_all();
-  }
-
-  late final _resource_manager_free_allPtr =
-      _lookup<ffi.NativeFunction<ffi.Void Function()>>(
-          'resource_manager_free_all');
-  late final _resource_manager_free_all =
-      _resource_manager_free_allPtr.asFunction<void Function()>();
-
   /// Creates a new Context and initializes the audio system with default
   /// settings.
   result_t audio_context_create() {
@@ -158,160 +147,6 @@ class ProMiniaudioBindings {
       _audio_context_get_capture_devices_infoPtr
           .asFunction<result_t Function(ffi.Pointer<ffi.Void>)>();
 
-  /// Creates a playback device with the specified parameters.
-  result_t playback_device_create(
-    ffi.Pointer<ffi.Void> pAudioContext,
-    int bufferSizeInBytes,
-    device_id_t deviceId,
-    supported_format_t supportedFormat,
-  ) {
-    return _playback_device_create(
-      pAudioContext,
-      bufferSizeInBytes,
-      deviceId,
-      supportedFormat,
-    );
-  }
-
-  late final _playback_device_createPtr = _lookup<
-      ffi.NativeFunction<
-          result_t Function(ffi.Pointer<ffi.Void>, ffi.Size, device_id_t,
-              supported_format_t)>>('playback_device_create');
-  late final _playback_device_create = _playback_device_createPtr.asFunction<
-      result_t Function(
-          ffi.Pointer<ffi.Void>, int, device_id_t, supported_format_t)>();
-
-  /// Destroys a playback device and releases its resources.
-  result_t playback_device_destroy(
-    ffi.Pointer<ffi.Void> device,
-  ) {
-    return _playback_device_destroy(
-      device,
-    );
-  }
-
-  late final _playback_device_destroyPtr =
-      _lookup<ffi.NativeFunction<result_t Function(ffi.Pointer<ffi.Void>)>>(
-          'playback_device_destroy');
-  late final _playback_device_destroy = _playback_device_destroyPtr
-      .asFunction<result_t Function(ffi.Pointer<ffi.Void>)>();
-
-  /// Starts playback on the device.
-  result_t playback_device_start(
-    ffi.Pointer<ffi.Void> device,
-  ) {
-    return _playback_device_start(
-      device,
-    );
-  }
-
-  late final _playback_device_startPtr =
-      _lookup<ffi.NativeFunction<result_t Function(ffi.Pointer<ffi.Void>)>>(
-          'playback_device_start');
-  late final _playback_device_start = _playback_device_startPtr
-      .asFunction<result_t Function(ffi.Pointer<ffi.Void>)>();
-
-  /// Stops playback on the device.
-  result_t playback_device_stop(
-    ffi.Pointer<ffi.Void> device,
-  ) {
-    return _playback_device_stop(
-      device,
-    );
-  }
-
-  late final _playback_device_stopPtr =
-      _lookup<ffi.NativeFunction<result_t Function(ffi.Pointer<ffi.Void>)>>(
-          'playback_device_stop');
-  late final _playback_device_stop = _playback_device_stopPtr
-      .asFunction<result_t Function(ffi.Pointer<ffi.Void>)>();
-
-  /// Pushes audio data to the playback device's buffer.
-  result_t playback_device_push_buffer(
-    ffi.Pointer<ffi.Void> device,
-    ffi.Pointer<playback_data_t> data,
-  ) {
-    return _playback_device_push_buffer(
-      device,
-      data,
-    );
-  }
-
-  late final _playback_device_push_bufferPtr = _lookup<
-      ffi.NativeFunction<
-          result_t Function(ffi.Pointer<ffi.Void>,
-              ffi.Pointer<playback_data_t>)>>('playback_device_push_buffer');
-  late final _playback_device_push_buffer =
-      _playback_device_push_bufferPtr.asFunction<
-          result_t Function(
-              ffi.Pointer<ffi.Void>, ffi.Pointer<playback_data_t>)>();
-
-  /// Creates a waveform generator with the specified parameters.
-  result_t waveform_create(
-    sample_format_t format,
-    int channels,
-    int sampleRate,
-    waveform_type_t waveformType,
-    double amplitude,
-    double frequency,
-  ) {
-    return _waveform_create(
-      format.value,
-      channels,
-      sampleRate,
-      waveformType.value,
-      amplitude,
-      frequency,
-    );
-  }
-
-  late final _waveform_createPtr = _lookup<
-      ffi.NativeFunction<
-          result_t Function(ffi.UnsignedInt, ffi.Uint32, ffi.Uint32,
-              ffi.UnsignedInt, ffi.Double, ffi.Double)>>('waveform_create');
-  late final _waveform_create = _waveform_createPtr
-      .asFunction<result_t Function(int, int, int, int, double, double)>();
-
-  /// Destroys a waveform generator and releases its resources.
-  void waveform_destroy(
-    ffi.Pointer<ffi.Void> waveform,
-  ) {
-    return _waveform_destroy(
-      waveform,
-    );
-  }
-
-  late final _waveform_destroyPtr =
-      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Void>)>>(
-          'waveform_destroy');
-  late final _waveform_destroy =
-      _waveform_destroyPtr.asFunction<void Function(ffi.Pointer<ffi.Void>)>();
-
-  /// Reads PCM frames from the waveform generator.
-  result_t waveform_read_pcm_frames_with_buffer(
-    ffi.Pointer<ffi.Void> waveform,
-    ffi.Pointer<ffi.Void> pFramesOut,
-    int framesCount,
-    ffi.Pointer<ffi.Uint64> pFramesRead,
-  ) {
-    return _waveform_read_pcm_frames_with_buffer(
-      waveform,
-      pFramesOut,
-      framesCount,
-      pFramesRead,
-    );
-  }
-
-  late final _waveform_read_pcm_frames_with_bufferPtr = _lookup<
-          ffi.NativeFunction<
-              result_t Function(ffi.Pointer<ffi.Void>, ffi.Pointer<ffi.Void>,
-                  ffi.Uint64, ffi.Pointer<ffi.Uint64>)>>(
-      'waveform_read_pcm_frames_with_buffer');
-  late final _waveform_read_pcm_frames_with_buffer =
-      _waveform_read_pcm_frames_with_bufferPtr.asFunction<
-          result_t Function(ffi.Pointer<ffi.Void>, ffi.Pointer<ffi.Void>, int,
-              ffi.Pointer<ffi.Uint64>)>();
-
   /// Gets the number of bytes per sample for the given format.
   int get_bytes_per_sample(
     sample_format_t format,
@@ -426,6 +261,205 @@ class ProMiniaudioBindings {
               ffi.UnsignedInt, ffi.Pointer<ffi.Char>)>>('log_message');
   late final _log_message =
       _log_messagePtr.asFunction<void Function(int, ffi.Pointer<ffi.Char>)>();
+
+  /// Creates a playback device with the specified parameters.
+  result_t playback_device_create(
+    ffi.Pointer<ffi.Void> pAudioContext,
+    int bufferSizeInBytes,
+    device_id_t deviceId,
+    supported_format_t supportedFormat,
+  ) {
+    return _playback_device_create(
+      pAudioContext,
+      bufferSizeInBytes,
+      deviceId,
+      supportedFormat,
+    );
+  }
+
+  late final _playback_device_createPtr = _lookup<
+      ffi.NativeFunction<
+          result_t Function(ffi.Pointer<ffi.Void>, ffi.Size, device_id_t,
+              supported_format_t)>>('playback_device_create');
+  late final _playback_device_create = _playback_device_createPtr.asFunction<
+      result_t Function(
+          ffi.Pointer<ffi.Void>, int, device_id_t, supported_format_t)>();
+
+  /// Destroys a playback device and releases its resources.
+  result_t playback_device_destroy(
+    ffi.Pointer<ffi.Void> device,
+  ) {
+    return _playback_device_destroy(
+      device,
+    );
+  }
+
+  late final _playback_device_destroyPtr =
+      _lookup<ffi.NativeFunction<result_t Function(ffi.Pointer<ffi.Void>)>>(
+          'playback_device_destroy');
+  late final _playback_device_destroy = _playback_device_destroyPtr
+      .asFunction<result_t Function(ffi.Pointer<ffi.Void>)>();
+
+  /// Starts playback on the device.
+  result_t playback_device_start(
+    ffi.Pointer<ffi.Void> device,
+  ) {
+    return _playback_device_start(
+      device,
+    );
+  }
+
+  late final _playback_device_startPtr =
+      _lookup<ffi.NativeFunction<result_t Function(ffi.Pointer<ffi.Void>)>>(
+          'playback_device_start');
+  late final _playback_device_start = _playback_device_startPtr
+      .asFunction<result_t Function(ffi.Pointer<ffi.Void>)>();
+
+  /// Stops playback on the device.
+  result_t playback_device_stop(
+    ffi.Pointer<ffi.Void> device,
+  ) {
+    return _playback_device_stop(
+      device,
+    );
+  }
+
+  late final _playback_device_stopPtr =
+      _lookup<ffi.NativeFunction<result_t Function(ffi.Pointer<ffi.Void>)>>(
+          'playback_device_stop');
+  late final _playback_device_stop = _playback_device_stopPtr
+      .asFunction<result_t Function(ffi.Pointer<ffi.Void>)>();
+
+  /// Pushes audio data to the playback device's buffer.
+  result_t playback_device_push_buffer(
+    ffi.Pointer<ffi.Void> device,
+    ffi.Pointer<playback_data_t> data,
+  ) {
+    return _playback_device_push_buffer(
+      device,
+      data,
+    );
+  }
+
+  late final _playback_device_push_bufferPtr = _lookup<
+      ffi.NativeFunction<
+          result_t Function(ffi.Pointer<ffi.Void>,
+              ffi.Pointer<playback_data_t>)>>('playback_device_push_buffer');
+  late final _playback_device_push_buffer =
+      _playback_device_push_bufferPtr.asFunction<
+          result_t Function(
+              ffi.Pointer<ffi.Void>, ffi.Pointer<playback_data_t>)>();
+
+  /// Registers a resource with the resource manager.
+  bool resource_manager_register(
+    ffi.Pointer<ffi.Void> resource,
+    resource_cleanup_func_t cleanup,
+  ) {
+    return _resource_manager_register(
+      resource,
+      cleanup,
+    );
+  }
+
+  late final _resource_manager_registerPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Bool Function(ffi.Pointer<ffi.Void>,
+              resource_cleanup_func_t)>>('resource_manager_register');
+  late final _resource_manager_register =
+      _resource_manager_registerPtr.asFunction<
+          bool Function(ffi.Pointer<ffi.Void>, resource_cleanup_func_t)>();
+
+  /// Unregisters a resource from the resource manager and cleans it up.
+  void resource_manager_unregister(
+    ffi.Pointer<ffi.Void> resource,
+  ) {
+    return _resource_manager_unregister(
+      resource,
+    );
+  }
+
+  late final _resource_manager_unregisterPtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Void>)>>(
+          'resource_manager_unregister');
+  late final _resource_manager_unregister = _resource_manager_unregisterPtr
+      .asFunction<void Function(ffi.Pointer<ffi.Void>)>();
+
+  /// Frees all resources registered in the resource manager.
+  void resource_manager_clear() {
+    return _resource_manager_clear();
+  }
+
+  late final _resource_manager_clearPtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function()>>(
+          'resource_manager_clear');
+  late final _resource_manager_clear =
+      _resource_manager_clearPtr.asFunction<void Function()>();
+
+  /// Creates a waveform generator with the specified parameters.
+  result_t waveform_create(
+    sample_format_t format,
+    int channels,
+    int sampleRate,
+    waveform_type_t waveformType,
+    double amplitude,
+    double frequency,
+  ) {
+    return _waveform_create(
+      format.value,
+      channels,
+      sampleRate,
+      waveformType.value,
+      amplitude,
+      frequency,
+    );
+  }
+
+  late final _waveform_createPtr = _lookup<
+      ffi.NativeFunction<
+          result_t Function(ffi.UnsignedInt, ffi.Uint32, ffi.Uint32,
+              ffi.UnsignedInt, ffi.Double, ffi.Double)>>('waveform_create');
+  late final _waveform_create = _waveform_createPtr
+      .asFunction<result_t Function(int, int, int, int, double, double)>();
+
+  /// Destroys a waveform generator and releases its resources.
+  void waveform_destroy(
+    ffi.Pointer<ffi.Void> waveform,
+  ) {
+    return _waveform_destroy(
+      waveform,
+    );
+  }
+
+  late final _waveform_destroyPtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Void>)>>(
+          'waveform_destroy');
+  late final _waveform_destroy =
+      _waveform_destroyPtr.asFunction<void Function(ffi.Pointer<ffi.Void>)>();
+
+  /// Reads PCM frames from the waveform generator.
+  result_t waveform_read_pcm_frames_with_buffer(
+    ffi.Pointer<ffi.Void> waveform,
+    ffi.Pointer<ffi.Void> pFramesOut,
+    int framesCount,
+    ffi.Pointer<ffi.Uint64> pFramesRead,
+  ) {
+    return _waveform_read_pcm_frames_with_buffer(
+      waveform,
+      pFramesOut,
+      framesCount,
+      pFramesRead,
+    );
+  }
+
+  late final _waveform_read_pcm_frames_with_bufferPtr = _lookup<
+          ffi.NativeFunction<
+              result_t Function(ffi.Pointer<ffi.Void>, ffi.Pointer<ffi.Void>,
+                  ffi.Uint64, ffi.Pointer<ffi.Uint64>)>>(
+      'waveform_read_pcm_frames_with_buffer');
+  late final _waveform_read_pcm_frames_with_buffer =
+      _waveform_read_pcm_frames_with_bufferPtr.asFunction<
+          result_t Function(ffi.Pointer<ffi.Void>, ffi.Pointer<ffi.Void>, int,
+              ffi.Pointer<ffi.Uint64>)>();
 }
 
 /// Union to store device identifiers for different audio backends.
@@ -483,79 +517,6 @@ final class UnnamedUnion1 extends ffi.Union {
   external ffi.Array<ffi.Char> s;
 
   external ffi.Pointer<ffi.Void> p;
-}
-
-/// Error codes for function results.
-enum error_code_t {
-  error_code_none(0),
-  error_code_unknown(1),
-  error_code_context(2),
-  error_code_device(3),
-  error_code_get_device(5),
-  error_code_get_device_info(6),
-  error_code_buffer(7),
-  error_waveform(8);
-
-  final int value;
-  const error_code_t(this.value);
-
-  static error_code_t fromValue(int value) => switch (value) {
-        0 => error_code_none,
-        1 => error_code_unknown,
-        2 => error_code_context,
-        3 => error_code_device,
-        5 => error_code_get_device,
-        6 => error_code_get_device_info,
-        7 => error_code_buffer,
-        8 => error_waveform,
-        _ => throw ArgumentError("Unknown value for error_code_t: $value"),
-      };
-}
-
-/// Enum to represent the type of data stored in a `result_t`.
-enum data_type_t {
-  data_type_empty(0),
-  data_type_int(1),
-  data_type_ptr(2);
-
-  final int value;
-  const data_type_t(this.value);
-
-  static data_type_t fromValue(int value) => switch (value) {
-        0 => data_type_empty,
-        1 => data_type_int,
-        2 => data_type_ptr,
-        _ => throw ArgumentError("Unknown value for data_type_t: $value"),
-      };
-}
-
-/// Union to store different types of result data.
-final class result_data_t extends ffi.Union {
-  external ffi.Pointer<ffi.Void> pData;
-
-  @ffi.Int32()
-  external int intData;
-
-  @ffi.Float()
-  external double floatData;
-}
-
-/// Structure to represent the result of a function call.
-final class result_t extends ffi.Struct {
-  external result_data_t data;
-
-  @ffi.UnsignedInt()
-  external int typeAsInt;
-
-  data_type_t get type => data_type_t.fromValue(typeAsInt);
-
-  @ffi.UnsignedInt()
-  external int codeAsInt;
-
-  error_code_t get code => error_code_t.fromValue(codeAsInt);
-
-  @ffi.Array.multi([256])
-  external ffi.Array<ffi.Char> message;
 }
 
 /// Enum to represent supported audio sample formats.
@@ -617,6 +578,95 @@ final class device_info_t extends ffi.Struct {
   external ffi.Array<supported_format_t> dataFormats;
 }
 
+/// Structure to represent the result of a function call.
+final class result_t extends ffi.Struct {
+  external result_data_t data;
+
+  @ffi.UnsignedInt()
+  external int typeAsInt;
+
+  data_type_t get type => data_type_t.fromValue(typeAsInt);
+
+  @ffi.UnsignedInt()
+  external int codeAsInt;
+
+  error_code_t get code => error_code_t.fromValue(codeAsInt);
+
+  @ffi.Array.multi([256])
+  external ffi.Array<ffi.Char> message;
+}
+
+/// Union to store different types of result data.
+final class result_data_t extends ffi.Union {
+  external ffi.Pointer<ffi.Void> pData;
+
+  @ffi.Int32()
+  external int intData;
+
+  @ffi.Float()
+  external double floatData;
+}
+
+/// Enum to represent the type of data stored in a `result_t`.
+enum data_type_t {
+  data_type_empty(0),
+  data_type_int(1),
+  data_type_ptr(2);
+
+  final int value;
+  const data_type_t(this.value);
+
+  static data_type_t fromValue(int value) => switch (value) {
+        0 => data_type_empty,
+        1 => data_type_int,
+        2 => data_type_ptr,
+        _ => throw ArgumentError("Unknown value for data_type_t: $value"),
+      };
+}
+
+/// Error codes for function results.
+enum error_code_t {
+  error_code_none(0),
+  error_code_unknown(1),
+  error_code_context(2),
+  error_code_device(3),
+  error_code_get_device(5),
+  error_code_get_device_info(6),
+  error_code_buffer(7),
+  error_waveform(8);
+
+  final int value;
+  const error_code_t(this.value);
+
+  static error_code_t fromValue(int value) => switch (value) {
+        0 => error_code_none,
+        1 => error_code_unknown,
+        2 => error_code_context,
+        3 => error_code_device,
+        5 => error_code_get_device,
+        6 => error_code_get_device_info,
+        7 => error_code_buffer,
+        8 => error_waveform,
+        _ => throw ArgumentError("Unknown value for error_code_t: $value"),
+      };
+}
+
+enum LogLevel {
+  LOG_LEVEL_DEBUG(0),
+  LOG_LEVEL_INFO(1),
+  LOG_LEVEL_ERROR(2);
+
+  final int value;
+  const LogLevel(this.value);
+
+  static LogLevel fromValue(int value) => switch (value) {
+        0 => LOG_LEVEL_DEBUG,
+        1 => LOG_LEVEL_INFO,
+        2 => LOG_LEVEL_ERROR,
+        _ => throw ArgumentError("Unknown value for LogLevel: $value"),
+      };
+}
+
 /// Structure to represent data being pushed to a playback device.
 final class playback_data_t extends ffi.Struct {
   @ffi.UnsignedInt()
@@ -629,6 +679,14 @@ final class playback_data_t extends ffi.Struct {
   @ffi.Uint32()
   external int sizeInBytes;
 }
+
+/// Function pointer type for resource cleanup functions.
+typedef resource_cleanup_func_t
+    = ffi.Pointer<ffi.NativeFunction<resource_cleanup_func_tFunction>>;
+typedef resource_cleanup_func_tFunction = ffi.Void Function(
+    ffi.Pointer<ffi.Void> resource);
+typedef Dartresource_cleanup_func_tFunction = void Function(
+    ffi.Pointer<ffi.Void> resource);
 
 /// Enum representing different types of waveforms.
 enum waveform_type_t {
@@ -646,22 +704,6 @@ enum waveform_type_t {
         2 => waveform_type_triangle,
         3 => waveform_type_sawtooth,
         _ => throw ArgumentError("Unknown value for waveform_type_t: $value"),
-      };
-}
-
-enum LogLevel {
-  LOG_LEVEL_DEBUG(0),
-  LOG_LEVEL_INFO(1),
-  LOG_LEVEL_ERROR(2);
-
-  final int value;
-  const LogLevel(this.value);
-
-  static LogLevel fromValue(int value) => switch (value) {
-        0 => LOG_LEVEL_DEBUG,
-        1 => LOG_LEVEL_INFO,
-        2 => LOG_LEVEL_ERROR,
-        _ => throw ArgumentError("Unknown value for LogLevel: $value"),
       };
 }
 

@@ -1,5 +1,5 @@
 # Name of the executable
-TARGET = test_runner
+TARGET = test/build/test_runner
 
 # Compiler and common flags
 CC = gcc
@@ -10,10 +10,13 @@ MINIAUDIO_CFLAGS = -Itest -Isrc -Wextra
 
 # Source files
 SRCS = test/test_runner.c \
-       test/unity.c \
-       src/pro_miniaudio.c \
+       test/unity/unity.c \
+       src/audio_context.c \
+	   src/result.c \
+	   src/waveform.c \
        src/logger.c \
-       src/miniaudio/miniaudio.c \
+       src/miniaudio.c \
+	   src/playback_device.c \
        src/resource_manager.c
 
 # Build directory
@@ -32,7 +35,7 @@ $(BUILD_DIR)/%.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 # Special rule for src/miniaudio/miniaudio.c
-$(BUILD_DIR)/src/miniaudio/miniaudio.o: src/miniaudio/miniaudio.c
+$(BUILD_DIR)/src/miniaudio.o: src/miniaudio.c
 	@mkdir -p $(dir $@)
 	$(CC) $(MINIAUDIO_CFLAGS) -c $< -o $@
 

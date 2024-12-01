@@ -15,7 +15,7 @@ class DevicesDropdown extends StatelessWidget {
   final DeviceInfo? selectedDevice;
   final ValueChanged<DeviceInfo> onChanged;
   final List<DeviceInfo> devices;
-  final VoidCallback onInfoPressed;
+  final VoidCallback? onInfoPressed;
 
   @override
   Widget build(BuildContext context) => Column(
@@ -32,13 +32,14 @@ class DevicesDropdown extends StatelessWidget {
                     ),
               ),
               const Spacer(),
-              IconButton(
-                iconSize: 16,
-                padding: const EdgeInsets.all(4),
-                constraints: const BoxConstraints(),
-                icon: const Icon(Icons.info_outline),
-                onPressed: onInfoPressed,
-              ),
+              if (onInfoPressed != null)
+                IconButton(
+                  iconSize: 16,
+                  padding: const EdgeInsets.all(4),
+                  constraints: const BoxConstraints(),
+                  icon: const Icon(Icons.info_outline),
+                  onPressed: onInfoPressed,
+                ),
             ],
           ),
           DropdownButton<DeviceInfo>(

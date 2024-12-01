@@ -8,13 +8,17 @@
                 "-fcolor-diagnostics",
                 "-fansi-escape-codes",
                 "-g",
-                "${workspaceFolder}/src/miniaudio/miniaudio.c",
-                "${workspaceFolder}/src/pro_miniaudio.c",
-                "${workspaceFolder}/src/resource_manager.c",
-                "${workspaceFolder}/src/logger.c",
-                "${workspaceFolder}/src/bin/main.c",
+                "${workspaceFolder}/native/src/miniaudio.c",
+                "${workspaceFolder}/native/src/audio_context.c",
+                "${workspaceFolder}/native/src/resource_manager.c",
+                "${workspaceFolder}/native/src/playback_device.c",
+                "${workspaceFolder}/native/src/logger.c",
+                "${workspaceFolder}/native/src/result.c",
+                "${workspaceFolder}/native/src/waveform.c",
+                "${workspaceFolder}/native/bin/main.c",
+
                 "-o",
-                "${workspaceFolder}/build/main"
+                "${workspaceFolder}/native/build/main"
             ],
             "presentation": {
                 "clear": false,

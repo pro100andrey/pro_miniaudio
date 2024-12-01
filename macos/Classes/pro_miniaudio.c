@@ -1,7 +1,6 @@
-// Relative import to be able to reuse the C sources.
-// See the comment in ../pro_miniaudio.podspec for more information.
-#include "../../src/pro_miniaudio.c"
-
-#include "../../src/logger.c"
-#include "../../src/miniaudio/miniaudio.c"
-#include "../../src/resource_manager.c"
+#include "../../native/src/audio_context.c"
+#include "../../native/src/logger.c"
+#include "../../native/src/miniaudio.c"
+#include "../../native/src/playback_device.c"
+#include "../../native/src/resource_manager.c"
+#include "../../native/src/result.c"

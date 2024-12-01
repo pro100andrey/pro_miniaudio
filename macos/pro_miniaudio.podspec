@@ -24,6 +24,7 @@ A new Flutter FFI plugin project.
   s.platform = :osx, '10.11'
   s.pod_target_xcconfig = {
     'DEFINES_MODULE' => 'YES',
+    'GCC_WARN_PROTOTYPES' => 'NO',
   }
 
   s.swift_version = '5.0'

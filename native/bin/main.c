@@ -4,9 +4,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "../logger.h"
-#include "../pro_miniaudio.h"
-#include "../resource_manager.h"
+#include "../include/audio_context.h"
+#include "../include/logger.h"
+#include "../include/playback_device.h"
+#include "../include/resource_manager.h"
+#include "../include/result.h"
+#include "../include/waveform.h"
 
 volatile bool running = true;
 
@@ -139,7 +142,7 @@ int main(int argc, char const* argv[]) {
         usleep(95000);
     }
 
-    resource_manager_free_all();
+    resource_manager_clear();
 
     return 0;
 }

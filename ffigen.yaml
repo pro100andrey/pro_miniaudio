@@ -7,11 +7,17 @@ description: |
 output: 'lib/src/generated/bindings.dart'
 headers:
   entry-points:
-    - 'src/pro_miniaudio.h'
-    - 'src/logger.h'
+    - 'native/include/audio_context.h'
+    - 'native/include/logger.h'
+    - 'native/include/playback_device.h'
+    - 'native/include/resource_manager.h'
+    - 'native/include/waveform.h'
   include-directives:
-    - 'src/pro_miniaudio.h'
-    - 'src/logger.h'
+    - 'native/include/audio_context.h'
+    - 'native/include/logger.h'
+    - 'native/include/playback_device.h'
+    - 'native/include/resource_manager.h'
+    - 'native/include/waveform.h'
 
 preamble: |
   // ignore_for_file: always_specify_types

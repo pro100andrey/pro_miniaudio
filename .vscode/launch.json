@@ -1,5 +1,7 @@
 {
+    "version": "2.0.0",
     "configurations": [
+
         {
             "name": "C/C++: main",
             "type": "cppdbg",
@@ -12,7 +14,15 @@
             "externalConsole": false,
             "MIMode": "lldb",
             "preLaunchTask": "clang build"
+        },
+        {
+            "name": "Example flutter",
+            "request": "launch",
+            "type": "dart",
+            "program": "lib/main.dart",
+            "args": [],
+            "cwd": "${workspaceFolder}/example",
+            "env": {}
         }
-    ],
-    "version": "2.0.0"
+    ]
 }

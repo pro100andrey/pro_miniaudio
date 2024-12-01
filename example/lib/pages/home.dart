@@ -89,26 +89,30 @@ class _HomePageState extends State<HomePage> {
                                   ),
                                 ),
                               ),
-                              ConstrainedBox(
-                                constraints: BoxConstraints(
-                                  minWidth: 200,
-                                  maxWidth: maxWidth > 200
-                                      ? maxWidth
-                                      : double.infinity,
-                                ),
-                                child: DevicesDropdown(
-                                  label: 'Capture',
-                                  selectedDevice:
-                                      notifier.selectedCaptureDevice,
-                                  onChanged: notifier.selectCaptureDevice,
-                                  devices: notifier.devicesInfos.capture,
-                                  onInfoPressed: () async =>
-                                      _onPlaybackInfoPressed(
-                                    context,
-                                    notifier.selectedCaptureDevice!,
+                              if (notifier.devicesInfos.capture.isNotEmpty)
+                                ConstrainedBox(
+                                  constraints: BoxConstraints(
+                                    minWidth: 200,
+                                    maxWidth: maxWidth > 200
+                                        ? maxWidth
+                                        : double.infinity,
+                                  ),
+                                  child: DevicesDropdown(
+                                    label: 'Capture',
+                                    selectedDevice:
+                                        notifier.selectedCaptureDevice,
+                                    onChanged: notifier.selectCaptureDevice,
+                                    devices: notifier.devicesInfos.capture,
+                                    onInfoPressed: notifier
+                                                .selectedCaptureDevice !=
+                                            null
+                                        ? () async => _onPlaybackInfoPressed(
+                                              context,
+                                              notifier.selectedCaptureDevice!,
+                                            )
+                                        : null,
                                   ),
                                 ),
-                              ),
                             ],
                           );
                         },
@@ -167,8 +171,12 @@ class _HomePageState extends State<HomePage> {
                   alignment: Alignment.centerRight,
                   child: DeviceActions(
                     vm: DeviceActionsVm(
-                      createCapture: notifier.createCaptureDevice,
-                      createPlayback: notifier.createPlaybackDevice,
+                      createCapture: notifier.selectedCaptureDevice != null
+                          ? notifier.createCaptureDevice
+                          : null,
+                      createPlayback: notifier.selectedPlaybackDevice != null
+                          ? notifier.createPlaybackDevice
+                          : null,
                     ),
                   ),
                 ),

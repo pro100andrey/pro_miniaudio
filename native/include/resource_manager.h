@@ -44,7 +44,24 @@ bool resource_manager_register(void *resource, resource_cleanup_func_t cleanup);
 void resource_manager_unregister(void *resource);
 
 /**
- * @brief Cleans up all registered resources.
+ * @brief Frees all resources registered in the resource manager.
+ *
+ * This function is designed to handle the cleanup of all resources managed by
+ * the resource manager. It is particularly useful in scenarios such as:
+ * - **Hot Reload:** During development (e.g., in Flutter), where application
+ *   state needs to be reset and resources reallocated to avoid memory leaks
+ *   or dangling pointers.
+ * - **Application Shutdown:** Ensures proper cleanup of resources during
+ *   application termination to prevent resource leaks.
+ *
+ * Internally, this function calls `resource_manager_clear`, which:
+ * - Iterates through all currently registered resources.
+ * - Executes the cleanup function for each registered resource.
+ * - Frees the memory associated with the resource manager.
+ *
+ * @note After calling this function, previously registered resources become invalid.
+ * Ensure resources are reinitialized if this function is used during a hot reload.
+ *
  *
  * This function iterates through all resources managed by the resource manager,
  * calls their associated cleanup functions, and removes them from the manager.

@@ -46,15 +46,19 @@ class AudioController extends ChangeNotifier {
 
     _deviceInfos = result;
 
-    _selectedPlaybackDevice ??= result.playback.firstWhere(
-      (device) => device.isDefault,
-      orElse: () => result.playback.first,
-    );
+    _selectedPlaybackDevice ??= result.playback.isNotEmpty
+        ? result.playback.firstWhere(
+            (device) => device.isDefault,
+            orElse: () => result.playback.first,
+          )
+        : null;
 
-    _selectedCaptureDevice ??= result.capture.firstWhere(
-      (device) => device.isDefault,
-      orElse: () => result.capture.first,
-    );
+    _selectedCaptureDevice ??= result.capture.isNotEmpty
+        ? result.capture.firstWhere(
+            (device) => device.isDefault,
+            orElse: () => result.capture.first,
+          )
+        : null;
 
     _selectedCaptureFormat ??=
         selectedCaptureDevice?.supportedFormats.firstOrNull;
@@ -115,7 +119,7 @@ class AudioController extends ChangeNotifier {
   }
 
   void removePlaybackDevice(int index) {
-    playbackDevices.removeAt(index);
+    playbackDevices.removeAt(index).dispose();
     notifyListeners();
   }
 

@@ -7,11 +7,11 @@ class DeviceActionsVm extends Equatable {
     required this.createCapture,
   });
 
-  final VoidCallback createPlayback;
-  final VoidCallback createCapture;
+  final VoidCallback? createPlayback;
+  final VoidCallback? createCapture;
 
   @override
-  List<Object?> get props => [];
+  List<Object?> get props => [createPlayback != null, createCapture != null];
 }
 
 class DeviceActions extends StatelessWidget {
@@ -27,22 +27,24 @@ class DeviceActions extends StatelessWidget {
         onSelected: (value) {
           switch (value) {
             case 0:
-              vm.createPlayback();
+              vm.createPlayback!();
             case 1:
-              vm.createCapture();
+              vm.createCapture!();
             case _:
               throw Exception('Invalid value: $value');
           }
         },
         itemBuilder: (context) => [
-          const PopupMenuItem(
-            value: 0,
-            child: Text('Create playback'),
-          ),
-          const PopupMenuItem(
-            value: 1,
-            child: Text('Create capture'),
-          ),
+          if (vm.createPlayback != null)
+            const PopupMenuItem(
+              value: 0,
+              child: Text('Create playback'),
+            ),
+          if (vm.createCapture != null)
+            const PopupMenuItem(
+              value: 1,
+              child: Text('Create capture'),
+            ),
         ],
       );
 }
