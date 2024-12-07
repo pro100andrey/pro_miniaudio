@@ -4,9 +4,6 @@
 
 #include "../include/logger.h"
 #include "../include/miniaudio.h"
-#include "../include/resource_manager.h"
-
-GENERATE_CLEANUP_FUNC(waveform_destroy)
 
 FFI_PLUGIN_EXPORT
 result_t waveform_create(sample_format_t format,
@@ -44,14 +41,6 @@ result_t waveform_create(sample_format_t format,
             ma_result_description(waveformInitResult));
     }
 
-    if (!resource_manager_register(waveform, waveform_destroy_cleanup)) {
-        waveform_destroy(waveform);
-
-        return result_error(
-            error_waveform,
-            "Failed to register waveform");
-    }
-
     LOG_INFO("Waveform created <%p>.", waveform);
 
     return result_ptr(waveform);
@@ -60,8 +49,6 @@ result_t waveform_create(sample_format_t format,
 FFI_PLUGIN_EXPORT
 void waveform_destroy(void *waveform) {
     ma_waveform *pWaveform = (ma_waveform *)waveform;
-
-    resource_manager_unregister(pWaveform);
 
     ma_waveform_uninit(pWaveform);
 

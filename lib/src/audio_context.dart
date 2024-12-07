@@ -1,9 +1,4 @@
-import 'dart:ffi' as ffi;
-
-import 'generated/bindings.dart';
-import 'library.dart';
-import 'models/device_info.dart';
-import 'models/sample_format.dart';
+part of 'library.dart';
 
 /// A constant representing an empty result for device information.
 ///
@@ -34,54 +29,34 @@ const kEmptyDevicesInfos = (playback: <DeviceInfo>[], capture: <DeviceInfo>[]);
 /// print('Capture Devices: ${devices.capture.length}');
 /// audioContext.dispose();
 /// ```
-final class AudioContext {
-  AudioContext() {
-    if (_context != null) {
-      throw StateError('Context is already initialized.');
-    }
-
-    final result = FFResult<ffi.Void>(_bindings.audio_context_create())
+final class AudioContext extends NativeResource<Void> {
+  factory AudioContext() {
+    final result = FFResult<Void>(_bindings.audio_context_create())
       ..throwIfError();
 
-    _context = result.data;
+    return AudioContext._(result.data);
   }
 
-  /// Returns the native pointer to the audio context.
-  ///
-  /// This pointer is used internally to interact with the native audio system.
-  /// The context must be initialized before accessing this property.
-  dynamic get nativeContext => _context;
-
-  /// Internal pointer to the native `Context`.
-  ffi.Pointer<ffi.Void>? _context;
-
-  /// Provides access to the bindings for the native audio library.
-  ProMiniaudioBindings get _bindings => Library.instance.bindings;
+  /// Internal constructor.
+  AudioContext._(super.ptr) : super._();
 
   /// Checks if the audio context is initialized and valid.
   ///
   /// Returns `true` if the context is initialized and valid; otherwise,
   /// `false`.
-  bool get contextIsInitialized =>
-      _context != null && _bindings.audio_context_is_valid(_context!);
+  bool get contextIsInitialized => _bindings.audio_context_is_valid(_resource);
 
-  /// Disposes the audio context and releases associated resources.
-  ///
-  /// This method must be called when the `AudioContext` is no longer needed.
-  /// Throws a [StateError] if the context is not initialized.
-  ///
-  /// Example:
-  /// ```dart
-  /// audioContext.dispose();
-  /// ```
-  void dispose() {
-    if (_context == null) {
-      throw StateError('Context is not initialized.');
-    }
+  /// The finalizer for the `AudioContext` class.
+  static final _finalizer = NativeFinalizer(
+    _bindings.addresses.audio_context_destroy.cast(),
+  );
 
-    FFResult(_bindings.audio_context_destroy(_context!)).throwIfError();
+  @override
+  NativeFinalizer get finalizer => _finalizer;
 
-    _context = null;
+  @override
+  void releaseResource() {
+    FFResult(_bindings.audio_context_destroy(_resource)).throwIfError();
   }
 
   /// Refreshes the list of available audio devices.
@@ -194,13 +169,12 @@ final class AudioContext {
   /// final contextPointer = audioContext._requireContext();
   /// ```
   @pragma('vm:prefer-inline')
-  ffi.Pointer<ffi.Void> _ensureContextInitialized() {
-    final context = _context;
-    if (context == null) {
-      throw StateError('AudioContext must be initialized before use.');
+  Pointer<Void> _ensureContextInitialized() {
+    if (_isFinalized) {
+      throw StateError('AudioContext is finalized');
     }
 
-    return context;
+    return _resource;
   }
 
   /// Extracts a list of [DeviceInfo] objects from a pointer to an array of
@@ -220,7 +194,7 @@ final class AudioContext {
   /// - [isDefault]: Whether the device is the default device.
   /// - [supportedFormats]: A list of formats supported by the device.
   List<DeviceInfo> _extractDeviceInfoList(
-    ffi.Pointer<device_info_t> devicesPointer,
+    Pointer<device_info_t> devicesPointer,
     int count,
   ) =>
       List.generate(count, (i) {

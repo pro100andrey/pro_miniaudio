@@ -4,7 +4,6 @@
 #include <string.h>
 
 #include "../include/miniaudio.h"
-#include "../include/resource_manager.h"
 #include "../include/logger.h"
 
 /**
@@ -28,8 +27,6 @@ typedef struct audio_context {
     device_cache_t playback;  // Playback device cache
     device_cache_t capture;   // Capture device cache
 } audio_context_t;
-
-GENERATE_CLEANUP_FUNC(audio_context_destroy)
 
 FFI_PLUGIN_EXPORT
 result_t audio_context_create(void) {
@@ -68,13 +65,6 @@ result_t audio_context_create(void) {
     context->playback.deviceCount = 0;
     context->capture.deviceCount = 0;
 
-    if (!resource_manager_register(context, audio_context_destroy_cleanup)) {
-        audio_context_destroy(context);
-
-        return result_error(error_code_context,
-                            "Failed to register AudioContext");
-    }
-
     LOG_INFO("Audio context created <%p>.", context);
 
     return result_ptr(context);
@@ -88,8 +78,6 @@ result_t audio_context_destroy(void *context) {
     }
 
     audio_context_t *ctx = (audio_context_t *)context;
-
-    resource_manager_unregister(ctx);
 
     if (ctx->initialized) {
         ma_result contextUninitResult =

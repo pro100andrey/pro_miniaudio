@@ -1,7 +1,4 @@
-import 'package:equatable/equatable.dart';
-
-import 'sample_format.dart';
-import 'waveform_type.dart';
+part of '../library.dart';
 
 /// Base class for waveform configuration.
 ///

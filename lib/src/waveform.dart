@@ -1,11 +1,4 @@
-import 'dart:ffi' as ffi;
-import 'dart:typed_data';
-
-import 'package:ffi/ffi.dart';
-
-import 'generated/bindings.dart';
-import 'library.dart';
-import 'models/waveform_config.dart';
+part of 'library.dart';
 
 /// A class for generating and managing waveforms.
 ///
@@ -30,7 +23,7 @@ import 'models/waveform_config.dart';
 ///
 /// waveform.dispose();
 /// ```
-final class Waveform {
+final class Waveform extends NativeResource<Void> {
   /// Creates a new waveform instance based on the provided configuration.
   ///
   /// - [config]: A configuration object that defines the waveform type,
@@ -50,7 +43,7 @@ final class Waveform {
   ///   ),
   /// );
   /// ```
-  Waveform({required this.config}) {
+  factory Waveform({required BaseWaveformConfig config}) {
     final cfg = config;
 
     final rWaveform = switch (cfg) {
@@ -88,22 +81,32 @@ final class Waveform {
         ),
     };
 
-    final result = FFResult<ffi.Void>(rWaveform)..throwIfError();
+    final result = FFResult<Void>(rWaveform)..throwIfError();
 
-    _pWaveform = result.data;
+    final waveform = Waveform._(result.data)..config = cfg;
+
+    return waveform;
   }
 
+  /// Internal constructor.
+  Waveform._(super.ptr) : super._();
+
+
   /// The waveform configuration used for generating PCM frames.
-  final BaseWaveformConfig config;
+  late final BaseWaveformConfig config;
 
-  /// Internal pointer to the native waveform instance.
-  ///
-  /// This pointer is managed by the native library and must be properly
-  /// disposed of using the [dispose] method.
-  ffi.Pointer<ffi.Void>? _pWaveform;
+  /// The finalizer for the `Waveform` class.
+  static final _finalizer = NativeFinalizer(
+    _bindings.addresses.waveform_destroy.cast(),
+  );
 
-  /// Provides access to the native bindings for waveform operations.
-  ProMiniaudioBindings get _bindings => Library.instance.bindings;
+  @override
+  NativeFinalizer get finalizer => _finalizer;
+
+  @override
+  void releaseResource() {
+    _bindings.waveform_destroy(_resource);
+  }
 
   /// Reads PCM frames from the waveform generator.
   ///
@@ -124,22 +127,18 @@ final class Waveform {
   ({Float32List frames, int framesRead}) readWaveformPcmFrames({
     required int frameCount,
   }) {
-    if (_pWaveform == null) {
-      throw Exception('Waveform is not initialized');
-    }
-
     final bytesPerFrame = _bindings.get_bytes_per_frame(
       config.format.toNative(),
       config.channels,
     );
 
-    final pFramesOut = malloc.allocate<ffi.Void>(frameCount * bytesPerFrame);
-    final pFramesRead = malloc.allocate<ffi.Uint64>(1);
+    final pFramesOut = malloc.allocate<Void>(frameCount * bytesPerFrame);
+    final pFramesRead = malloc.allocate<Uint64>(1);
 
     try {
-      FFResult<ffi.Void>(
+      FFResult<Void>(
         _bindings.waveform_read_pcm_frames_with_buffer(
-          _pWaveform!,
+          _resource,
           pFramesOut,
           frameCount,
           pFramesRead,
@@ -147,9 +146,8 @@ final class Waveform {
       ).throwIfError();
 
       final framesRead = pFramesRead.value;
-      final frames = pFramesOut
-          .cast<ffi.Float>()
-          .asTypedList(framesRead * config.channels);
+      final frames =
+          pFramesOut.cast<Float>().asTypedList(framesRead * config.channels);
       final result = Float32List.fromList(frames);
 
       return (frames: result, framesRead: framesRead);
@@ -158,24 +156,5 @@ final class Waveform {
         ..free(pFramesRead)
         ..free(pFramesOut);
     }
-  }
-
-  /// Disposes of the waveform generator, releasing associated resources.
-  ///
-  /// This method must be called when the waveform instance is no longer needed
-  /// to ensure proper cleanup of native resources.
-  ///
-  /// Example:
-  /// ```dart
-  /// waveform.dispose();
-  /// ```
-  void dispose() {
-    if (_pWaveform == null) {
-      return;
-    }
-
-    _bindings.waveform_destroy(_pWaveform!);
-
-    _pWaveform = null;
   }
 }

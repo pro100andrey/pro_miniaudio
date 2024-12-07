@@ -10,7 +10,6 @@
                 "-g",
                 "${workspaceFolder}/native/src/miniaudio.c",
                 "${workspaceFolder}/native/src/audio_context.c",
-                "${workspaceFolder}/native/src/resource_manager.c",
                 "${workspaceFolder}/native/src/playback_device.c",
                 "${workspaceFolder}/native/src/logger.c",
                 "${workspaceFolder}/native/src/result.c",

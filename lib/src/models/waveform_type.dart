@@ -1,3 +1,4 @@
+part of '../library.dart';
 /// Enum representing different types of waveforms.
 ///
 /// Each waveform type corresponds to a unique integer value.

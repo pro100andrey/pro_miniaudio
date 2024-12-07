@@ -5,7 +5,6 @@
 
 #include "../include/logger.h"
 #include "../include/miniaudio.h"
-#include "../include/resource_manager.h"
 
 typedef struct device_context {
     ma_device device;     // Playback device
@@ -94,8 +93,6 @@ void notification_callback(const ma_device_notification *pNotification) {
     }
 }
 
-GENERATE_CLEANUP_FUNC(playback_device_destroy)
-
 FFI_PLUGIN_EXPORT
 result_t playback_device_create(void *pAudioContext,
                                 size_t bufferSizeInBytes,
@@ -161,13 +158,6 @@ result_t playback_device_create(void *pAudioContext,
                             ma_result_description(rbInitResult));
     }
 
-    if (!resource_manager_register(deviceCtx, playback_device_destroy_cleanup)) {
-        playback_device_destroy(deviceCtx);
-
-        return result_error(error_code_device,
-                            "Failed to register playback device");
-    }
-
     LOG_INFO("Playback device created <%p>.", deviceCtx);
     LOG_INFO("Playback buffer created size: %zu (bytes) <%p>.",
              bufferSizeInBytes, &deviceCtx->pcmRingBuffer);
@@ -183,8 +173,6 @@ result_t playback_device_destroy(void *device) {
     }
 
     device_context_t *deviceCtx = (device_context_t *)device;
-
-    resource_manager_unregister(deviceCtx);
 
     if (ma_device_is_started(&deviceCtx->device)) {
         ma_device_stop(&deviceCtx->device);

@@ -1,7 +1,6 @@
 #include "../include/audio_context.h"
 #include "../include/error_code.h"
 #include "../include/playback_device.h"
-#include "../include/resource_manager.h"
 #include "../include/result.h"
 #include "../include/waveform.h"
 #include "unity/unity.h"
@@ -34,13 +33,6 @@ void test_audio_context_double_destroy(void) {
     destroy_result = audio_context_destroy(context);
     TEST_ASSERT_EQUAL_INT(error_code_context, destroy_result.code);
     TEST_ASSERT_EQUAL_STRING("Invalid audio context", destroy_result.message);
-}
-
-void test_resource_manager_free_all(void) {
-    result_t result = audio_context_create();
-    TEST_ASSERT_EQUAL_INT(error_code_none, result.code);
-
-    resource_manager_clear();
 }
 
 void test_audio_context_refresh_devices(void) {
@@ -142,7 +134,9 @@ void test_resource_manager_with_multiple_contexts(void) {
 
     TEST_ASSERT_EQUAL_INT(error_code_none, result3.code);
 
-    resource_manager_clear();
+    audio_context_destroy(result1.data.pData);
+    audio_context_destroy(result2.data.pData);
+    waveform_destroy(result3.data.pData);
 }
 
 int main(void) {
@@ -150,7 +144,6 @@ int main(void) {
 
     RUN_TEST(test_audio_context_create_destroy);
     RUN_TEST(test_audio_context_double_destroy);
-    RUN_TEST(test_resource_manager_free_all);
     RUN_TEST(test_audio_context_refresh_devices);
     RUN_TEST(test_playback_device_create_and_destroy);
     RUN_TEST(test_waveform_create_and_destroy);

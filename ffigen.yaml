@@ -27,11 +27,11 @@ comments:
   style: doxygen
   length: brief
 
-# functions:
-#   leaf:
-#     include:
-#       - '.*'
-#     exclude:
-#       - 'dispose'
+functions:
+  symbol-address:
+    include:
+      - 'audio_context_destroy'
+      - 'playback_device_destroy'
+      - 'waveform_destroy'
 
 silence-enum-warning: true

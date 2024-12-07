@@ -1,18 +1,11 @@
-import 'dart:ffi' as ffi;
-import 'dart:typed_data';
-
-import 'package:ffi/ffi.dart';
-
-import '../pro_miniaudio.dart';
-import 'generated/bindings.dart';
-import 'library.dart';
+part of 'library.dart';
 
 /// A class for managing audio playback devices.
 ///
 /// The `PlaybackDevice` class provides methods to control audio playback,
 /// such as starting playback, pushing audio buffers, stopping playback,
 /// and releasing resources.
-final class PlaybackDevice {
+final class PlaybackDevice extends NativeResource<Void> {
   /// Creates a new playback device instance.
   ///
   /// - [deviceId]: The unique identifier of the playback device.
@@ -22,49 +15,57 @@ final class PlaybackDevice {
   ///
   /// Throws an exception if the [AudioContext] is not initialized or
   /// if the device creation fails.
-  PlaybackDevice({
+  factory PlaybackDevice({
     required Object deviceId,
     required AudioContext context,
     required int bufferSizeInBytes,
     required SupportedFormat format,
-  }) : _supportedFormat = format {
+  }) {
     if (!context.contextIsInitialized) {
       throw Exception('Audio context is not initialized');
     }
 
-    final result = FFResult<ffi.Void>(
+    final result = FFResult<Void>(
       _bindings.playback_device_create(
-        context.nativeContext,
+        context._resource,
         bufferSizeInBytes,
         deviceId as device_id_t,
         format.nativeFormat,
       ),
     )..throwIfError();
 
-    _device = result.data;
+    final playbackDevice = PlaybackDevice._(result.data)
+      .._supportedFormat = format;
+
+    return playbackDevice;
   }
+
+  /// Internal constructor.
+  PlaybackDevice._(super.ptr) : super._();
 
   /// The audio format supported by this playback device.
   ///
   /// This format defines the sample rate, channels, and data representation.
-  final SupportedFormat _supportedFormat;
+  late SupportedFormat _supportedFormat;
 
-  /// Pointer to the native playback device.
-  ///
-  /// This is used internally for interacting with the underlying
-  /// native playback device.
-  late ffi.Pointer<ffi.Void>? _device;
+  static final _finalizer = NativeFinalizer(
+    _bindings.addresses.playback_device_destroy.cast(),
+  );
 
-  /// Provides access to the native bindings for playback device operations.
-  ProMiniaudioBindings get _bindings => Library.instance.bindings;
+  @override
+  NativeFinalizer get finalizer => _finalizer;
+
+  @override
+  void releaseResource() {
+    _bindings.playback_device_destroy(_resource);
+  }
 
   /// Starts audio playback on the device.
   ///
   /// Throws an exception if the operation fails or if the device is not
   /// properly initialized.
   void start() {
-    FFResult<ffi.Void>(_bindings.playback_device_start(_device!))
-        .throwIfError();
+    FFResult<Void>(_bindings.playback_device_start(_resource)).throwIfError();
   }
 
   /// Pushes an audio buffer to the playback device for playback.
@@ -78,12 +79,11 @@ final class PlaybackDevice {
   /// Throws an exception if the operation fails or if the buffer cannot be
   /// processed.
   void pushBuffer({required Float32List buffer, required int framesCount}) {
-    final data =
-        malloc.allocate<playback_data_t>(ffi.sizeOf<playback_data_t>());
+    final data = malloc.allocate<playback_data_t>(sizeOf<playback_data_t>());
 
     final sizeInBytes = framesCount * _supportedFormat.bytesPerFrame;
 
-    final pUserData = malloc<ffi.Float>(sizeInBytes);
+    final pUserData = malloc<Float>(sizeInBytes);
 
     try {
       // Fill the allocated memory with audio buffer data.
@@ -97,8 +97,8 @@ final class PlaybackDevice {
       data.ref.formatAsInt = _supportedFormat.format.value;
 
       // Push the buffer to the playback device.
-      FFResult<ffi.Void>(
-        _bindings.playback_device_push_buffer(_device!, data),
+      FFResult<Void>(
+        _bindings.playback_device_push_buffer(_resource, data),
       ).throwIfError();
     } finally {
       // Free allocated memory to avoid leaks.
@@ -116,14 +116,6 @@ final class PlaybackDevice {
   /// Throws an exception if the operation fails or if the device is not
   /// properly initialized.
   void stop() {
-    FFResult<ffi.Void>(_bindings.playback_device_stop(_device!)).throwIfError();
-  }
-
-  /// Releases the resources associated with this playback device.
-  ///
-  /// This method must be called when the playback device is no longer needed
-  /// to free up native resources and prevent memory leaks.
-  void dispose() {
-    _bindings.playback_device_destroy(_device!);
+    FFResult<Void>(_bindings.playback_device_stop(_resource)).throwIfError();
   }
 }

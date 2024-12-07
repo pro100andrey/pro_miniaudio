@@ -350,51 +350,6 @@ class ProMiniaudioBindings {
           result_t Function(
               ffi.Pointer<ffi.Void>, ffi.Pointer<playback_data_t>)>();
 
-  /// Registers a resource with the resource manager.
-  bool resource_manager_register(
-    ffi.Pointer<ffi.Void> resource,
-    resource_cleanup_func_t cleanup,
-  ) {
-    return _resource_manager_register(
-      resource,
-      cleanup,
-    );
-  }
-
-  late final _resource_manager_registerPtr = _lookup<
-      ffi.NativeFunction<
-          ffi.Bool Function(ffi.Pointer<ffi.Void>,
-              resource_cleanup_func_t)>>('resource_manager_register');
-  late final _resource_manager_register =
-      _resource_manager_registerPtr.asFunction<
-          bool Function(ffi.Pointer<ffi.Void>, resource_cleanup_func_t)>();
-
-  /// Unregisters a resource from the resource manager and cleans it up.
-  void resource_manager_unregister(
-    ffi.Pointer<ffi.Void> resource,
-  ) {
-    return _resource_manager_unregister(
-      resource,
-    );
-  }
-
-  late final _resource_manager_unregisterPtr =
-      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Void>)>>(
-          'resource_manager_unregister');
-  late final _resource_manager_unregister = _resource_manager_unregisterPtr
-      .asFunction<void Function(ffi.Pointer<ffi.Void>)>();
-
-  /// Frees all resources registered in the resource manager.
-  void resource_manager_clear() {
-    return _resource_manager_clear();
-  }
-
-  late final _resource_manager_clearPtr =
-      _lookup<ffi.NativeFunction<ffi.Void Function()>>(
-          'resource_manager_clear');
-  late final _resource_manager_clear =
-      _resource_manager_clearPtr.asFunction<void Function()>();
-
   /// Creates a waveform generator with the specified parameters.
   result_t waveform_create(
     sample_format_t format,
@@ -460,6 +415,19 @@ class ProMiniaudioBindings {
       _waveform_read_pcm_frames_with_bufferPtr.asFunction<
           result_t Function(ffi.Pointer<ffi.Void>, ffi.Pointer<ffi.Void>, int,
               ffi.Pointer<ffi.Uint64>)>();
+
+  late final addresses = _SymbolAddresses(this);
+}
+
+class _SymbolAddresses {
+  final ProMiniaudioBindings _library;
+  _SymbolAddresses(this._library);
+  ffi.Pointer<ffi.NativeFunction<result_t Function(ffi.Pointer<ffi.Void>)>>
+      get audio_context_destroy => _library._audio_context_destroyPtr;
+  ffi.Pointer<ffi.NativeFunction<result_t Function(ffi.Pointer<ffi.Void>)>>
+      get playback_device_destroy => _library._playback_device_destroyPtr;
+  ffi.Pointer<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Void>)>>
+      get waveform_destroy => _library._waveform_destroyPtr;
 }
 
 /// Union to store device identifiers for different audio backends.
@@ -679,14 +647,6 @@ final class playback_data_t extends ffi.Struct {
   @ffi.Uint32()
   external int sizeInBytes;
 }
-
-/// Function pointer type for resource cleanup functions.
-typedef resource_cleanup_func_t
-    = ffi.Pointer<ffi.NativeFunction<resource_cleanup_func_tFunction>>;
-typedef resource_cleanup_func_tFunction = ffi.Void Function(
-    ffi.Pointer<ffi.Void> resource);
-typedef Dartresource_cleanup_func_tFunction = void Function(
-    ffi.Pointer<ffi.Void> resource);
 
 /// Enum representing different types of waveforms.
 enum waveform_type_t {

@@ -52,7 +52,7 @@ result_t result_ptr(void *value);
 
 /**
  * @brief Creates a result structure with an error code and message.
- * @param errorCode Error code to store in the result.
+ * @param code Error code to store in the result.
  * @param format Format string for the error message.
  * @return A `result_t` structure containing the error code and message.
  */

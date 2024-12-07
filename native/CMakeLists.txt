@@ -10,7 +10,6 @@ set(SOURCES
   "src/logger.c"
   "src/miniaudio.c"
   "src/playback_device.c"
-  "src/resource_manager.c"
   "src/waveform.c"
   "src/result.c"
 )
@@ -22,7 +21,6 @@ set(PUBLIC_HEADERS
   "include/logger.h"
   "include/playback_device.h"
   "include/waveform.h"
-  "include/resource_manager.h"
   "include/result.h"
   "include/platform.h"
 )

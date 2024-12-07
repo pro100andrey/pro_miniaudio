@@ -1,6 +1,6 @@
-import 'package:equatable/equatable.dart';
 
-import 'sample_format.dart';
+
+part of '../library.dart';
 
 /// Represents information about an audio device.
 ///

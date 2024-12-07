@@ -1,3 +1,4 @@
+part of '../library.dart';
 /// Enum representing different audio sample formats.
 ///
 /// Sample formats define the data type and bit depth of individual audio
@@ -49,7 +50,7 @@ enum SampleFormat {
     if (value < 0 || value >= SampleFormat.values.length) {
       throw RangeError('Invalid SampleFormat value: $value');
     }
-    
+
     return SampleFormat.values[value];
   }
 

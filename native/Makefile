@@ -16,8 +16,7 @@ SRCS = test/test_runner.c \
 	   src/waveform.c \
        src/logger.c \
        src/miniaudio.c \
-	   src/playback_device.c \
-       src/resource_manager.c
+	   src/playback_device.c
 
 # Build directory
 BUILD_DIR = test/build

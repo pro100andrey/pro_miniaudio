@@ -1,8 +1,24 @@
-import 'dart:ffi' as ffi;
+import 'dart:ffi';
 import 'dart:io';
+import 'dart:typed_data';
 
-import '../pro_miniaudio.dart';
+import 'package:equatable/equatable.dart';
+import 'package:ffi/ffi.dart';
+import 'package:meta/meta.dart';
+
 import 'generated/bindings.dart';
+
+part 'audio_context.dart';
+part 'internal.dart';
+part 'models/device_info.dart';
+part 'models/sample_format.dart';
+part 'models/waveform_config.dart';
+part 'models/waveform_type.dart';
+part 'native_resource.dart';
+part 'playback_device.dart';
+part 'waveform.dart';
+
+ProMiniaudioBindings get _bindings => Library.instance.bindings;
 
 final class Library {
   const Library._(this.bindings);
@@ -19,79 +35,19 @@ final class Library {
   static ProMiniaudioBindings _loadBindings() {
     const libName = 'pro_miniaudio';
 
-    final ffi.DynamicLibrary dylib;
+    final DynamicLibrary dylib;
     if (Platform.isMacOS || Platform.isIOS) {
-      dylib = ffi.DynamicLibrary.open('$libName.framework/$libName');
+      dylib = DynamicLibrary.open('$libName.framework/$libName');
     } else if (Platform.isAndroid || Platform.isLinux) {
-      dylib = ffi.DynamicLibrary.open('lib$libName.so');
+      dylib = DynamicLibrary.open('lib$libName.so');
     } else if (Platform.isWindows) {
-      dylib = ffi.DynamicLibrary.open('$libName.dll');
+      dylib = DynamicLibrary.open('$libName.dll');
     } else {
       throw UnsupportedError(
         'Unsupported platform: ${Platform.operatingSystem}',
       );
     }
 
-    final bindings = ProMiniaudioBindings(dylib)..resource_manager_clear();
-
-    return bindings;
+    return ProMiniaudioBindings(dylib);
   }
-}
-
-/// A helper class to manage the `Result` structure returned by native
-/// functions.
-extension type FFResult<T extends ffi.NativeType>(result_t result) {
-  void throwIfError() {
-    if (result.code != error_code_t.error_code_none) {
-      final message = arrayCharToString(result.message);
-
-      throw Exception('Error: ${result.code} - $message');
-    }
-  }
-
-  ffi.Pointer<T> get data => result.data.pData.cast<T>();
-
-  int get intData {
-    if (result.type != data_type_t.data_type_int) {
-      throw StateError('Expected integer data but got ${result.type}.');
-    }
-
-    return result.data.intData;
-  }
-}
-
-/// Converts a native `Array<Char>` to a Dart string.
-///
-/// - [array]: The native array of characters.
-/// - [maxLength]: The maximum length to process (default: 256). This ensures
-///   safety in case of missing null terminator.
-///
-/// Returns a Dart string.
-String arrayCharToString(ffi.Array<ffi.Char> array, {int maxLength = 256}) {
-  // Ensure maxLength is positive
-  if (maxLength <= 0) {
-    throw ArgumentError('maxLength must be greater than zero');
-  }
-
-  final charCodes = <int>[];
-
-  for (var i = 0; i < maxLength; i++) {
-    final char = array[i];
-
-    if (char == 0) {
-      break; // Stop at null terminator
-    }
-
-    charCodes.add(char);
-  }
-
-  return String.fromCharCodes(charCodes);
-}
-
-extension SampleFormatExt on SampleFormat {
-  sample_format_t toNative() => sample_format_t.values[index];
-}
-
-extension WaveformTypeExt on WaveformType {
-  waveform_type_t toNative() => waveform_type_t.values[index];
 }
