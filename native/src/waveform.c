@@ -48,6 +48,11 @@ result_t waveform_create(sample_format_t format,
 
 FFI_PLUGIN_EXPORT
 void waveform_destroy(void *waveform) {
+    if (waveform == NULL) {
+        LOG_ERROR("Invalid waveform provided for destruction", "");
+        return;
+    }
+
     ma_waveform *pWaveform = (ma_waveform *)waveform;
 
     ma_waveform_uninit(pWaveform);

@@ -1,7 +1,7 @@
 #include "../include/playback_device.h"
 
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "../include/logger.h"
 #include "../include/miniaudio.h"
@@ -166,10 +166,10 @@ result_t playback_device_create(void *pAudioContext,
 }
 
 FFI_PLUGIN_EXPORT
-result_t playback_device_destroy(void *device) {
+void playback_device_destroy(void *device) {
     if (!device) {
-        return result_error(error_code_device,
-                            "Invalid playback device");
+        LOG_ERROR("Invalid playback device provided for destruction", "");
+        return;
     }
 
     device_context_t *deviceCtx = (device_context_t *)device;
@@ -186,8 +186,6 @@ result_t playback_device_destroy(void *device) {
     free(deviceCtx);
 
     LOG_INFO("Playback device destroyed <%p>.", device);
-
-    return (result_t){0};
 }
 
 FFI_PLUGIN_EXPORT

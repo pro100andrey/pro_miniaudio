@@ -54,7 +54,7 @@ class ProMiniaudioBindings {
       .asFunction<bool Function(ffi.Pointer<ffi.Void>)>();
 
   /// Destroys the Context and releases all associated resources.
-  result_t audio_context_destroy(
+  void audio_context_destroy(
     ffi.Pointer<ffi.Void> context,
   ) {
     return _audio_context_destroy(
@@ -63,10 +63,10 @@ class ProMiniaudioBindings {
   }
 
   late final _audio_context_destroyPtr =
-      _lookup<ffi.NativeFunction<result_t Function(ffi.Pointer<ffi.Void>)>>(
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Void>)>>(
           'audio_context_destroy');
   late final _audio_context_destroy = _audio_context_destroyPtr
-      .asFunction<result_t Function(ffi.Pointer<ffi.Void>)>();
+      .asFunction<void Function(ffi.Pointer<ffi.Void>)>();
 
   /// Refreshes the list of available audio devices.
   result_t audio_context_refresh_devices(
@@ -286,7 +286,7 @@ class ProMiniaudioBindings {
           ffi.Pointer<ffi.Void>, int, device_id_t, supported_format_t)>();
 
   /// Destroys a playback device and releases its resources.
-  result_t playback_device_destroy(
+  void playback_device_destroy(
     ffi.Pointer<ffi.Void> device,
   ) {
     return _playback_device_destroy(
@@ -295,10 +295,10 @@ class ProMiniaudioBindings {
   }
 
   late final _playback_device_destroyPtr =
-      _lookup<ffi.NativeFunction<result_t Function(ffi.Pointer<ffi.Void>)>>(
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Void>)>>(
           'playback_device_destroy');
   late final _playback_device_destroy = _playback_device_destroyPtr
-      .asFunction<result_t Function(ffi.Pointer<ffi.Void>)>();
+      .asFunction<void Function(ffi.Pointer<ffi.Void>)>();
 
   /// Starts playback on the device.
   result_t playback_device_start(
@@ -353,7 +353,7 @@ class ProMiniaudioBindings {
   /// Creates a waveform generator with the specified parameters.
   result_t waveform_create(
     sample_format_t format,
-    int channels,
+    Dartu_int32_t channels,
     int sampleRate,
     waveform_type_t waveformType,
     double amplitude,
@@ -371,7 +371,7 @@ class ProMiniaudioBindings {
 
   late final _waveform_createPtr = _lookup<
       ffi.NativeFunction<
-          result_t Function(ffi.UnsignedInt, ffi.Uint32, ffi.Uint32,
+          result_t Function(ffi.UnsignedInt, u_int32_t, ffi.Uint32,
               ffi.UnsignedInt, ffi.Double, ffi.Double)>>('waveform_create');
   late final _waveform_create = _waveform_createPtr
       .asFunction<result_t Function(int, int, int, int, double, double)>();
@@ -422,9 +422,9 @@ class ProMiniaudioBindings {
 class _SymbolAddresses {
   final ProMiniaudioBindings _library;
   _SymbolAddresses(this._library);
-  ffi.Pointer<ffi.NativeFunction<result_t Function(ffi.Pointer<ffi.Void>)>>
+  ffi.Pointer<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Void>)>>
       get audio_context_destroy => _library._audio_context_destroyPtr;
-  ffi.Pointer<ffi.NativeFunction<result_t Function(ffi.Pointer<ffi.Void>)>>
+  ffi.Pointer<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Void>)>>
       get playback_device_destroy => _library._playback_device_destroyPtr;
   ffi.Pointer<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Void>)>>
       get waveform_destroy => _library._waveform_destroyPtr;
@@ -666,5 +666,8 @@ enum waveform_type_t {
         _ => throw ArgumentError("Unknown value for waveform_type_t: $value"),
       };
 }
+
+typedef u_int32_t = ffi.UnsignedInt;
+typedef Dartu_int32_t = int;
 
 const int MAX_DEVICE_NAME_LENGTH = 255;

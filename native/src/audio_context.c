@@ -71,30 +71,26 @@ result_t audio_context_create(void) {
 }
 
 FFI_PLUGIN_EXPORT
-result_t audio_context_destroy(void *context) {
+void audio_context_destroy(void *context) {
     if (!context) {
-        return result_error(error_code_context,
-                            "Invalid audio context");
+
+        LOG_ERROR("Invalid AudioContext provided for destruction", "");
+        return;
     }
 
     audio_context_t *ctx = (audio_context_t *)context;
 
-    if (ctx->initialized) {
-        ma_result contextUninitResult =
-            ma_context_uninit(&ctx->maContext);
+    ma_result contextUninitResult =
+        ma_context_uninit(&ctx->maContext);
 
-        if (contextUninitResult != MA_SUCCESS) {
-            return result_error(error_code_context,
-                                "Failed to uninitialize audio context - %s",
-                                ma_result_description(contextUninitResult));
-        }
+    if (contextUninitResult != MA_SUCCESS) {
+        LOG_ERROR("Failed to uninitialize miniaudio context - %s",
+                  ma_result_description(contextUninitResult));
     }
 
     free(ctx);
 
     LOG_INFO("Audio context destroyed <%p>", context);
-
-    return (result_t){0};
 }
 
 FFI_PLUGIN_EXPORT

@@ -28,7 +28,7 @@ typedef enum {
  * @return A `result_t` structure containing a pointer to the waveform generator or an error code.
  */
 FFI_PLUGIN_EXPORT result_t waveform_create(sample_format_t format,
-                                           uint32_t channels,
+                                           u_int32_t channels,
                                            uint32_t sampleRate,
                                            waveform_type_t waveformType,
                                            double amplitude,

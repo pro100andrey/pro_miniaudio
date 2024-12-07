@@ -35,7 +35,7 @@ FFI_PLUGIN_EXPORT result_t playback_device_create(void *pAudioContext,
  * @param device Pointer to the playback device to destroy.
  * @return A `result_t` structure indicating success or failure.
  */
-FFI_PLUGIN_EXPORT result_t playback_device_destroy(void *device);
+FFI_PLUGIN_EXPORT void playback_device_destroy(void *device);
 
 /**
  * @brief Starts playback on the device.

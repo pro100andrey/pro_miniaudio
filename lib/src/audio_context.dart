@@ -56,7 +56,7 @@ final class AudioContext extends NativeResource<Void> {
 
   @override
   void releaseResource() {
-    FFResult(_bindings.audio_context_destroy(_resource)).throwIfError();
+    _bindings.audio_context_destroy(_resource);
   }
 
   /// Refreshes the list of available audio devices.

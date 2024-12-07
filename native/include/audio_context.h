@@ -103,7 +103,7 @@ FFI_PLUGIN_EXPORT bool audio_context_is_valid(const void *context);
  * @param context Pointer to the Context to be destroyed. Passing NULL is safe and has no effect.
  * @return A `result_t` structure indicating success or failure.
  */
-FFI_PLUGIN_EXPORT result_t audio_context_destroy(void *context);
+FFI_PLUGIN_EXPORT void audio_context_destroy(void *context);
 
 /**
  * @brief Refreshes the list of available audio devices.
