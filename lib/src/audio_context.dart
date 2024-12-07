@@ -30,12 +30,7 @@ const kEmptyDevicesInfos = (playback: <DeviceInfo>[], capture: <DeviceInfo>[]);
 /// audioContext.dispose();
 /// ```
 final class AudioContext extends NativeResource<Void> {
-  factory AudioContext() {
-    final result = FFResult<Void>(_bindings.audio_context_create())
-      ..throwIfError();
-
-    return AudioContext._(result.data);
-  }
+  factory AudioContext() => AudioContext._(_bindings.audio_context_create());
 
   /// Internal constructor.
   AudioContext._(super.ptr) : super._();
@@ -55,9 +50,9 @@ final class AudioContext extends NativeResource<Void> {
   NativeFinalizer get finalizer => _finalizer;
 
   @override
-  void releaseResource() {
-    _bindings.audio_context_destroy(_resource);
-  }
+  void releaseResource() => _bindings.audio_context_destroy(
+        _ensureContextInitialized(),
+      );
 
   /// Refreshes the list of available audio devices.
   ///
@@ -69,11 +64,9 @@ final class AudioContext extends NativeResource<Void> {
   /// ```dart
   /// audioContext.refreshDevices();
   /// ```
-  void refreshDevices() {
-    final context = _ensureContextInitialized();
-
-    FFResult(_bindings.audio_context_refresh_devices(context)).throwIfError();
-  }
+  void refreshDevices() => _bindings.audio_context_refresh_devices(
+        _ensureContextInitialized(),
+      );
 
   /// Refreshes the list of devices and retrieves updated information.
   ///
@@ -88,8 +81,10 @@ final class AudioContext extends NativeResource<Void> {
   ///
   /// Throws:
   /// - An exception if the refresh operation or data retrieval fails.
-  ({List<DeviceInfo> playback, List<DeviceInfo> capture})
-      refreshAndReturnDevices() {
+  ({
+    List<DeviceInfo> playback,
+    List<DeviceInfo> capture,
+  }) refreshAndReturnDevices() {
     refreshDevices();
 
     final playbackDevices = playbackDevicesInfo;
@@ -104,15 +99,10 @@ final class AudioContext extends NativeResource<Void> {
   ///
   /// Returns:
   /// The count of playback devices available on the system.
-  int get playbackDevicesCount {
-    final context = _ensureContextInitialized();
-
-    final result =
-        FFResult(_bindings.audio_context_get_playback_device_count(context))
-          ..throwIfError();
-
-    return result.intData;
-  }
+  int get playbackDevicesCount =>
+      _bindings.audio_context_get_playback_device_count(
+        _ensureContextInitialized(),
+      );
 
   /// Gets the number of available capture devices.
   ///
@@ -120,15 +110,10 @@ final class AudioContext extends NativeResource<Void> {
   ///
   /// Returns:
   /// The count of capture devices available on the system.
-  int get captureDevicesCount {
-    final context = _ensureContextInitialized();
-
-    final result =
-        FFResult(_bindings.audio_context_get_capture_device_count(context))
-          ..throwIfError();
-
-    return result.intData;
-  }
+  int get captureDevicesCount =>
+      _bindings.audio_context_get_capture_device_count(
+        _ensureContextInitialized(),
+      );
 
   /// Retrieves information about all available playback devices.
   ///
@@ -136,14 +121,12 @@ final class AudioContext extends NativeResource<Void> {
   ///
   /// Returns:
   /// A list of [DeviceInfo] objects representing playback devices.
-  List<DeviceInfo> get playbackDevicesInfo {
-    final context = _ensureContextInitialized();
-    final result = FFResult<device_info_t>(
-      _bindings.audio_context_get_playback_devices_info(context),
-    )..throwIfError();
-
-    return _extractDeviceInfoList(result.data, playbackDevicesCount);
-  }
+  List<DeviceInfo> get playbackDevicesInfo => _extractDeviceInfoList(
+        _bindings.audio_context_get_playback_devices_info(
+          _ensureContextInitialized(),
+        ),
+        playbackDevicesCount,
+      );
 
   /// Retrieves information about all available capture devices.
   ///
@@ -151,14 +134,12 @@ final class AudioContext extends NativeResource<Void> {
   ///
   /// Returns:
   /// A list of [DeviceInfo] objects representing capture devices.
-  List<DeviceInfo> get captureDevicesInfo {
-    final context = _ensureContextInitialized();
-    final result = FFResult<device_info_t>(
-      _bindings.audio_context_get_capture_devices_info(context),
-    )..throwIfError();
-
-    return _extractDeviceInfoList(result.data, captureDevicesCount);
-  }
+  List<DeviceInfo> get captureDevicesInfo => _extractDeviceInfoList(
+        _bindings.audio_context_get_capture_devices_info(
+          _ensureContextInitialized(),
+        ),
+        captureDevicesCount,
+      );
 
   /// Ensures that the context is initialized and returns its pointer.
   ///

@@ -30,7 +30,12 @@ abstract class NativeResource<T extends NativeType> implements Finalizable {
   /// The finalizer will automatically release the resource if the
   /// Dart object is garbage collected (GC), unless [dispose] is called
   /// explicitly to release the resource beforehand.
+  /// Throws an [ArgumentError] if [ptr] is `null`.
   NativeResource._(Pointer<T> ptr) : _resource = ptr {
+    if (ptr == nullptr) {
+      throw ArgumentError.notNull('ptr');
+    }
+
     finalizer.attach(this, ptr.cast(), detach: this);
   }
 

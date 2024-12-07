@@ -3,8 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../include/miniaudio.h"
 #include "../include/logger.h"
+#include "../include/miniaudio.h"
 
 /**
  * @struct device_cache
@@ -29,14 +29,13 @@ typedef struct audio_context {
 } audio_context_t;
 
 FFI_PLUGIN_EXPORT
-result_t audio_context_create(void) {
+void *audio_context_create(void) {
     audio_context_t *context =
         (audio_context_t *)malloc(sizeof(audio_context_t));
 
     if (!context) {
-        return result_error(
-            error_code_context,
-            "Failed to allocate memory for AudioContext");
+        LOG_DEBUG("Failed to allocate memory for audio context", "");
+        return NULL;
     }
 
     ma_context_config contextConfig = ma_context_config_init();
@@ -54,9 +53,10 @@ result_t audio_context_create(void) {
     if (contextInitResult != MA_SUCCESS) {
         free(context);
 
-        return result_error(error_code_context,
-                            "Failed to initialize audio context - %s",
-                            ma_result_description(contextInitResult));
+        LOG_ERROR("Failed to initialize audio context - %s",
+                  ma_result_description(contextInitResult));
+
+        return NULL;
     }
 
     context->initialized = true;
@@ -67,13 +67,12 @@ result_t audio_context_create(void) {
 
     LOG_INFO("Audio context created <%p>.", context);
 
-    return result_ptr(context);
+    return context;
 }
 
 FFI_PLUGIN_EXPORT
 void audio_context_destroy(void *context) {
     if (!context) {
-
         LOG_ERROR("Invalid AudioContext provided for destruction", "");
         return;
     }
@@ -100,15 +99,6 @@ bool audio_context_is_valid(const void *context) {
     return audio_context && audio_context->initialized;
 }
 
-#define RETURN_IF_AUDIO_CONTEXT_INVALID(context) \
-    do {                                         \
-        if (!audio_context_is_valid(context)) {  \
-            return result_error(                 \
-                error_code_context,              \
-                "Invalid AudioContext");         \
-        }                                        \
-    } while (0)
-
 static void process_device_info(const ma_device_info *nativeDeviceInfo,
                                 device_info_t *deviceInfo) {
     strncpy(deviceInfo->name,
@@ -132,11 +122,11 @@ static void process_device_info(const ma_device_info *nativeDeviceInfo,
     }
 }
 
-static result_t process_device_list(audio_context_t *ctx,
-                                    ma_device_type deviceType,
-                                    ma_device_info *nativeDevices,
-                                    uint32_t deviceCount,
-                                    device_cache_t *deviceCache) {
+static void process_device_list(audio_context_t *ctx,
+                                ma_device_type deviceType,
+                                ma_device_info *nativeDevices,
+                                uint32_t deviceCount,
+                                device_cache_t *deviceCache) {
     deviceCache->deviceCount = deviceCount;
 
     for (uint32_t i = 0; i < deviceCount; i++) {
@@ -148,22 +138,24 @@ static result_t process_device_list(audio_context_t *ctx,
                                        &deviceInfo);
 
         if (getDeviceInfoResult != MA_SUCCESS) {
-            return result_error(error_code_get_device_info,
-                                "Failed to get %s device info - %s",
-                                deviceType == ma_device_type_playback ? "playback" : "capture",
-                                ma_result_description(getDeviceInfoResult));
+            LOG_ERROR("Failed to get %s device info - %s",
+                      deviceType == ma_device_type_playback ? "playback" : "capture",
+                      ma_result_description(getDeviceInfoResult));
+
+            continue;
         }
 
         process_device_info(&deviceInfo,
                             &deviceCache->devices[i]);
     }
-
-    return (result_t){0};
 }
 
 FFI_PLUGIN_EXPORT
-result_t audio_context_refresh_devices(const void *context) {
-    RETURN_IF_AUDIO_CONTEXT_INVALID(context);
+void audio_context_refresh_devices(const void *context) {
+    if (!context) {
+        LOG_ERROR("Invalid AudioContext provided for device refresh", "");
+        return;
+    }
 
     ma_device_info *pPlaybackInfos;
     ma_uint32 playbackCount;
@@ -181,67 +173,73 @@ result_t audio_context_refresh_devices(const void *context) {
                                &captureCount);
 
     if (getDevicesResult != MA_SUCCESS) {
-        return result_error(error_code_get_device,
-                            "Failed to get audio devices - %s",
-                            ma_result_description(getDevicesResult));
+        LOG_ERROR("Failed to get audio devices - %s",
+                  ma_result_description(getDevicesResult));
+
+        return;
     }
 
     // Process playback devices
-    result_t playbackResult =
-        process_device_list(ctx,
-                            ma_device_type_playback,
-                            pPlaybackInfos,
-                            playbackCount,
-                            &ctx->playback);
-
-    if (playbackResult.code != error_code_none) {
-        return playbackResult;
-    }
+    process_device_list(ctx,
+                        ma_device_type_playback,
+                        pPlaybackInfos,
+                        playbackCount,
+                        &ctx->playback);
 
     // Process capture devices
-    result_t captureResult =
-        process_device_list(ctx,
-                            ma_device_type_capture,
-                            pCaptureInfos,
-                            captureCount,
-                            &ctx->capture);
-
-    return captureResult;
+    process_device_list(ctx,
+                        ma_device_type_capture,
+                        pCaptureInfos,
+                        captureCount,
+                        &ctx->capture);
 }
 
 FFI_PLUGIN_EXPORT
-result_t audio_context_get_playback_device_count(const void *context) {
-    RETURN_IF_AUDIO_CONTEXT_INVALID(context);
+uint32_t audio_context_get_playback_device_count(const void *context) {
+    if (!context) {
+        LOG_ERROR("Invalid AudioContext provided for playback device count", "");
+        return -1;
+    }
+
     audio_context_t *audio_context = (audio_context_t *)context;
 
-    return result_int(audio_context->playback.deviceCount);
+    return audio_context->playback.deviceCount;
 }
 
 FFI_PLUGIN_EXPORT
-result_t audio_context_get_capture_device_count(const void *context) {
-    RETURN_IF_AUDIO_CONTEXT_INVALID(context);
+uint32_t audio_context_get_capture_device_count(const void *context) {
+    if (!context) {
+        LOG_ERROR("Invalid AudioContext provided for capture device count", "");
+        return -1;
+    }
 
     audio_context_t *audio_context = (audio_context_t *)context;
 
-    return result_int(audio_context->capture.deviceCount);
+    return audio_context->capture.deviceCount;
 }
 
 FFI_PLUGIN_EXPORT
-result_t audio_context_get_playback_devices_info(const void *context) {
-    RETURN_IF_AUDIO_CONTEXT_INVALID(context);
+device_info_t *audio_context_get_playback_devices_info(const void *context) {
+    if (!context) {
+        LOG_ERROR("Invalid AudioContext provided for playback devices info", "");
+        return NULL;
+    }
 
     audio_context_t *audio_context = (audio_context_t *)context;
 
-    return result_ptr(audio_context->playback.devices);
+    return audio_context->playback.devices;
 }
 
 FFI_PLUGIN_EXPORT
-result_t audio_context_get_capture_devices_info(const void *context) {
-    RETURN_IF_AUDIO_CONTEXT_INVALID(context);
+device_info_t *audio_context_get_capture_devices_info(const void *context) {
+    if (!context) {
+        LOG_ERROR("Invalid AudioContext provided for capture devices info", "");
+        return NULL;
+    }
 
     audio_context_t *audio_context = (audio_context_t *)context;
 
-    return result_ptr(audio_context->capture.devices);
+    return audio_context->capture.devices;
 }
 
 FFI_PLUGIN_EXPORT

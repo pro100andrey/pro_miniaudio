@@ -80,10 +80,9 @@ typedef struct {
  *
  * This function initializes the audio backend and prepares the system for audio device management.
  *
- * @return A `result_t` structure containing a pointer to the Context on success,
- *         or an error code and message on failure.
+ * @return A pointer to the new Context, or NULL if initialization failed.
  */
-FFI_PLUGIN_EXPORT result_t audio_context_create(void);
+FFI_PLUGIN_EXPORT void *audio_context_create(void);
 
 /**
  * @brief Checks if the provided Context is valid.
@@ -101,7 +100,6 @@ FFI_PLUGIN_EXPORT bool audio_context_is_valid(const void *context);
  * This function cleans up memory and system resources allocated by the Context.
  *
  * @param context Pointer to the Context to be destroyed. Passing NULL is safe and has no effect.
- * @return A `result_t` structure indicating success or failure.
  */
 FFI_PLUGIN_EXPORT void audio_context_destroy(void *context);
 
@@ -112,45 +110,40 @@ FFI_PLUGIN_EXPORT void audio_context_destroy(void *context);
  * updating the internal device list in the provided Context.
  *
  * @param context Pointer to the Context to refresh devices for.
- * @return A `result_t` structure indicating success or failure.
  */
-FFI_PLUGIN_EXPORT result_t audio_context_refresh_devices(const void *context);
+FFI_PLUGIN_EXPORT void audio_context_refresh_devices(const void *context);
 
 /**
  * @brief Gets the number of available playback devices.
  *
  * @param context Pointer to the Context.
- * @return A `result_t` structure containing the number of playback devices on success,
- *         or an error code and message on failure.
+ * @return The number of playback devices. Returns -1 on failure.
  */
-FFI_PLUGIN_EXPORT result_t audio_context_get_playback_device_count(const void *context);
+FFI_PLUGIN_EXPORT uint32_t audio_context_get_playback_device_count(const void *context);
 
 /**
  * @brief Gets the number of available capture devices.
  *
  * @param context Pointer to the Context.
- * @return A `result_t` structure containing the number of capture devices on success,
- *         or an error code and message on failure.
+ * @return The number of capture devices. Returns -1 on failure.
  */
-FFI_PLUGIN_EXPORT result_t audio_context_get_capture_device_count(const void *context);
+FFI_PLUGIN_EXPORT uint32_t audio_context_get_capture_device_count(const void *context);
 
 /**
  * @brief Gets information about available playback devices.
  *
  * @param context Pointer to the Context.
- * @return A `result_t` structure containing a pointer to an array of `device_info_t` structures
- *         describing playback devices, or an error code and message on failure.
+ * @return A `device_info_t` structure describing playback devices, or NULL on failure.
  */
-FFI_PLUGIN_EXPORT result_t audio_context_get_playback_devices_info(const void *context);
+FFI_PLUGIN_EXPORT device_info_t *audio_context_get_playback_devices_info(const void *context);
 
 /**
  * @brief Gets information about available capture devices.
  *
  * @param context Pointer to the Context.
- * @return A `result_t` structure containing a pointer to an array of `device_info_t` structures
- *         describing capture devices, or an error code and message on failure.
+ * @return A `device_info_t` structure describing capture devices, or NULL on failure.
  */
-FFI_PLUGIN_EXPORT result_t audio_context_get_capture_devices_info(const void *context);
+FFI_PLUGIN_EXPORT device_info_t *audio_context_get_capture_devices_info(const void *context);
 
 /**
  * @brief Gets the number of bytes per sample for the given format.
