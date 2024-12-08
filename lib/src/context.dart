@@ -81,7 +81,7 @@ final class Context extends NativeResource<Void> {
   }) refreshAndReturnDevices() {
     refreshDevices();
 
-    final playbackDevices = playbackDevicesInfo;
+    final playbackDevices = playbackDeviceInfos;
     final captureDevices = captureDevicesInfo;
 
     return (playback: playbackDevices, capture: captureDevices);
@@ -93,8 +93,7 @@ final class Context extends NativeResource<Void> {
   ///
   /// Returns:
   /// The count of playback devices available on the system.
-  int get playbackDevicesCount =>
-      _bindings.context_get_playback_device_count(
+  int get playbackDevicesCount => _bindings.context_get_playback_device_count(
         _ensureContextInitialized(),
       );
 
@@ -104,8 +103,7 @@ final class Context extends NativeResource<Void> {
   ///
   /// Returns:
   /// The count of capture devices available on the system.
-  int get captureDevicesCount =>
-      _bindings.context_get_capture_device_count(
+  int get captureDevicesCount => _bindings.context_get_capture_device_count(
         _ensureContextInitialized(),
       );
 
@@ -115,8 +113,8 @@ final class Context extends NativeResource<Void> {
   ///
   /// Returns:
   /// A list of [DeviceInfo] objects representing playback devices.
-  List<DeviceInfo> get playbackDevicesInfo => _extractDeviceInfoList(
-        _bindings.context_get_playback_devices_info(
+  List<DeviceInfo> get playbackDeviceInfos => _extractDeviceInfoList(
+        _bindings.context_get_playback_device_infos(
           _ensureContextInitialized(),
         ),
         playbackDevicesCount,
@@ -129,7 +127,7 @@ final class Context extends NativeResource<Void> {
   /// Returns:
   /// A list of [DeviceInfo] objects representing capture devices.
   List<DeviceInfo> get captureDevicesInfo => _extractDeviceInfoList(
-        _bindings.context_get_capture_devices_info(
+        _bindings.context_get_capture_device_infos(
           _ensureContextInitialized(),
         ),
         captureDevicesCount,

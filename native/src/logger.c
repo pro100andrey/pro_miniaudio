@@ -1,5 +1,6 @@
 #include "../include/logger.h"
 
+#include <limits.h>
 #include <pthread.h>
 #include <stdarg.h>
 #include <stdbool.h>
@@ -11,6 +12,12 @@ static pthread_mutex_t g_logMutex = PTHREAD_MUTEX_INITIALIZER;
 static bool g_logToFileEnabled = false;
 static bool g_logToConsoleEnabled = false;
 static FILE *g_logFile = NULL;
+static LogLevel g_logLevel = LOG_LEVEL_ERROR;
+
+FFI_PLUGIN_EXPORT
+void set_log_level(LogLevel level) {
+    g_logLevel = level;
+}
 
 FFI_PLUGIN_EXPORT
 void set_log_to_file_enabled(bool enabled) {
@@ -23,19 +30,26 @@ bool is_log_to_file_enabled(void) {
 }
 
 FFI_PLUGIN_EXPORT
-void init_log(const char *filename) {
+void init_file_log(const char *filename) {
     pthread_mutex_lock(&g_logMutex);
+
+    if (g_logFile != NULL) {
+        fclose(g_logFile);
+        g_logFile = NULL;
+    }
+
     if (g_logFile == NULL) {
         g_logFile = fopen(filename, "a");
         if (g_logFile == NULL) {
             perror("Failed to open log file");
         }
     }
+
     pthread_mutex_unlock(&g_logMutex);
 }
 
 FFI_PLUGIN_EXPORT
-void close_log(void) {
+void close_file_log(void) {
     pthread_mutex_lock(&g_logMutex);
     if (g_logFile != NULL) {
         fclose(g_logFile);
@@ -50,7 +64,15 @@ void set_log_to_console_enabled(bool enabled) {
 }
 
 FFI_PLUGIN_EXPORT
-void log_message(LogLevel level, const char *format, ...) {
+void log_message(LogLevel level, const char *funcName, const char *format, ...) {
+    if (level < g_logLevel) {
+        return;
+    }
+
+    if (!g_logToFileEnabled && !g_logToConsoleEnabled) {
+        return;
+    }
+
     pthread_mutex_lock(&g_logMutex);
 
     // Get the current time
@@ -64,6 +86,9 @@ void log_message(LogLevel level, const char *format, ...) {
     switch (level) {
         case LOG_LEVEL_DEBUG:
             levelStr = "[DEBUG]";
+            break;
+        case LOG_LEVEL_STATS:
+            levelStr = "[STATS]";
             break;
         case LOG_LEVEL_INFO:
             levelStr = "[INFO]";
@@ -81,7 +106,7 @@ void log_message(LogLevel level, const char *format, ...) {
 
     // Write to file if enabled
     if (g_logToFileEnabled && g_logFile != NULL) {
-        fprintf(g_logFile, "%s %s ", timeStr, levelStr);
+        fprintf(g_logFile, "%s %s [%s] ", timeStr, levelStr, funcName);
         va_list args;
         va_start(args, format);
         vfprintf(g_logFile, format, args);
@@ -92,7 +117,7 @@ void log_message(LogLevel level, const char *format, ...) {
 
     // Write to console if enabled
     if (g_logToConsoleEnabled) {
-        printf("%s %s ", timeStr, levelStr);
+        printf("%s %s [%s] ", timeStr, levelStr, funcName);
         va_list args;
         va_start(args, format);
         vprintf(format, args);

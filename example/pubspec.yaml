@@ -12,6 +12,7 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_svg: ^2.0.15
+  path_provider: ^2.1.5
   pro_miniaudio:
     path: ../
   svg_image: ^0.0.5

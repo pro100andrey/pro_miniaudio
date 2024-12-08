@@ -17,6 +17,7 @@ part 'models/waveform_type.dart';
 part 'native_resource.dart';
 part 'playback_device.dart';
 part 'waveform.dart';
+part 'file_logger.dart';
 
 ProMiniaudioBindings get _bindings => Library.instance.bindings;
 

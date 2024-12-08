@@ -31,5 +31,6 @@ functions:
       - 'context_destroy'
       - 'playback_device_destroy'
       - 'waveform_destroy'
+      - 'close_log'
 
 silence-enum-warning: true

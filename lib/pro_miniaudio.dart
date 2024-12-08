@@ -5,6 +5,7 @@ export 'src/library.dart'
     show
         Context,
         DeviceInfo,
+        FileLogger,
         PlaybackDevice,
         SampleFormat,
         SupportedFormat,

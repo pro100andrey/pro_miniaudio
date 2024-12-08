@@ -7,7 +7,10 @@
 
 /**
  * union device_id_t
- * @brief Union to store device identifiers for different audio backends.
+ * @brief Union for storing device identifiers for different audio backends.
+ *
+ * Each audio backend uses a specific type of identifier, tailored to its API requirements.
+ * For example, WASAPI uses a wchar_t string, while DirectSound uses a GUID.
  */
 typedef union {
     unsigned short wasapi[64]; /* WASAPI uses a wchar_t string for identification. */
@@ -33,7 +36,9 @@ typedef union {
 
 /**
  * @enum sample_format_t
- * @brief Enum to represent supported audio sample formats.
+ * @brief Enumeration to represent supported audio sample formats.
+ *
+ * This enum provides identifiers for common audio sample formats supported by the system.
  */
 typedef enum {
     sample_format_unknown = 0, /* Unknown or unsupported format. */
@@ -42,16 +47,18 @@ typedef enum {
     sample_format_s24 = 3,     /* Signed 24-bit integer. */
     sample_format_s32 = 4,     /* Signed 32-bit integer. */
     sample_format_f32 = 5,     /* 32-bit floating point. */
-    sample_format_count        /* Number of supported formats. */
+    sample_format_count        /* Total number of supported formats. */
 } sample_format_t;
 
 /**
- * struct supported_format_t
+ * @struct supported_format_t
  * @brief Structure to describe a supported audio data format.
+ *
+ * Provides details about the sample format, number of channels, sample rate, and additional flags.
  */
 typedef struct {
     sample_format_t format; /* Audio sample format. */
-    uint32_t channels;      /* Number of channels. */
+    uint32_t channels;      /* Number of audio channels. */
     uint32_t sampleRate;    /* Sample rate in Hertz. */
     uint32_t flags;         /* Format flags (reserved for future use). */
 } supported_format_t;
@@ -63,44 +70,100 @@ typedef struct {
 #define MAX_DEVICE_NAME_LENGTH 255
 
 /**
- * struct device_info_t
+ * @struct device_info_t
  * @brief Structure to describe an audio device.
+ *
+ * Contains information about the device, including its identifier, name, whether it is the default device,
+ * and the supported audio formats.
  */
 typedef struct {
     device_id_t id;                        /* Unique identifier for the device. */
-    char name[MAX_DEVICE_NAME_LENGTH + 1]; /* Device name (null-terminated string). */
+    char name[MAX_DEVICE_NAME_LENGTH + 1]; /* Null-terminated string representing the device name. */
     bool isDefault;                        /* Indicates if this is the default device. */
-    uint32_t dataFormatCount;              /* Number of supported formats. */
+    uint32_t dataFormatCount;              /* Number of supported audio formats. */
     supported_format_t dataFormats[64];    /* Array of supported audio formats. */
 } device_info_t;
 
+/**
+ * @brief Creates a new audio context.
+ *
+ * @return A pointer to the created context, or NULL if the creation failed.
+ */
 FFI_PLUGIN_EXPORT
 void *context_create(void);
 
+/**
+ * @brief Destroys an audio context.
+ *
+ * Frees all associated resources.
+ *
+ * @param pContext Pointer to the context to destroy.
+ */
 FFI_PLUGIN_EXPORT
-bool context_is_valid(const void *p);
+void context_destroy(void *pContext);
 
+/**
+ * @brief Refreshes the list of available audio devices.
+ *
+ * Updates both playback and capture device lists in the context.
+ *
+ * @param pContext Pointer to the context.
+ */
 FFI_PLUGIN_EXPORT
-void context_destroy(void *p);
+void context_refresh_devices(const void *pContext);
 
+/**
+ * @brief Gets the number of playback devices.
+ *
+ * @param pContext Pointer to the context.
+ * @return The number of playback devices.
+ */
 FFI_PLUGIN_EXPORT
-void context_refresh_devices(const void *p);
+uint32_t context_get_playback_device_count(const void *pContext);
 
+/**
+ * @brief Gets the number of capture devices.
+ *
+ * @param pContext Pointer to the context.
+ * @return The number of capture devices.
+ */
 FFI_PLUGIN_EXPORT
-uint32_t context_get_playback_device_count(const void *p);
+uint32_t context_get_capture_device_count(const void *pContext);
 
+/**
+ * @brief Retrieves playback device information.
+ *
+ * @param pContext Pointer to the context.
+ * @return A pointer to an array of device_info_t structures.
+ */
 FFI_PLUGIN_EXPORT
-uint32_t context_get_capture_device_count(const void *p);
+device_info_t *context_get_playback_device_infos(const void *pContext);
 
+/**
+ * @brief Retrieves capture device information.
+ *
+ * @param pContext Pointer to the context.
+ * @return A pointer to an array of device_info_t structures.
+ */
 FFI_PLUGIN_EXPORT
-device_info_t *context_get_playback_device_infos(const void *p);
+device_info_t *context_get_capture_device_infos(const void *pContext);
 
-FFI_PLUGIN_EXPORT
-device_info_t *context_get_capture_device_infos(const void *p);
-
+/**
+ * @brief Gets the number of bytes per sample for a given format.
+ *
+ * @param format The audio sample format.
+ * @return The number of bytes per sample.
+ */
 FFI_PLUGIN_EXPORT
 uint32_t get_bytes_per_sample(sample_format_t format);
 
+/**
+ * @brief Gets the number of bytes per audio frame.
+ *
+ * @param format The audio sample format.
+ * @param channels The number of channels in the audio frame.
+ * @return The number of bytes per frame.
+ */
 FFI_PLUGIN_EXPORT
 uint32_t get_bytes_per_frame(sample_format_t format, uint32_t channels);
 

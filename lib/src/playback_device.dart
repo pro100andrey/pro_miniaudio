@@ -21,7 +21,7 @@ final class PlaybackDevice extends NativeResource<Void> {
     required int bufferSizeInBytes,
     required SupportedFormat format,
   }) {
-    if (!context.isFinalized) {
+    if (context.isFinalized) {
       throw Exception('Audio context is finalized');
     }
 

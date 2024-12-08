@@ -19,6 +19,7 @@ int main(int argc, char const* argv[]) {
     signal(SIGINT, handle_signal);
 
     set_log_to_console_enabled(true);
+    set_log_level(LOG_LEVEL_INFO);
 
     void* pContext = context_create();
 
@@ -111,6 +112,14 @@ int main(int argc, char const* argv[]) {
 
         usleep(95000);
     }
+
+    playback_device_stop(pPlaybackDevice);
+
+    playback_device_destroy(pPlaybackDevice);
+
+    waveform_destroy(pWaveform);
+
+    context_destroy(pContext);
 
     return 0;
 }

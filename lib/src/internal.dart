@@ -28,6 +28,23 @@ String arrayCharToString(Array<Char> array, {int maxLength = 256}) {
   return String.fromCharCodes(charCodes);
 }
 
+/// Converts a Dart string to a native `Pointer<Char>`.
+/// The returned pointer must be freed using `malloc.free(pointer)`.
+
+/// - [string]: The Dart string to convert.
+/// Returns a native `Pointer<Char>`.
+Pointer<Char> stringToCharPointer(String string) {
+  final pointer = malloc<Char>(string.length + 1);
+
+  for (var i = 0; i < string.length; i++) {
+    (pointer + i).value = string.codeUnitAt(i);
+  }
+
+  (pointer + string.length).value = 0;
+
+  return pointer;
+}
+
 extension SampleFormatExt on SampleFormat {
   sample_format_t toNative() => sample_format_t.values[index];
 }
