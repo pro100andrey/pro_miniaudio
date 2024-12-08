@@ -571,11 +571,6 @@ enum LogLevel {
 
 /// Represents audio data to be pushed to a playback device.
 final class playback_data_t extends ffi.Struct {
-  @ffi.UnsignedInt()
-  external int formatAsInt;
-
-  sample_format_t get format => sample_format_t.fromValue(formatAsInt);
-
   external ffi.Pointer<ffi.Void> pUserData;
 
   @ffi.Uint32()

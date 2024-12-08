@@ -19,7 +19,7 @@ int main(int argc, char const* argv[]) {
     signal(SIGINT, handle_signal);
 
     set_log_to_console_enabled(true);
-    set_log_level(LOG_LEVEL_INFO);
+    set_log_level(LOG_LEVEL_DEBUG);
 
     void* pContext = context_create();
 
@@ -30,23 +30,20 @@ int main(int argc, char const* argv[]) {
     context_refresh_devices(pContext);
 
     uint32_t rPlaybackCount = context_get_playback_device_count(pContext);
-
     device_info_t* pPlaybackDevices = context_get_playback_device_infos(pContext);
 
     if (!pPlaybackDevices) {
         context_destroy(pContext);
-
         return 1;
     }
 
     device_info_t playbackDeviceInfo = pPlaybackDevices[0];
-
     supported_format_t supportedFormat = playbackDeviceInfo.dataFormats[0];
     uint32_t bpf = get_bytes_per_frame(supportedFormat.format, supportedFormat.channels);
 
     uint32_t framesCount = 4410;
     uint32_t dataSizeInBytes = framesCount * bpf;
-    size_t bufferSizeInBytes = dataSizeInBytes * 10;
+    size_t bufferSizeInBytes = dataSizeInBytes * 5;
 
     void* pPlaybackDevice = playback_device_create(
         pContext,
@@ -78,7 +75,6 @@ int main(int argc, char const* argv[]) {
     }
 
     playback_data_t data = {
-        .format = supportedFormat.format,
         .pUserData = malloc(dataSizeInBytes),
         .sizeInBytes = framesCount * bpf,
     };
@@ -110,7 +106,7 @@ int main(int argc, char const* argv[]) {
 
         playback_device_push_buffer(pPlaybackDevice, &data);
 
-        usleep(95000);
+        usleep(96500);
     }
 
     playback_device_stop(pPlaybackDevice);

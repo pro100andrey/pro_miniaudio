@@ -183,9 +183,7 @@ void *playback_device_create(const void *pMaContext,
     }
 
     LOG_INFO("<%p>(ma_device *) created.", &playback->device);
-
     LOG_INFO("<%p>(ma_rb *) created.", &playback->rb);
-
     LOG_INFO("<%p>(playback_device_t *) created.",
              "buffer size: %zu (bytes) <%p>.",
              playback,
@@ -287,31 +285,40 @@ void playback_device_push_buffer(void *pDevice, playback_data_t *pData) {
         return;
     }
 
-    playback_device_t *playback = (playback_device_t *)pDevice;
-    ma_format format = playback->device.playback.format;
-
-    if (format != (ma_format)pData->format) {
-        LOG_ERROR("invalid data format %d != %d",
-                  format, pData->format);
+    if (pData->sizeInBytes == 0) {
+        LOG_ERROR("`pData` is empty", "");
         return;
     }
+
+    playback_device_t *playback = (playback_device_t *)pDevice;
 
     ma_uint32 availableWrite = ma_rb_available_write(&playback->rb);
     ma_uint32 availableRead = ma_rb_available_read(&playback->rb);
     size_t bufferSize = ma_rb_get_subbuffer_size(&playback->rb);
     size_t sizeInBytes = pData->sizeInBytes;
+    ma_format format = playback->device.playback.format;
+    ma_uint32 channels = playback->device.playback.channels;
+    ma_uint32 sampleRate = playback->device.sampleRate;
 
-    // Calculate buffer available write percentage
-    float availableWritePercentage = (float)availableWrite / bufferSize * 100;
+    size_t bpf = ma_get_bytes_per_frame(format, channels);
 
-    // calculate buffer available write in seconds
+    float bufferAvailableInPercent = (float)availableWrite / bufferSize * 100;
+    float bufferAvailableInSec = (float)availableWrite / (sampleRate * bpf);
+    float fullBufferInSec = (float)bufferSize / (sampleRate * bpf);
+    float bufferFillInPercent = 100.0f - bufferAvailableInPercent;
+    float bufferFillInSec = fullBufferInSec - bufferAvailableInSec;
 
-    float timeInSec = (float)availableRead / (pData->format * 2 * 441000);
-
-    if (availableWritePercentage > 10) {
-        LOG_STATS("buffer available write: %.2f%% (%.2f seconds)",
-                  availableWritePercentage, timeInSec);
-    }
+    // Логирование метрик
+    LOG_STATS(
+        "buffer: "
+        "full: %.2fs, "
+        "available: %.2f%% (%.2fs), "
+        "filled: %.2f%% (%.2fs)",
+        fullBufferInSec,
+        bufferAvailableInPercent,
+        bufferAvailableInSec,
+        bufferFillInPercent,
+        bufferFillInSec);
 
     if (availableWrite < sizeInBytes) {
         size_t bytesToSkip = sizeInBytes - availableWrite;

@@ -13,8 +13,9 @@ class PlaybackWaveformDevice {
     required this.name,
   })  : _formats = supportedFormats,
         _supportedFormat = supportedFormats.first {
-    final bufferSizeInBytes =
-        _framesCount * _supportedFormat.bytesPerFrame * 10;
+    final bpf = _supportedFormat.bytesPerFrame;
+    final dataSizeInBytes = _framesCount * bpf;
+    final bufferSizeInBytes = dataSizeInBytes * 10;
 
     _playbackDevice = PlaybackDevice(
       deviceId: deviceId,

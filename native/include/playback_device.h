@@ -12,7 +12,6 @@
  * a pointer to the data itself, and its size in bytes.
  */
 typedef struct {
-    sample_format_t format; /* Format of the audio samples (e.g., signed 16-bit). */
     void *pUserData;        /* Pointer to the audio data to be played. */
     uint32_t sizeInBytes;   /* Size of the audio data in bytes. */
 } playback_data_t;

@@ -90,7 +90,6 @@ final class PlaybackDevice extends NativeResource<Void> {
     // Set data properties for the native structure.
     data.ref.pUserData = pUserData.cast();
     data.ref.sizeInBytes = sizeInBytes;
-    data.ref.formatAsInt = _supportedFormat.format.value;
 
     _bindings.playback_device_push_buffer(_resource, data);
 
