@@ -68,7 +68,7 @@ void *context_create(void) {
 FFI_PLUGIN_EXPORT
 void context_destroy(void *pContext) {
     if (!pContext) {
-        LOG_ERROR("called with NULL context", "");
+        LOG_ERROR("invalid parameter: `pContext` is NULL", "");
         return;
     }
 
@@ -153,7 +153,7 @@ static void process_device_list(context_t *pContext,
 FFI_PLUGIN_EXPORT
 void context_refresh_devices(const void *pContext) {
     if (!pContext) {
-        LOG_ERROR("called with NULL context", "");
+        LOG_ERROR("invalid parameter: `pContext` is NULL", "");
         return;
     }
 
@@ -208,7 +208,7 @@ void context_refresh_devices(const void *pContext) {
 FFI_PLUGIN_EXPORT
 uint32_t context_get_playback_device_count(const void *pContext) {
     if (!pContext) {
-        LOG_ERROR("called with NULL context", "");
+        LOG_ERROR("invalid parameter: `pContext` is NULL", "");
         return -1;
     }
 
@@ -220,7 +220,7 @@ uint32_t context_get_playback_device_count(const void *pContext) {
 FFI_PLUGIN_EXPORT
 uint32_t context_get_capture_device_count(const void *pContext) {
     if (!pContext) {
-        LOG_ERROR("called with NULL context", "");
+        LOG_ERROR("invalid parameter: `pContext` is NULL", "");
         return -1;
     }
 
@@ -232,7 +232,7 @@ uint32_t context_get_capture_device_count(const void *pContext) {
 FFI_PLUGIN_EXPORT
 device_info_t *context_get_playback_device_infos(const void *pContext) {
     if (!pContext) {
-        LOG_ERROR("called with NULL context", "");
+        LOG_ERROR("invalid parameter: `pContext` is NULL", "");
         return NULL;
     }
 
@@ -244,7 +244,7 @@ device_info_t *context_get_playback_device_infos(const void *pContext) {
 FFI_PLUGIN_EXPORT
 device_info_t *context_get_capture_device_infos(const void *pContext) {
     if (!pContext) {
-        LOG_ERROR("called with NULL context", "");
+        LOG_ERROR("invalid parameter: `pContext` is NULL", "");
         return NULL;
     }
 

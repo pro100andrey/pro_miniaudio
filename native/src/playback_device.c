@@ -21,7 +21,7 @@ void data_callback(ma_device *pDevice,
         (playback_device_t *)pDevice->pUserData;
 
     if (!playback) {
-        LOG_ERROR("`pDevice->pUserData` is NULL", "");
+        LOG_ERROR("invalid parameter: `pDevice->pUserData` is NULL", "");
         return;
     }
 
@@ -113,7 +113,7 @@ void *playback_device_create(const void *pMaContext,
                              device_id_t deviceId,
                              supported_format_t supportedFormat) {
     if (!pMaContext) {
-        LOG_ERROR("`pMaContext` is NULL", "");
+        LOG_ERROR("invalid parameter: `pMaContext` is NULL", "");
 
         return NULL;
     }
@@ -174,6 +174,7 @@ void *playback_device_create(const void *pMaContext,
                    &playback->rb);
 
     if (maRbInitResult != MA_SUCCESS) {
+        ma_device_uninit(&playback->device);
         free(playback);
 
         LOG_ERROR("`ma_rb_init` failed - %s",
@@ -196,7 +197,7 @@ void *playback_device_create(const void *pMaContext,
 FFI_PLUGIN_EXPORT
 void playback_device_destroy(void *pDevice) {
     if (!pDevice) {
-        LOG_ERROR("`pDevice` is NULL", "");
+        LOG_ERROR("invalid parameter: `pDevice` is NULL", "");
         return;
     }
 
@@ -222,7 +223,7 @@ void playback_device_destroy(void *pDevice) {
 
 FFI_PLUGIN_EXPORT void playback_device_start(void *pDevice) {
     if (!pDevice) {
-        LOG_ERROR("`pDevice` is NULL", "");
+        LOG_ERROR("invalid parameter: `pDevice` is NULL", "");
 
         return;
     }
@@ -255,7 +256,7 @@ FFI_PLUGIN_EXPORT void playback_device_start(void *pDevice) {
 FFI_PLUGIN_EXPORT
 void playback_device_stop(void *pDevice) {
     if (!pDevice) {
-        LOG_ERROR("`pDevice` is NULL", "");
+        LOG_ERROR("invalid parameter: `pDevice` is NULL", "");
 
         return;
     }
@@ -276,17 +277,17 @@ void playback_device_stop(void *pDevice) {
 FFI_PLUGIN_EXPORT
 void playback_device_push_buffer(void *pDevice, playback_data_t *pData) {
     if (!pDevice) {
-        LOG_ERROR("`pDevice` is NULL", "");
+        LOG_ERROR("invalid parameter: `pDevice` is NULL", "");
         return;
     }
 
     if (!pData) {
-        LOG_ERROR("`pData` is NULL", "");
+        LOG_ERROR("invalid parameter: `pData` is NULL", "");
         return;
     }
 
     if (pData->sizeInBytes == 0) {
-        LOG_ERROR("`pData` is empty", "");
+        LOG_ERROR("invalid parameter: `pData->sizeInBytes` is 0", "");
         return;
     }
 
@@ -296,10 +297,10 @@ void playback_device_push_buffer(void *pDevice, playback_data_t *pData) {
     ma_uint32 availableRead = ma_rb_available_read(&playback->rb);
     size_t bufferSize = ma_rb_get_subbuffer_size(&playback->rb);
     size_t sizeInBytes = pData->sizeInBytes;
+
     ma_format format = playback->device.playback.format;
     ma_uint32 channels = playback->device.playback.channels;
     ma_uint32 sampleRate = playback->device.sampleRate;
-
     size_t bpf = ma_get_bytes_per_frame(format, channels);
 
     float bufferAvailableInPercent = (float)availableWrite / bufferSize * 100;
@@ -308,7 +309,6 @@ void playback_device_push_buffer(void *pDevice, playback_data_t *pData) {
     float bufferFillInPercent = 100.0f - bufferAvailableInPercent;
     float bufferFillInSec = fullBufferInSec - bufferAvailableInSec;
 
-    // Логирование метрик
     LOG_STATS(
         "buffer: "
         "full: %.2fs, "

@@ -50,7 +50,7 @@ void *waveform_create(sample_format_t format,
 FFI_PLUGIN_EXPORT
 void waveform_destroy(void *pWaveform) {
     if (!pWaveform) {
-        LOG_ERROR("pWaveform is NULL", "");
+        LOG_ERROR("invalid parameter: `pWaveform` is NULL", "");
         return;
     }
 
@@ -69,18 +69,18 @@ void waveform_read_pcm_frames_with_buffer(void *pWaveform,
                                           uint64_t framesCount,
                                           uint64_t *pFramesRead) {
     if (!pWaveform) {
-        LOG_ERROR("pWaveform is NULL", "");
+        LOG_ERROR("invalid parameter: `pWaveform` is NULL", "");
 
         return;
     }
 
     if (!pFramesOut) {
-        LOG_ERROR("pFramesOut is NULL", "");
+        LOG_ERROR("invalid parameter: `pFramesOut` is NULL", "");
         return;
     }
 
     if (!pFramesRead) {
-        LOG_ERROR("pFramesRead is NULL", "");
+        LOG_ERROR("invalid parameter: `pFramesRead` is NULL", "");
         return;
     }
 
