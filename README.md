@@ -1,6 +1,6 @@
 # pro_miniaudio
 
-A Flutter plugin for managing audio contexts, playback devices, and waveform generation via Dart FFI.
+A Flutter plugin for managing contexts, playback devices, and waveform generation via Dart FFI.
 
 ## Features
 
@@ -22,9 +22,9 @@ dependencies:
   pro_miniaudio: 0.0.1
 ```
 
-## AudioContext
+## Context
 
-The `AudioContext` class manages the initialization and querying of audio devices.
+The `Context` class manages the initialization and querying of audio devices.
 
 ### Example: Initialize and Query Devices
 
@@ -32,18 +32,15 @@ The `AudioContext` class manages the initialization and querying of audio device
 import 'package:pro_miniaudio/pro_miniaudio.dart';
 
 void main() {
-  final audioContext = AudioContext();
-
-  // Initialize the audio context
-  audioContext.initialize();
+  final context = Context();
 
   // Refresh and get devices
-  final devices = audioContext.refreshAndReturnDevices();
+  final devices = context.refreshAndReturnDevices();
   print('Playback Devices: ${devices.playback.length}');
   print('Capture Devices: ${devices.capture.length}');
 
   // Clean up
-  audioContext.dispose();
+  context.dispose();
 }
 ```
 
@@ -58,11 +55,10 @@ import 'dart:typed_data';
 import 'package:pro_miniaudio/pro_miniaudio.dart';
 
 void main() {
-  final audioContext = AudioContext();
-  audioContext.initialize();
+  final context = Context();
 
   final device = PlaybackDevice(
-    context: audioContext,
+    context: context,
     deviceId: 0, // Use default device
     bufferSizeInBytes: 4096,
     format: SupportedFormat(
@@ -86,7 +82,7 @@ void main() {
 
   // Clean up
   device.dispose();
-  audioContext.dispose();
+  context.dispose();
 }
 ```
 

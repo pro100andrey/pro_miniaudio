@@ -81,16 +81,13 @@ final class Waveform extends NativeResource<Void> {
         ),
     };
 
-    final result = FFResult<Void>(rWaveform)..throwIfError();
-
-    final waveform = Waveform._(result.data)..config = cfg;
+    final waveform = Waveform._(rWaveform)..config = cfg;
 
     return waveform;
   }
 
   /// Internal constructor.
   Waveform._(super.ptr) : super._();
-
 
   /// The waveform configuration used for generating PCM frames.
   late final BaseWaveformConfig config;
@@ -136,14 +133,12 @@ final class Waveform extends NativeResource<Void> {
     final pFramesRead = malloc.allocate<Uint64>(1);
 
     try {
-      FFResult<Void>(
-        _bindings.waveform_read_pcm_frames_with_buffer(
-          _resource,
-          pFramesOut,
-          frameCount,
-          pFramesRead,
-        ),
-      ).throwIfError();
+      _bindings.waveform_read_pcm_frames_with_buffer(
+        _resource,
+        pFramesOut,
+        frameCount,
+        pFramesRead,
+      );
 
       final framesRead = pFramesRead.value;
       final frames =

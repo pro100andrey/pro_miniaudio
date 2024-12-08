@@ -1,9 +1,8 @@
 #ifndef PLAYBACK_DEVICE_H
 #define PLAYBACK_DEVICE_H
 
+#include "context.h"
 #include "platform.h"
-#include "result.h"
-#include "audio_context.h"
 
 /**
  * struct playback_data_t
@@ -18,48 +17,44 @@ typedef struct {
 /**
  * @brief Creates a playback device with the specified parameters.
  *
- * @param pAudioContext Pointer to the audio context.
+ * @param p Pointer to the `ma_context`.
  * @param bufferSizeInBytes Size of the internal buffer in bytes.
  * @param deviceId Identifier of the device to be used.
  * @param supportedFormat Format configuration for the playback device.
- * @return A `result_t` structure containing a pointer to the playback device or an error code.
+ * @return A pointer to the playback device.
  */
-FFI_PLUGIN_EXPORT result_t playback_device_create(void *pAudioContext,
-                                                  size_t bufferSizeInBytes,
-                                                  device_id_t deviceId,
-                                                  supported_format_t supportedFormat);
+FFI_PLUGIN_EXPORT void *playback_device_create(const void *p,
+                                               size_t bufferSizeInBytes,
+                                               device_id_t deviceId,
+                                               supported_format_t supportedFormat);
 
 /**
  * @brief Destroys a playback device and releases its resources.
  *
- * @param device Pointer to the playback device to destroy.
- * @return A `result_t` structure indicating success or failure.
+ * @param p Pointer to the playback device to destroy.
  */
-FFI_PLUGIN_EXPORT void playback_device_destroy(void *device);
+FFI_PLUGIN_EXPORT void playback_device_destroy(void *p);
 
 /**
  * @brief Starts playback on the device.
  *
- * @param device Pointer to the playback device.
- * @return A `result_t` structure indicating success or failure.
+ * @param p Pointer to the playback device.
  */
-FFI_PLUGIN_EXPORT result_t playback_device_start(void *device);
+FFI_PLUGIN_EXPORT void playback_device_start(void *p);
 
 /**
  * @brief Stops playback on the device.
  *
- * @param device Pointer to the playback device.
- * @return A `result_t` structure indicating success or failure.
+ * @param p Pointer to the playback device.
  */
-FFI_PLUGIN_EXPORT result_t playback_device_stop(void *device);
+FFI_PLUGIN_EXPORT void playback_device_stop(void *p);
 
 /**
  * @brief Pushes audio data to the playback device's buffer.
  *
- * @param device Pointer to the playback device.
- * @param data Pointer to the data to be pushed.
- * @return A `result_t` structure indicating success or failure.
+ * @param p Pointer to the playback device.
+ * @param pData Pointer to the data to be pushed.
  */
-FFI_PLUGIN_EXPORT result_t playback_device_push_buffer(void *device, playback_data_t *data);
+FFI_PLUGIN_EXPORT void playback_device_push_buffer(void *p, playback_data_t *pData);
 
 #endif  // !PLAYBACK_DEVICE_H

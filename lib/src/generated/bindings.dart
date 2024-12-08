@@ -29,125 +29,125 @@ class ProMiniaudioBindings {
 
   /// Creates a new Context and initializes the audio system with default
   /// settings.
-  ffi.Pointer<ffi.Void> audio_context_create() {
-    return _audio_context_create();
+  ffi.Pointer<ffi.Void> context_create() {
+    return _context_create();
   }
 
-  late final _audio_context_createPtr =
+  late final _context_createPtr =
       _lookup<ffi.NativeFunction<ffi.Pointer<ffi.Void> Function()>>(
-          'audio_context_create');
-  late final _audio_context_create =
-      _audio_context_createPtr.asFunction<ffi.Pointer<ffi.Void> Function()>();
+          'context_create');
+  late final _context_create =
+      _context_createPtr.asFunction<ffi.Pointer<ffi.Void> Function()>();
 
   /// Checks if the provided Context is valid.
-  bool audio_context_is_valid(
-    ffi.Pointer<ffi.Void> context,
+  bool context_is_valid(
+    ffi.Pointer<ffi.Void> pContext,
   ) {
-    return _audio_context_is_valid(
-      context,
+    return _context_is_valid(
+      pContext,
     );
   }
 
-  late final _audio_context_is_validPtr =
+  late final _context_is_validPtr =
       _lookup<ffi.NativeFunction<ffi.Bool Function(ffi.Pointer<ffi.Void>)>>(
-          'audio_context_is_valid');
-  late final _audio_context_is_valid = _audio_context_is_validPtr
-      .asFunction<bool Function(ffi.Pointer<ffi.Void>)>();
+          'context_is_valid');
+  late final _context_is_valid =
+      _context_is_validPtr.asFunction<bool Function(ffi.Pointer<ffi.Void>)>();
 
   /// Destroys the Context and releases all associated resources.
-  void audio_context_destroy(
-    ffi.Pointer<ffi.Void> context,
+  void context_destroy(
+    ffi.Pointer<ffi.Void> pContext,
   ) {
-    return _audio_context_destroy(
-      context,
+    return _context_destroy(
+      pContext,
     );
   }
 
-  late final _audio_context_destroyPtr =
+  late final _context_destroyPtr =
       _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Void>)>>(
-          'audio_context_destroy');
-  late final _audio_context_destroy = _audio_context_destroyPtr
-      .asFunction<void Function(ffi.Pointer<ffi.Void>)>();
+          'context_destroy');
+  late final _context_destroy =
+      _context_destroyPtr.asFunction<void Function(ffi.Pointer<ffi.Void>)>();
 
   /// Refreshes the list of available audio devices.
-  void audio_context_refresh_devices(
-    ffi.Pointer<ffi.Void> context,
+  void context_refresh_devices(
+    ffi.Pointer<ffi.Void> pContext,
   ) {
-    return _audio_context_refresh_devices(
-      context,
+    return _context_refresh_devices(
+      pContext,
     );
   }
 
-  late final _audio_context_refresh_devicesPtr =
+  late final _context_refresh_devicesPtr =
       _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Void>)>>(
-          'audio_context_refresh_devices');
-  late final _audio_context_refresh_devices = _audio_context_refresh_devicesPtr
+          'context_refresh_devices');
+  late final _context_refresh_devices = _context_refresh_devicesPtr
       .asFunction<void Function(ffi.Pointer<ffi.Void>)>();
 
   /// Gets the number of available playback devices.
-  int audio_context_get_playback_device_count(
-    ffi.Pointer<ffi.Void> context,
+  int context_get_playback_device_count(
+    ffi.Pointer<ffi.Void> pContext,
   ) {
-    return _audio_context_get_playback_device_count(
-      context,
+    return _context_get_playback_device_count(
+      pContext,
     );
   }
 
-  late final _audio_context_get_playback_device_countPtr =
+  late final _context_get_playback_device_countPtr =
       _lookup<ffi.NativeFunction<ffi.Uint32 Function(ffi.Pointer<ffi.Void>)>>(
-          'audio_context_get_playback_device_count');
-  late final _audio_context_get_playback_device_count =
-      _audio_context_get_playback_device_countPtr
+          'context_get_playback_device_count');
+  late final _context_get_playback_device_count =
+      _context_get_playback_device_countPtr
           .asFunction<int Function(ffi.Pointer<ffi.Void>)>();
 
   /// Gets the number of available capture devices.
-  int audio_context_get_capture_device_count(
-    ffi.Pointer<ffi.Void> context,
+  int context_get_capture_device_count(
+    ffi.Pointer<ffi.Void> pContext,
   ) {
-    return _audio_context_get_capture_device_count(
-      context,
+    return _context_get_capture_device_count(
+      pContext,
     );
   }
 
-  late final _audio_context_get_capture_device_countPtr =
+  late final _context_get_capture_device_countPtr =
       _lookup<ffi.NativeFunction<ffi.Uint32 Function(ffi.Pointer<ffi.Void>)>>(
-          'audio_context_get_capture_device_count');
-  late final _audio_context_get_capture_device_count =
-      _audio_context_get_capture_device_countPtr
+          'context_get_capture_device_count');
+  late final _context_get_capture_device_count =
+      _context_get_capture_device_countPtr
           .asFunction<int Function(ffi.Pointer<ffi.Void>)>();
 
   /// Gets information about available playback devices.
-  ffi.Pointer<device_info_t> audio_context_get_playback_devices_info(
-    ffi.Pointer<ffi.Void> context,
+  ffi.Pointer<device_info_t> context_get_playback_devices_info(
+    ffi.Pointer<ffi.Void> pContext,
   ) {
-    return _audio_context_get_playback_devices_info(
-      context,
+    return _context_get_playback_devices_info(
+      pContext,
     );
   }
 
-  late final _audio_context_get_playback_devices_infoPtr = _lookup<
-          ffi.NativeFunction<
-              ffi.Pointer<device_info_t> Function(ffi.Pointer<ffi.Void>)>>(
-      'audio_context_get_playback_devices_info');
-  late final _audio_context_get_playback_devices_info =
-      _audio_context_get_playback_devices_infoPtr.asFunction<
+  late final _context_get_playback_devices_infoPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Pointer<device_info_t> Function(
+              ffi.Pointer<ffi.Void>)>>('context_get_playback_devices_info');
+  late final _context_get_playback_devices_info =
+      _context_get_playback_devices_infoPtr.asFunction<
           ffi.Pointer<device_info_t> Function(ffi.Pointer<ffi.Void>)>();
 
   /// Gets information about available capture devices.
-  ffi.Pointer<device_info_t> audio_context_get_capture_devices_info(
-    ffi.Pointer<ffi.Void> context,
+  ffi.Pointer<device_info_t> context_get_capture_devices_info(
+    ffi.Pointer<ffi.Void> pContext,
   ) {
-    return _audio_context_get_capture_devices_info(
-      context,
+    return _context_get_capture_devices_info(
+      pContext,
     );
   }
 
-  late final _audio_context_get_capture_devices_infoPtr = _lookup<
-          ffi.NativeFunction<
-              ffi.Pointer<device_info_t> Function(ffi.Pointer<ffi.Void>)>>(
-      'audio_context_get_capture_devices_info');
-  late final _audio_context_get_capture_devices_info =
-      _audio_context_get_capture_devices_infoPtr.asFunction<
+  late final _context_get_capture_devices_infoPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Pointer<device_info_t> Function(
+              ffi.Pointer<ffi.Void>)>>('context_get_capture_devices_info');
+  late final _context_get_capture_devices_info =
+      _context_get_capture_devices_infoPtr.asFunction<
           ffi.Pointer<device_info_t> Function(ffi.Pointer<ffi.Void>)>();
 
   /// Gets the number of bytes per sample for the given format.
@@ -266,14 +266,14 @@ class ProMiniaudioBindings {
       _log_messagePtr.asFunction<void Function(int, ffi.Pointer<ffi.Char>)>();
 
   /// Creates a playback device with the specified parameters.
-  result_t playback_device_create(
-    ffi.Pointer<ffi.Void> pAudioContext,
+  ffi.Pointer<ffi.Void> playback_device_create(
+    ffi.Pointer<ffi.Void> pContext,
     int bufferSizeInBytes,
     device_id_t deviceId,
     supported_format_t supportedFormat,
   ) {
     return _playback_device_create(
-      pAudioContext,
+      pContext,
       bufferSizeInBytes,
       deviceId,
       supportedFormat,
@@ -282,18 +282,18 @@ class ProMiniaudioBindings {
 
   late final _playback_device_createPtr = _lookup<
       ffi.NativeFunction<
-          result_t Function(ffi.Pointer<ffi.Void>, ffi.Size, device_id_t,
-              supported_format_t)>>('playback_device_create');
+          ffi.Pointer<ffi.Void> Function(ffi.Pointer<ffi.Void>, ffi.Size,
+              device_id_t, supported_format_t)>>('playback_device_create');
   late final _playback_device_create = _playback_device_createPtr.asFunction<
-      result_t Function(
+      ffi.Pointer<ffi.Void> Function(
           ffi.Pointer<ffi.Void>, int, device_id_t, supported_format_t)>();
 
   /// Destroys a playback device and releases its resources.
   void playback_device_destroy(
-    ffi.Pointer<ffi.Void> device,
+    ffi.Pointer<ffi.Void> pDevice,
   ) {
     return _playback_device_destroy(
-      device,
+      pDevice,
     );
   }
 
@@ -304,57 +304,56 @@ class ProMiniaudioBindings {
       .asFunction<void Function(ffi.Pointer<ffi.Void>)>();
 
   /// Starts playback on the device.
-  result_t playback_device_start(
-    ffi.Pointer<ffi.Void> device,
+  void playback_device_start(
+    ffi.Pointer<ffi.Void> pDevice,
   ) {
     return _playback_device_start(
-      device,
+      pDevice,
     );
   }
 
   late final _playback_device_startPtr =
-      _lookup<ffi.NativeFunction<result_t Function(ffi.Pointer<ffi.Void>)>>(
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Void>)>>(
           'playback_device_start');
   late final _playback_device_start = _playback_device_startPtr
-      .asFunction<result_t Function(ffi.Pointer<ffi.Void>)>();
+      .asFunction<void Function(ffi.Pointer<ffi.Void>)>();
 
   /// Stops playback on the device.
-  result_t playback_device_stop(
-    ffi.Pointer<ffi.Void> device,
+  void playback_device_stop(
+    ffi.Pointer<ffi.Void> pDevice,
   ) {
     return _playback_device_stop(
-      device,
+      pDevice,
     );
   }
 
   late final _playback_device_stopPtr =
-      _lookup<ffi.NativeFunction<result_t Function(ffi.Pointer<ffi.Void>)>>(
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Void>)>>(
           'playback_device_stop');
   late final _playback_device_stop = _playback_device_stopPtr
-      .asFunction<result_t Function(ffi.Pointer<ffi.Void>)>();
+      .asFunction<void Function(ffi.Pointer<ffi.Void>)>();
 
   /// Pushes audio data to the playback device's buffer.
-  result_t playback_device_push_buffer(
-    ffi.Pointer<ffi.Void> device,
-    ffi.Pointer<playback_data_t> data,
+  void playback_device_push_buffer(
+    ffi.Pointer<ffi.Void> pDevice,
+    ffi.Pointer<playback_data_t> pData,
   ) {
     return _playback_device_push_buffer(
-      device,
-      data,
+      pDevice,
+      pData,
     );
   }
 
   late final _playback_device_push_bufferPtr = _lookup<
       ffi.NativeFunction<
-          result_t Function(ffi.Pointer<ffi.Void>,
+          ffi.Void Function(ffi.Pointer<ffi.Void>,
               ffi.Pointer<playback_data_t>)>>('playback_device_push_buffer');
   late final _playback_device_push_buffer =
       _playback_device_push_bufferPtr.asFunction<
-          result_t Function(
-              ffi.Pointer<ffi.Void>, ffi.Pointer<playback_data_t>)>();
+          void Function(ffi.Pointer<ffi.Void>, ffi.Pointer<playback_data_t>)>();
 
   /// Creates a waveform generator with the specified parameters.
-  result_t waveform_create(
+  ffi.Pointer<ffi.Void> waveform_create(
     sample_format_t format,
     Dartu_int32_t channels,
     int sampleRate,
@@ -374,10 +373,10 @@ class ProMiniaudioBindings {
 
   late final _waveform_createPtr = _lookup<
       ffi.NativeFunction<
-          result_t Function(ffi.UnsignedInt, u_int32_t, ffi.Uint32,
+          ffi.Pointer<ffi.Void> Function(ffi.UnsignedInt, u_int32_t, ffi.Uint32,
               ffi.UnsignedInt, ffi.Double, ffi.Double)>>('waveform_create');
-  late final _waveform_create = _waveform_createPtr
-      .asFunction<result_t Function(int, int, int, int, double, double)>();
+  late final _waveform_create = _waveform_createPtr.asFunction<
+      ffi.Pointer<ffi.Void> Function(int, int, int, int, double, double)>();
 
   /// Destroys a waveform generator and releases its resources.
   void waveform_destroy(
@@ -395,7 +394,7 @@ class ProMiniaudioBindings {
       _waveform_destroyPtr.asFunction<void Function(ffi.Pointer<ffi.Void>)>();
 
   /// Reads PCM frames from the waveform generator.
-  result_t waveform_read_pcm_frames_with_buffer(
+  void waveform_read_pcm_frames_with_buffer(
     ffi.Pointer<ffi.Void> waveform,
     ffi.Pointer<ffi.Void> pFramesOut,
     int framesCount,
@@ -411,12 +410,12 @@ class ProMiniaudioBindings {
 
   late final _waveform_read_pcm_frames_with_bufferPtr = _lookup<
           ffi.NativeFunction<
-              result_t Function(ffi.Pointer<ffi.Void>, ffi.Pointer<ffi.Void>,
+              ffi.Void Function(ffi.Pointer<ffi.Void>, ffi.Pointer<ffi.Void>,
                   ffi.Uint64, ffi.Pointer<ffi.Uint64>)>>(
       'waveform_read_pcm_frames_with_buffer');
   late final _waveform_read_pcm_frames_with_buffer =
       _waveform_read_pcm_frames_with_bufferPtr.asFunction<
-          result_t Function(ffi.Pointer<ffi.Void>, ffi.Pointer<ffi.Void>, int,
+          void Function(ffi.Pointer<ffi.Void>, ffi.Pointer<ffi.Void>, int,
               ffi.Pointer<ffi.Uint64>)>();
 
   late final addresses = _SymbolAddresses(this);
@@ -426,7 +425,7 @@ class _SymbolAddresses {
   final ProMiniaudioBindings _library;
   _SymbolAddresses(this._library);
   ffi.Pointer<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Void>)>>
-      get audio_context_destroy => _library._audio_context_destroyPtr;
+      get context_destroy => _library._context_destroyPtr;
   ffi.Pointer<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Void>)>>
       get playback_device_destroy => _library._playback_device_destroyPtr;
   ffi.Pointer<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Void>)>>
@@ -576,79 +575,6 @@ final class playback_data_t extends ffi.Struct {
 
   @ffi.Uint32()
   external int sizeInBytes;
-}
-
-/// Structure to represent the result of a function call.
-final class result_t extends ffi.Struct {
-  external result_data_t data;
-
-  @ffi.UnsignedInt()
-  external int typeAsInt;
-
-  data_type_t get type => data_type_t.fromValue(typeAsInt);
-
-  @ffi.UnsignedInt()
-  external int codeAsInt;
-
-  error_code_t get code => error_code_t.fromValue(codeAsInt);
-
-  @ffi.Array.multi([256])
-  external ffi.Array<ffi.Char> message;
-}
-
-/// Union to store different types of result data.
-final class result_data_t extends ffi.Union {
-  external ffi.Pointer<ffi.Void> pData;
-
-  @ffi.Int32()
-  external int intData;
-
-  @ffi.Float()
-  external double floatData;
-}
-
-/// Enum to represent the type of data stored in a `result_t`.
-enum data_type_t {
-  data_type_empty(0),
-  data_type_int(1),
-  data_type_ptr(2);
-
-  final int value;
-  const data_type_t(this.value);
-
-  static data_type_t fromValue(int value) => switch (value) {
-        0 => data_type_empty,
-        1 => data_type_int,
-        2 => data_type_ptr,
-        _ => throw ArgumentError("Unknown value for data_type_t: $value"),
-      };
-}
-
-/// Error codes for function results.
-enum error_code_t {
-  error_code_none(0),
-  error_code_unknown(1),
-  error_code_context(2),
-  error_code_device(3),
-  error_code_get_device(5),
-  error_code_get_device_info(6),
-  error_code_buffer(7),
-  error_waveform(8);
-
-  final int value;
-  const error_code_t(this.value);
-
-  static error_code_t fromValue(int value) => switch (value) {
-        0 => error_code_none,
-        1 => error_code_unknown,
-        2 => error_code_context,
-        3 => error_code_device,
-        5 => error_code_get_device,
-        6 => error_code_get_device_info,
-        7 => error_code_buffer,
-        8 => error_waveform,
-        _ => throw ArgumentError("Unknown value for error_code_t: $value"),
-      };
 }
 
 /// Enum representing different types of waveforms.

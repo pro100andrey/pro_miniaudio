@@ -4,10 +4,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "../include/audio_context.h"
+#include "../include/context.h"
 #include "../include/logger.h"
 #include "../include/playback_device.h"
-#include "../include/result.h"
 #include "../include/waveform.h"
 
 volatile bool running = true;
@@ -21,55 +20,41 @@ int main(int argc, char const* argv[]) {
 
     set_log_to_console_enabled(true);
 
-    result_t rContext = audio_context_create();
-    if (rContext.code != error_code_none) {
+    void* pContext = context_create();
+
+    if (!pContext) {
         return 1;
     }
 
-    void* pAudioContext = rContext.data.pData;
+    context_refresh_devices(pContext);
 
-    result_t rRefresh = audio_context_refresh_devices(pAudioContext);
-    if (rRefresh.code != error_code_none) {
-        audio_context_destroy(pAudioContext);
+    uint32_t rPlaybackCount = context_get_playback_device_count(pContext);
 
-        return 1;
-    }
+    device_info_t* pPlaybackDevices = context_get_playback_device_infos(pContext);
 
-    result_t rPlaybackCount = audio_context_get_playback_device_count(pAudioContext);
-    if (rPlaybackCount.code != error_code_none) {
-        audio_context_destroy(pAudioContext);
-
-        return 1;
-    }
-
-    int playbackCount = rPlaybackCount.data.intData;
-
-    result_t rPlaybackDevices = audio_context_get_playback_devices_info(pAudioContext);
-    if (rPlaybackDevices.code != error_code_none) {
-        audio_context_destroy(pAudioContext);
+    if (!pPlaybackDevices) {
+        context_destroy(pContext);
 
         return 1;
     }
 
-    const device_info_t* playbackDevices = rPlaybackDevices.data.pData;
+    device_info_t playbackDeviceInfo = pPlaybackDevices[0];
 
-    device_info_t playbackDevice = playbackDevices[0];
-
-    supported_format_t supportedFormat = playbackDevice.dataFormats[0];
+    supported_format_t supportedFormat = playbackDeviceInfo.dataFormats[0];
     uint32_t bpf = get_bytes_per_frame(supportedFormat.format, supportedFormat.channels);
 
     uint32_t framesCount = 4410;
     uint32_t dataSizeInBytes = framesCount * bpf;
     size_t bufferSizeInBytes = dataSizeInBytes * 10;
 
-    result_t rPlaybackDevice = playback_device_create(
-        pAudioContext,
+    void* pPlaybackDevice = playback_device_create(
+        pContext,
         bufferSizeInBytes,
-        playbackDevice.id,
+        playbackDeviceInfo.id,
         supportedFormat);
 
-    if (rPlaybackDevice.code != error_code_none) {
-        audio_context_destroy(pAudioContext);
+    if (!pPlaybackDevice) {
+        context_destroy(pContext);
 
         return 1;
     }
@@ -77,7 +62,7 @@ int main(int argc, char const* argv[]) {
     double amplitude = 1.0;
     double frequency = 300;
 
-    result_t formResult = waveform_create(
+    void* pWaveform = waveform_create(
         supportedFormat.format,
         supportedFormat.channels,
         supportedFormat.sampleRate,
@@ -85,62 +70,47 @@ int main(int argc, char const* argv[]) {
         amplitude,
         frequency);
 
-    if (formResult.code != error_code_none) {
-        audio_context_destroy(pAudioContext);
+    if (!pWaveform) {
+        context_destroy(pContext);
 
         return 1;
     }
 
-    void* pWaveform = formResult.data.pData;
-    void* device = rPlaybackDevice.data.pData;
+    playback_data_t data = {
+        .format = supportedFormat.format,
+        .pUserData = malloc(dataSizeInBytes),
+        .sizeInBytes = framesCount * bpf,
+    };
 
-    result_t startResult = playback_device_start(device);
+    uint64_t pFramesRead = 0;
 
-    if (startResult.code != error_code_none) {
-        return 1;
-    }
+    waveform_read_pcm_frames_with_buffer(
+        pWaveform,
+        data.pUserData,
+        framesCount,
+        &pFramesRead);
 
-    int tik = 10;
+    playback_device_push_buffer(pPlaybackDevice, &data);
+
+    playback_device_start(pPlaybackDevice);
+
     while (running) {
-        tik--;
-
-        if (tik == 0) {
-            break;
-        }
-
-        playback_data_t data = {
-            .format = supportedFormat.format,
-            .pUserData = NULL,
-            .sizeInBytes = framesCount * bpf,
-        };
-
-        void* userData = malloc(dataSizeInBytes);
-
-        data.pUserData = userData;
-
         if (!data.pUserData) {
             break;
         }
 
         uint64_t pFramesRead = 0;
 
-        result_t readResult = waveform_read_pcm_frames_with_buffer(
+        waveform_read_pcm_frames_with_buffer(
             pWaveform,
             data.pUserData,
             framesCount,
             &pFramesRead);
 
-        if (readResult.code == error_code_none) {
-            result_t pushResult = playback_device_push_buffer(device, &data);
-
-            (void)pushResult;
-        }
-
-        free(data.pUserData);
+        playback_device_push_buffer(pPlaybackDevice, &data);
 
         usleep(95000);
     }
-    
 
     return 0;
 }

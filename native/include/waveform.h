@@ -1,9 +1,8 @@
 #ifndef WAVEFORM_H
 #define WAVEFORM_H
 
-#include "audio_context.h"
+#include "context.h"
 #include "platform.h"
-#include "result.h"
 
 /**
  * @enum waveform_type_t
@@ -25,14 +24,14 @@ typedef enum {
  * @param waveformType Type of waveform to generate.
  * @param amplitude Amplitude of the waveform.
  * @param frequency Frequency of the waveform in Hertz.
- * @return A `result_t` structure containing a pointer to the waveform generator or an error code.
+ * @return A pointer to the waveform generator.
  */
-FFI_PLUGIN_EXPORT result_t waveform_create(sample_format_t format,
-                                           u_int32_t channels,
-                                           uint32_t sampleRate,
-                                           waveform_type_t waveformType,
-                                           double amplitude,
-                                           double frequency);
+FFI_PLUGIN_EXPORT void *waveform_create(sample_format_t format,
+                                        u_int32_t channels,
+                                        uint32_t sampleRate,
+                                        waveform_type_t waveformType,
+                                        double amplitude,
+                                        double frequency);
 
 /**
  * @brief Destroys a waveform generator and releases its resources.
@@ -48,9 +47,8 @@ FFI_PLUGIN_EXPORT void waveform_destroy(void *waveform);
  * @param pFramesOut Pointer to the output buffer for PCM frames.
  * @param framesCount Number of frames to read.
  * @param pFramesRead Pointer to a variable to store the number of frames read.
- * @return A `result_t` structure indicating success or failure.
  */
-FFI_PLUGIN_EXPORT result_t waveform_read_pcm_frames_with_buffer(void *waveform,
+FFI_PLUGIN_EXPORT void waveform_read_pcm_frames_with_buffer(void *waveform,
                                                                 void *pFramesOut,
                                                                 uint64_t framesCount,
                                                                 uint64_t *pFramesRead);

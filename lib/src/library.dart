@@ -8,7 +8,7 @@ import 'package:meta/meta.dart';
 
 import 'generated/bindings.dart';
 
-part 'audio_context.dart';
+part 'context.dart';
 part 'internal.dart';
 part 'models/device_info.dart';
 part 'models/sample_format.dart';

@@ -8,7 +8,7 @@ const _milliseconds = 100;
 class PlaybackWaveformDevice {
   PlaybackWaveformDevice({
     required Object deviceId,
-    required AudioContext context,
+    required Context context,
     required List<SupportedFormat> supportedFormats,
     required this.name,
   })  : _formats = supportedFormats,

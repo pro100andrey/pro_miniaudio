@@ -1,28 +1,5 @@
 part of 'library.dart';
 
-
-/// A helper class to manage the `Result` structure returned by native
-/// functions.
-extension type FFResult<T extends NativeType>(result_t result) {
-  void throwIfError() {
-    if (result.code != error_code_t.error_code_none) {
-      final message = arrayCharToString(result.message);
-
-      throw Exception('Error: ${result.code} - $message');
-    }
-  }
-
-  Pointer<T> get data => result.data.pData.cast<T>();
-
-  int get intData {
-    if (result.type != data_type_t.data_type_int) {
-      throw StateError('Expected integer data but got ${result.type}.');
-    }
-
-    return result.data.intData;
-  }
-}
-
 /// Converts a native `Array<Char>` to a Dart string.
 ///
 /// - [array]: The native array of characters.

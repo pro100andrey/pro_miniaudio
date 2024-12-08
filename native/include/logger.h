@@ -7,9 +7,10 @@
 
 // Log levels for messages
 typedef enum {
-    LOG_LEVEL_DEBUG,  // Debug level
-    LOG_LEVEL_INFO,   // Information level
-    LOG_LEVEL_ERROR   // Error level
+    LOG_LEVEL_DEBUG,    // Debug level
+    LOG_LEVEL_INFO,     // Information level
+    LOG_LEVEL_WARNING,  // Warning level
+    LOG_LEVEL_ERROR     // Error level
 } LogLevel;
 
 /**
@@ -62,6 +63,7 @@ void log_message(LogLevel level, const char *format, ...);
 
 #define LOG_DEBUG(fmt, ...) log_message(LOG_LEVEL_DEBUG, fmt __VA_OPT__(, ) __VA_ARGS__)
 #define LOG_INFO(fmt, ...) log_message(LOG_LEVEL_INFO, fmt __VA_OPT__(, ) __VA_ARGS__)
+#define LOG_WARN(fmt, ...) log_message(LOG_LEVEL_WARNING, fmt __VA_OPT__(, ) __VA_ARGS__)
 #define LOG_ERROR(fmt, ...) log_message(LOG_LEVEL_ERROR, fmt __VA_OPT__(, ) __VA_ARGS__)
 
 #endif  // LOGGER_H

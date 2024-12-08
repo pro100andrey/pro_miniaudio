@@ -15,56 +15,50 @@ part of 'library.dart';
 /// ```
 const kEmptyDevicesInfos = (playback: <DeviceInfo>[], capture: <DeviceInfo>[]);
 
-/// A class for managing audio contexts and devices.
+/// A class for managing contexts and devices.
 ///
-/// The `AudioContext` is responsible for initializing the audio system,
+/// The `Context` is responsible for initializing the audio system,
 /// retrieving information about playback and capture devices, and managing
 /// the resources associated with the audio context.
 ///
 /// Example:
 /// ```dart
-/// final audioContext = AudioContext();
-/// final devices = audioContext.refreshAndReturnDevices();
+/// final context = Context();
+/// final devices = context.refreshAndReturnDevices();
 /// print('Playback Devices: ${devices.playback.length}');
 /// print('Capture Devices: ${devices.capture.length}');
-/// audioContext.dispose();
+/// context.dispose();
 /// ```
-final class AudioContext extends NativeResource<Void> {
-  factory AudioContext() => AudioContext._(_bindings.audio_context_create());
+final class Context extends NativeResource<Void> {
+  factory Context() => Context._(_bindings.context_create());
 
   /// Internal constructor.
-  AudioContext._(super.ptr) : super._();
+  Context._(super.ptr) : super._();
 
-  /// Checks if the audio context is initialized and valid.
-  ///
-  /// Returns `true` if the context is initialized and valid; otherwise,
-  /// `false`.
-  bool get contextIsInitialized => _bindings.audio_context_is_valid(_resource);
-
-  /// The finalizer for the `AudioContext` class.
+  /// The finalizer for the `Context` class.
   static final _finalizer = NativeFinalizer(
-    _bindings.addresses.audio_context_destroy.cast(),
+    _bindings.addresses.context_destroy.cast(),
   );
 
   @override
   NativeFinalizer get finalizer => _finalizer;
 
   @override
-  void releaseResource() => _bindings.audio_context_destroy(
+  void releaseResource() => _bindings.context_destroy(
         _ensureContextInitialized(),
       );
 
   /// Refreshes the list of available audio devices.
   ///
   /// Queries the system for the latest playback and capture devices, updating
-  /// the internal state of the `AudioContext`. Throws an exception if the
+  /// the internal state of the `Context`. Throws an exception if the
   /// operation fails.
   ///
   /// Example:
   /// ```dart
-  /// audioContext.refreshDevices();
+  /// context.refreshDevices();
   /// ```
-  void refreshDevices() => _bindings.audio_context_refresh_devices(
+  void refreshDevices() => _bindings.context_refresh_devices(
         _ensureContextInitialized(),
       );
 
@@ -100,7 +94,7 @@ final class AudioContext extends NativeResource<Void> {
   /// Returns:
   /// The count of playback devices available on the system.
   int get playbackDevicesCount =>
-      _bindings.audio_context_get_playback_device_count(
+      _bindings.context_get_playback_device_count(
         _ensureContextInitialized(),
       );
 
@@ -111,7 +105,7 @@ final class AudioContext extends NativeResource<Void> {
   /// Returns:
   /// The count of capture devices available on the system.
   int get captureDevicesCount =>
-      _bindings.audio_context_get_capture_device_count(
+      _bindings.context_get_capture_device_count(
         _ensureContextInitialized(),
       );
 
@@ -122,7 +116,7 @@ final class AudioContext extends NativeResource<Void> {
   /// Returns:
   /// A list of [DeviceInfo] objects representing playback devices.
   List<DeviceInfo> get playbackDevicesInfo => _extractDeviceInfoList(
-        _bindings.audio_context_get_playback_devices_info(
+        _bindings.context_get_playback_devices_info(
           _ensureContextInitialized(),
         ),
         playbackDevicesCount,
@@ -135,7 +129,7 @@ final class AudioContext extends NativeResource<Void> {
   /// Returns:
   /// A list of [DeviceInfo] objects representing capture devices.
   List<DeviceInfo> get captureDevicesInfo => _extractDeviceInfoList(
-        _bindings.audio_context_get_capture_devices_info(
+        _bindings.context_get_capture_devices_info(
           _ensureContextInitialized(),
         ),
         captureDevicesCount,
@@ -144,15 +138,10 @@ final class AudioContext extends NativeResource<Void> {
   /// Ensures that the context is initialized and returns its pointer.
   ///
   /// Throws a [StateError] if the context is not initialized.
-  ///
-  /// Example:
-  /// ```dart
-  /// final contextPointer = audioContext._requireContext();
-  /// ```
   @pragma('vm:prefer-inline')
   Pointer<Void> _ensureContextInitialized() {
     if (_isFinalized) {
-      throw StateError('AudioContext is finalized');
+      throw StateError('Context is finalized');
     }
 
     return _resource;

@@ -11,8 +11,7 @@ MINIAUDIO_CFLAGS = -Itest -Isrc -Wextra
 # Source files
 SRCS = test/test_runner.c \
        test/unity/unity.c \
-       src/audio_context.c \
-	   src/result.c \
+       src/context.c \
 	   src/waveform.c \
        src/logger.c \
        src/miniaudio.c \

@@ -71,6 +71,9 @@ void log_message(LogLevel level, const char *format, ...) {
         case LOG_LEVEL_ERROR:
             levelStr = "[ERROR]";
             break;
+        case LOG_LEVEL_WARNING:
+            levelStr = "[WARNING]";
+            break;
         default:
             levelStr = "[UNKNOWN]";
             break;

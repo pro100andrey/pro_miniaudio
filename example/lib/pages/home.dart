@@ -5,7 +5,6 @@ import 'package:pro_miniaudio/pro_miniaudio.dart';
 import '../controllers/audio_controller.dart';
 import '../dialogs/formats_info_dialog.dart';
 import '../widgets/actions/device_actions.dart';
-import '../widgets/bars/status_bar.dart';
 import '../widgets/builders/change_notifier_builder.dart';
 import '../widgets/dropdowns/device_formats_dropdown.dart';
 import '../widgets/dropdowns/devices_dropdown.dart';
@@ -43,9 +42,6 @@ class _HomePageState extends State<HomePage> {
           body: CustomScrollView(
             slivers: [
               SliverAppBar(
-                title: StatusBar(
-                  contextIsInitialized: notifier.contextIsInitialized,
-                ),
                 floating: true,
                 actions: [
                   IconButton(

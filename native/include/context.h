@@ -1,10 +1,9 @@
-#ifndef AUDIO_CONTEXT_H
-#define AUDIO_CONTEXT_H
+#ifndef CONTEXT_H
+#define CONTEXT_H
 
 #include <stdbool.h>
 
 #include "platform.h"
-#include "result.h"
 
 /**
  * union device_id_t
@@ -75,91 +74,34 @@ typedef struct {
     supported_format_t dataFormats[64];    /* Array of supported audio formats. */
 } device_info_t;
 
-/**
- * @brief Creates a new Context and initializes the audio system with default settings.
- *
- * This function initializes the audio backend and prepares the system for audio device management.
- *
- * @return A pointer to the new Context, or NULL if initialization failed.
- */
-FFI_PLUGIN_EXPORT void *audio_context_create(void);
+FFI_PLUGIN_EXPORT
+void *context_create(void);
 
-/**
- * @brief Checks if the provided Context is valid.
- *
- * This function verifies that the provided Context is not NULL and has been initialized.
- *
- * @param context Pointer to the Context to check.
- * @return `true` if the Context is valid, `false` otherwise.
- */
-FFI_PLUGIN_EXPORT bool audio_context_is_valid(const void *context);
+FFI_PLUGIN_EXPORT
+bool context_is_valid(const void *p);
 
-/**
- * @brief Destroys the Context and releases all associated resources.
- *
- * This function cleans up memory and system resources allocated by the Context.
- *
- * @param context Pointer to the Context to be destroyed. Passing NULL is safe and has no effect.
- */
-FFI_PLUGIN_EXPORT void audio_context_destroy(void *context);
+FFI_PLUGIN_EXPORT
+void context_destroy(void *p);
 
-/**
- * @brief Refreshes the list of available audio devices.
- *
- * Queries the system for the current list of playback and capture devices,
- * updating the internal device list in the provided Context.
- *
- * @param context Pointer to the Context to refresh devices for.
- */
-FFI_PLUGIN_EXPORT void audio_context_refresh_devices(const void *context);
+FFI_PLUGIN_EXPORT
+void context_refresh_devices(const void *p);
 
-/**
- * @brief Gets the number of available playback devices.
- *
- * @param context Pointer to the Context.
- * @return The number of playback devices. Returns -1 on failure.
- */
-FFI_PLUGIN_EXPORT uint32_t audio_context_get_playback_device_count(const void *context);
+FFI_PLUGIN_EXPORT
+uint32_t context_get_playback_device_count(const void *p);
 
-/**
- * @brief Gets the number of available capture devices.
- *
- * @param context Pointer to the Context.
- * @return The number of capture devices. Returns -1 on failure.
- */
-FFI_PLUGIN_EXPORT uint32_t audio_context_get_capture_device_count(const void *context);
+FFI_PLUGIN_EXPORT
+uint32_t context_get_capture_device_count(const void *p);
 
-/**
- * @brief Gets information about available playback devices.
- *
- * @param context Pointer to the Context.
- * @return A `device_info_t` structure describing playback devices, or NULL on failure.
- */
-FFI_PLUGIN_EXPORT device_info_t *audio_context_get_playback_devices_info(const void *context);
+FFI_PLUGIN_EXPORT
+device_info_t *context_get_playback_device_infos(const void *p);
 
-/**
- * @brief Gets information about available capture devices.
- *
- * @param context Pointer to the Context.
- * @return A `device_info_t` structure describing capture devices, or NULL on failure.
- */
-FFI_PLUGIN_EXPORT device_info_t *audio_context_get_capture_devices_info(const void *context);
+FFI_PLUGIN_EXPORT
+device_info_t *context_get_capture_device_infos(const void *p);
 
-/**
- * @brief Gets the number of bytes per sample for the given format.
- *
- * @param format Audio sample format.
- * @return The number of bytes per sample.
- */
-FFI_PLUGIN_EXPORT uint32_t get_bytes_per_sample(sample_format_t format);
+FFI_PLUGIN_EXPORT
+uint32_t get_bytes_per_sample(sample_format_t format);
 
-/**
- * @brief Gets the number of bytes per frame for the given format and channel count.
- *
- * @param format Audio sample format.
- * @param channels Number of audio channels.
- * @return The number of bytes per frame.
- */
-FFI_PLUGIN_EXPORT uint32_t get_bytes_per_frame(sample_format_t format, uint32_t channels);
+FFI_PLUGIN_EXPORT
+uint32_t get_bytes_per_frame(sample_format_t format, uint32_t channels);
 
-#endif  // AUDIO_CONTEXT_H
+#endif  // CONTEXT_H

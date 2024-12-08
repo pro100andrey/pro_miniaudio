@@ -6,10 +6,10 @@
 #include "../include/logger.h"
 #include "../include/miniaudio.h"
 
-typedef struct device_context {
-    ma_device device;     // Playback device
-    ma_rb pcmRingBuffer;  // PCM ring buffer
-} device_context_t;
+typedef struct {
+    ma_device device;  // Playback device
+    ma_rb rb;          // Ring buffer
+} playback_device_t;
 
 void data_callback(ma_device *pDevice,
                    void *pOutput,
@@ -17,76 +17,87 @@ void data_callback(ma_device *pDevice,
                    ma_uint32 frameCount) {
     (void)pInput;
 
-    device_context_t *ctx = (device_context_t *)pDevice->pUserData;
+    playback_device_t *playbackDevice =
+        (playback_device_t *)pDevice->pUserData;
 
-    if (!ctx) {
-        LOG_ERROR("Invalid device context", "");
+    if (!playbackDevice) {
+        LOG_ERROR("invalid playback_device_t provided for data callback", "");
         return;
     }
 
-    ma_uint32 bpf =
-        ma_get_bytes_per_frame(pDevice->playback.format,
-                               pDevice->playback.channels);
-
+    ma_uint32 bpf = ma_get_bytes_per_frame(pDevice->playback.format,
+                                           pDevice->playback.channels);
     ma_uint32 availableRead =
-        ma_rb_available_read(&ctx->pcmRingBuffer);
+        ma_rb_available_read(&playbackDevice->rb);
 
     if (availableRead == 0) {
+        LOG_INFO("No data available for playback", "");
+
         return;
     }
 
-    ma_uint32 framesInBytes = frameCount * bpf;
+    ma_uint32 bytesPerFrames = frameCount * bpf;
+    size_t bytesToRead = (availableRead < bytesPerFrames) ? availableRead : bytesPerFrames;
+    size_t totalProcessed = 0;
 
-    // Buffering
-    if (availableRead < framesInBytes) {
-        return;
-    }
+    while (bytesToRead > 0) {
+        void *bufferOut;
+        size_t chunkSize = bytesToRead;
 
-    void *pReadBuffer;
-    size_t pSizeInBytes = frameCount * bpf;
-    // Acquire read buffer
-    ma_result readResult =
-        ma_rb_acquire_read(&ctx->pcmRingBuffer,
-                           &pSizeInBytes,
-                           &pReadBuffer);
+        ma_result readResult = ma_rb_acquire_read(&playbackDevice->rb,
+                                                  &chunkSize,
+                                                  &bufferOut);
+        if (readResult != MA_SUCCESS) {
+            LOG_ERROR("Failed to acquire read buffer: %s",
+                      ma_result_description(readResult));
+            break;
+        }
 
-    if (readResult != MA_SUCCESS) {
-        LOG_ERROR("Failed to acquire read buffer. %s",
-                  ma_result_description(readResult));
-        return;
-    }
+        if (chunkSize == 0) {
+            LOG_ERROR("No more data available for reading.");
+            break;
+        }
 
-    memcpy(pOutput, pReadBuffer, pSizeInBytes);
+        // Обработка данных из текущего сегмента
+        memcpy(pOutput, bufferOut, chunkSize);
+        pOutput = (char *)pOutput + chunkSize;
+        totalProcessed += chunkSize;
+        bytesToRead -= chunkSize;
 
-    ma_result commitResult =
-        ma_rb_commit_read(&ctx->pcmRingBuffer,
-                          pSizeInBytes);
+        ma_result commitResult = ma_rb_commit_read(
+            &playbackDevice->rb,
+            chunkSize);
 
-    if (commitResult != MA_SUCCESS) {
-        LOG_ERROR("Failed to commit read buffer. %s",
-                  ma_result_description(commitResult));
+        if (commitResult == MA_AT_END) {
+            LOG_INFO("Reached the end of available data in the ring buffer.");
+            break;
+        } else if (commitResult != MA_SUCCESS) {
+            LOG_ERROR("Failed to commit read buffer: %s",
+                      ma_result_description(commitResult));
+            break;
+        }
     }
 }
 
 void notification_callback(const ma_device_notification *pNotification) {
     switch (pNotification->type) {
         case ma_device_notification_type_started:
-            LOG_INFO("Device started <%p>.", pNotification->pDevice);
+            LOG_INFO("device started <%p>.", pNotification->pDevice);
             break;
         case ma_device_notification_type_stopped:
-            LOG_INFO("Device stopped <%p>.", pNotification->pDevice);
+            LOG_INFO("device stopped <%p>.", pNotification->pDevice);
             break;
         case ma_device_notification_type_rerouted:
-            LOG_INFO("Device rerouted <%p>.", pNotification->pDevice);
+            LOG_INFO("device rerouted <%p>.", pNotification->pDevice);
             break;
         case ma_device_notification_type_interruption_began:
-            LOG_INFO("Device interruption began <%p>.", pNotification->pDevice);
+            LOG_INFO("device interruption began <%p>.", pNotification->pDevice);
             break;
         case ma_device_notification_type_interruption_ended:
-            LOG_INFO("Device interruption ended <%p>.", pNotification->pDevice);
+            LOG_INFO("device interruption ended <%p>.", pNotification->pDevice);
             break;
         case ma_device_notification_type_unlocked:
-            LOG_INFO("Device unlocked <%p>.", pNotification->pDevice);
+            LOG_INFO("device unlocked <%p>.", pNotification->pDevice);
             break;
         default:
             break;
@@ -94,22 +105,29 @@ void notification_callback(const ma_device_notification *pNotification) {
 }
 
 FFI_PLUGIN_EXPORT
-result_t playback_device_create(void *pAudioContext,
-                                size_t bufferSizeInBytes,
-                                device_id_t deviceId,
-                                supported_format_t supportedFormat) {
-    ma_context *audioCtx = (ma_context *)pAudioContext;
+void *playback_device_create(const void *pMaContext,
+                             size_t bufferSizeInBytes,
+                             device_id_t deviceId,
+                             supported_format_t supportedFormat) {
+    if (!pMaContext) {
+        LOG_ERROR("Invalid context_t provided", "");
 
-    if (!audioCtx) {
-        return result_error(error_code_context,
-                            "Invalid AudioContext");
+        return NULL;
     }
 
-    device_context_t *deviceCtx = malloc(sizeof(device_context_t));
+    if (bufferSizeInBytes == 0) {
+        LOG_ERROR("Invalid buffer size", "");
 
-    if (!deviceCtx) {
-        return result_error(error_code_device,
-                            "Failed to allocate memory for device context");
+        return NULL;
+    }
+
+    ma_context *pContext = (ma_context *)pMaContext;
+    playback_device_t *pPlaybackDevice = malloc(sizeof(playback_device_t));
+
+    if (!pPlaybackDevice) {
+        LOG_ERROR("Failed to allocate memory for playback_device_t", "");
+
+        return NULL;
     }
 
     ma_device_id pDeviceId;
@@ -129,184 +147,202 @@ result_t playback_device_create(void *pAudioContext,
     config.sampleRate = sampleRate;
     config.dataCallback = data_callback;
     config.notificationCallback = notification_callback;
-    config.pUserData = deviceCtx;
+    config.pUserData = pPlaybackDevice;
 
-    ma_result deviceInitResult = ma_device_init(audioCtx,
-                                                &config,
-                                                &deviceCtx->device);
+    ma_result maDeviceInitR = ma_device_init(pContext,
+                                             &config,
+                                             &pPlaybackDevice->device);
 
-    if (deviceInitResult != MA_SUCCESS) {
-        free(deviceCtx);
+    if (maDeviceInitR != MA_SUCCESS) {
+        free(pPlaybackDevice);
 
-        return result_error(error_code_device,
-                            "Failed to initialize playback device - %s",
-                            ma_result_description(deviceInitResult));
+        LOG_ERROR("failed to initialize playback ma_device - %s",
+                  ma_result_description(maDeviceInitR));
+
+        return NULL;
     }
 
     // Initialize the ring buffer
-    ma_result rbInitResult =
+    ma_result maRBInitResult =
         ma_rb_init(bufferSizeInBytes,
                    NULL,
                    NULL,
-                   &deviceCtx->pcmRingBuffer);
+                   &pPlaybackDevice->rb);
 
-    if (rbInitResult != MA_SUCCESS) {
-        free(deviceCtx);
+    if (maRBInitResult != MA_SUCCESS) {
+        free(pPlaybackDevice);
 
-        return result_error(error_code_buffer,
-                            "Failed to initialize PCM ring buffer - %s",
-                            ma_result_description(rbInitResult));
+        LOG_ERROR("failed to initialize ma_rb - %s",
+                  ma_result_description(maRBInitResult));
+
+        return NULL;
     }
 
-    LOG_INFO("Playback device created <%p>.", deviceCtx);
+    LOG_INFO("Playback device created <%p>.", pPlaybackDevice);
     LOG_INFO("Playback buffer created size: %zu (bytes) <%p>.",
-             bufferSizeInBytes, &deviceCtx->pcmRingBuffer);
+             bufferSizeInBytes, &pPlaybackDevice->rb);
 
-    return result_ptr(deviceCtx);
+    return pPlaybackDevice;
 }
 
 FFI_PLUGIN_EXPORT
-void playback_device_destroy(void *device) {
-    if (!device) {
-        LOG_ERROR("Invalid playback device provided for destruction", "");
+void playback_device_destroy(void *pDevice) {
+    if (!pDevice) {
+        LOG_ERROR("invalid playback device provided for destruction", "");
         return;
     }
 
-    device_context_t *deviceCtx = (device_context_t *)device;
+    playback_device_t *deviceCtx =
+        (playback_device_t *)pDevice;
 
     if (ma_device_is_started(&deviceCtx->device)) {
         ma_device_stop(&deviceCtx->device);
     }
 
     ma_device_uninit(&deviceCtx->device);
-    ma_rb_uninit(&deviceCtx->pcmRingBuffer);
+    ma_rb_uninit(&deviceCtx->rb);
 
-    LOG_INFO("Playback buffer destroyed <%p>.", &deviceCtx->pcmRingBuffer);
+    LOG_INFO("Playback buffer destroyed <%p>.", &deviceCtx->rb);
 
     free(deviceCtx);
 
-    LOG_INFO("Playback device destroyed <%p>.", device);
+    LOG_INFO("Playback device destroyed <%p>.", pDevice);
 }
 
-FFI_PLUGIN_EXPORT
-result_t playback_device_start(void *device) {
-    device_context_t *ctx = (device_context_t *)device;
+FFI_PLUGIN_EXPORT void playback_device_start(void *pPlaybackDevice) {
+    if (pPlaybackDevice == NULL) {
+        LOG_ERROR("Invalid playback device", "");
 
-    if (ctx == NULL) {
-        return result_error(error_code_device,
-                            "Invalid playback device");
+        return;
     }
 
+    playback_device_t *ctx = (playback_device_t *)pPlaybackDevice;
+
     if (ctx->device.type != ma_device_type_playback) {
-        return result_error(error_code_device,
-                            "Invalid device type");
+        LOG_ERROR("Invalid device type", "");
+
+        return;
     }
 
     if (ma_device_is_started(&ctx->device)) {
-        return result_error(error_code_device,
-                            "Playback device is already started");
+        LOG_INFO("Playback device is already started", "");
+        return;
     }
 
-    if (ma_device_start(&ctx->device) != MA_SUCCESS) {
-        return result_error(error_code_device,
-                            "Failed to start playback device");
-    }
+    ma_result startResult = ma_device_start(&ctx->device);
 
-    return (result_t){0};
+    if (startResult != MA_SUCCESS) {
+        LOG_ERROR("Failed to start playback device - %s",
+                  ma_result_description(startResult));
+
+        return;
+    }
 }
 
 FFI_PLUGIN_EXPORT
-result_t playback_device_stop(void *device) {
-    device_context_t *ctx = (device_context_t *)device;
+void playback_device_stop(void *pDevice) {
+    if (pDevice == NULL) {
+        LOG_ERROR("Invalid playback device", "");
+
+        return;
+    }
+
+    playback_device_t *ctx = (playback_device_t *)pDevice;
 
     ma_result stopResult = ma_device_stop(&ctx->device);
     if (stopResult != MA_SUCCESS) {
-        return result_error(error_code_device,
-                            "Failed to stop playback device");
-    }
+        LOG_ERROR("Failed to stop playback device - %s",
+                  ma_result_description(stopResult));
 
-    return (result_t){0};
+        return;
+    }
 }
 
 FFI_PLUGIN_EXPORT
-result_t playback_device_push_buffer(void *device, playback_data_t *data) {
-    if (device == NULL || data == NULL || data->pUserData == NULL) {
-        return result_error(error_code_device,
-                            "Invalid parameters");
+void playback_device_push_buffer(void *pDevice, playback_data_t *pData) {
+    if (pDevice == NULL) {
+        LOG_ERROR("Invalid playback device", "");
+        return;
     }
 
-    device_context_t *ctx = (device_context_t *)device;
+    if (pData == NULL) {
+        LOG_ERROR("Invalid playback data", "");
+        return;
+    }
+
+    playback_device_t *ctx = (playback_device_t *)pDevice;
     ma_format format = ctx->device.playback.format;
 
-    if (format != (ma_format)data->format) {
-        return result_error(
-            error_code_device,
-            "Invalid format");
+    if (format != (ma_format)pData->format) {
+        LOG_ERROR("Invalid format", "");
+        return;
     }
 
-    ma_uint32 availableWrite = ma_rb_available_write(&ctx->pcmRingBuffer);
-    ma_uint32 availableRead = ma_rb_available_read(&ctx->pcmRingBuffer);
-    size_t pSizeInBytes = data->sizeInBytes;
+    ma_uint32 availableWrite = ma_rb_available_write(&ctx->rb);
+    ma_uint32 availableRead = ma_rb_available_read(&ctx->rb);
+    size_t bufferSize = ma_rb_get_subbuffer_size(&ctx->rb);
+    size_t sizeInBytes = pData->sizeInBytes;
 
-    if (availableWrite < pSizeInBytes) {
-        LOG_INFO("Buffer is full. Dropping frames", );
+    // Calculate buffer available write percentage
+    float availableWritePercentage = (float)availableWrite / bufferSize * 100;
 
-        size_t framesToRemove = pSizeInBytes - availableWrite;
+    // calculate buffer available write in seconds
 
-        if (framesToRemove > availableRead) {
-            framesToRemove = availableRead;
+    float timeInSec = (float)availableRead / (pData->format * 2 * 441000);
+
+    if (availableWritePercentage > 10) {
+        LOG_INFO("Buffer available write: %.2f%% (%.2f seconds)",
+                 availableWritePercentage, timeInSec);
+    }
+
+    if (availableWrite < sizeInBytes) {
+        size_t bytesToSkip = sizeInBytes - availableWrite;
+
+        if (bytesToSkip > availableRead) {
+            LOG_WARN("Not enough data in buffer to skip. Adjusting bytesToSkip to %u bytes.", availableRead);
+            bytesToSkip = availableRead;
         }
 
-        void *ppBufferOut;
-        ma_result readResult =
-            ma_rb_acquire_read(&ctx->pcmRingBuffer,
-                               &framesToRemove,
-                               &ppBufferOut);
+        ma_result seekResult = ma_rb_seek_read(&ctx->rb, bytesToSkip);
 
-        if (readResult != MA_SUCCESS) {
-            return result_error(error_code_buffer,
-                                "Failed to acquire read buffer - %s",
-                                ma_result_description(readResult));
+        if (seekResult != MA_SUCCESS) {
+            LOG_ERROR("Failed to seek read pointer: %s", ma_result_description(seekResult));
+            return;
         }
 
-        ma_result comitResult =
-            ma_rb_commit_read(&ctx->pcmRingBuffer,
-                              framesToRemove);
-
-        if (comitResult != MA_SUCCESS) {
-            return result_error(error_code_buffer,
-                                "Failed to commit read buffer - %s",
-                                ma_result_description(comitResult));
-        }
+        LOG_INFO(
+            "Skipped %zu "
+            "BS size: %u  "
+            "[AR %u]  "
+            "[AW %u] "
+            "DS: %u",
+            bytesToSkip,
+            bufferSize,
+            availableRead,
+            availableWrite,
+            sizeInBytes);
     }
 
     // Acquire write buffer
-    void *ppBufferOut;
+    void *bufferOut;
 
     ma_result writeResult =
-        ma_rb_acquire_write(&ctx->pcmRingBuffer,
-                            &pSizeInBytes,
-                            &ppBufferOut);
+        ma_rb_acquire_write(&ctx->rb, &sizeInBytes, &bufferOut);
 
     if (writeResult != MA_SUCCESS) {
-        return result_error(
-            error_code_buffer,
-            "Failed to acquire write buffer - %s",
-            ma_result_description(writeResult));
+        LOG_ERROR("Failed to acquire write buffer - %s",
+                  ma_result_description(writeResult));
+
+        return;
     }
 
-    memcpy(ppBufferOut, data->pUserData, pSizeInBytes);
+    memcpy(bufferOut, pData->pUserData, sizeInBytes);
 
-    ma_result commitResult = ma_rb_commit_write(
-        &ctx->pcmRingBuffer,
-        pSizeInBytes);
+    ma_result commitResult = ma_rb_commit_write(&ctx->rb,
+                                                sizeInBytes);
 
     if (commitResult != MA_SUCCESS) {
-        return result_error(
-            error_code_buffer,
-            "Failed to commit write buffer - %s",
-            ma_result_description(commitResult));
+        LOG_ERROR("Failed to commit write buffer - %s",
+                  ma_result_description(commitResult));
     }
-
-    return (result_t){0};
 }

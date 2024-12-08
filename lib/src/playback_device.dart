@@ -9,32 +9,30 @@ final class PlaybackDevice extends NativeResource<Void> {
   /// Creates a new playback device instance.
   ///
   /// - [deviceId]: The unique identifier of the playback device.
-  /// - [context]: The [AudioContext] associated with this device.
+  /// - [context]: The [Context] associated with this device.
   /// - [bufferSizeInBytes]: The size of the audio buffer in bytes.
   /// - [format]: The audio format that this device will use for playback.
   ///
-  /// Throws an exception if the [AudioContext] is not initialized or
+  /// Throws an exception if the [Context] is not initialized or
   /// if the device creation fails.
   factory PlaybackDevice({
     required Object deviceId,
-    required AudioContext context,
+    required Context context,
     required int bufferSizeInBytes,
     required SupportedFormat format,
   }) {
-    if (!context.contextIsInitialized) {
-      throw Exception('Audio context is not initialized');
+    if (!context.isFinalized) {
+      throw Exception('Audio context is finalized');
     }
 
-    final result = FFResult<Void>(
-      _bindings.playback_device_create(
-        context._resource,
-        bufferSizeInBytes,
-        deviceId as device_id_t,
-        format.nativeFormat,
-      ),
-    )..throwIfError();
+    final result = _bindings.playback_device_create(
+      context._resource,
+      bufferSizeInBytes,
+      deviceId as device_id_t,
+      format.nativeFormat,
+    );
 
-    final playbackDevice = PlaybackDevice._(result.data)
+    final playbackDevice = PlaybackDevice._(result) //
       .._supportedFormat = format;
 
     return playbackDevice;
@@ -65,7 +63,7 @@ final class PlaybackDevice extends NativeResource<Void> {
   /// Throws an exception if the operation fails or if the device is not
   /// properly initialized.
   void start() {
-    FFResult<Void>(_bindings.playback_device_start(_resource)).throwIfError();
+    _bindings.playback_device_start(_resource);
   }
 
   /// Pushes an audio buffer to the playback device for playback.
@@ -84,28 +82,22 @@ final class PlaybackDevice extends NativeResource<Void> {
     final sizeInBytes = framesCount * _supportedFormat.bytesPerFrame;
 
     final pUserData = malloc<Float>(sizeInBytes);
+    // Fill the allocated memory with audio buffer data.
+    pUserData
+        .asTypedList(framesCount * _supportedFormat.channels)
+        .setAll(0, buffer);
 
-    try {
-      // Fill the allocated memory with audio buffer data.
-      pUserData
-          .asTypedList(framesCount * _supportedFormat.channels)
-          .setAll(0, buffer);
+    // Set data properties for the native structure.
+    data.ref.pUserData = pUserData.cast();
+    data.ref.sizeInBytes = sizeInBytes;
+    data.ref.formatAsInt = _supportedFormat.format.value;
 
-      // Set data properties for the native structure.
-      data.ref.pUserData = pUserData.cast();
-      data.ref.sizeInBytes = sizeInBytes;
-      data.ref.formatAsInt = _supportedFormat.format.value;
+    _bindings.playback_device_push_buffer(_resource, data);
 
-      // Push the buffer to the playback device.
-      FFResult<Void>(
-        _bindings.playback_device_push_buffer(_resource, data),
-      ).throwIfError();
-    } finally {
-      // Free allocated memory to avoid leaks.
-      malloc
-        ..free(pUserData)
-        ..free(data);
-    }
+    // Free allocated memory to avoid leaks.
+    malloc
+      ..free(pUserData)
+      ..free(data);
   }
 
   /// Stops audio playback on the device.
@@ -116,6 +108,6 @@ final class PlaybackDevice extends NativeResource<Void> {
   /// Throws an exception if the operation fails or if the device is not
   /// properly initialized.
   void stop() {
-    FFResult<Void>(_bindings.playback_device_stop(_resource)).throwIfError();
+    _bindings.playback_device_stop(_resource);
   }
 }

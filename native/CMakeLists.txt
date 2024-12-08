@@ -6,22 +6,20 @@ cmake_minimum_required(VERSION 3.10)
 project(pro_miniaudio_library VERSION 0.0.1 LANGUAGES C)
 
 set(SOURCES
-  "src/audio_context.c"
+  "src/context.c"
   "src/logger.c"
   "src/miniaudio.c"
   "src/playback_device.c"
   "src/waveform.c"
-  "src/result.c"
 )
 
 add_library(pro_miniaudio SHARED ${SOURCES})
 
 set(PUBLIC_HEADERS
-  "include/audio_context.h"
+  "include/context.h"
   "include/logger.h"
   "include/playback_device.h"
   "include/waveform.h"
-  "include/result.h"
   "include/platform.h"
 )
 

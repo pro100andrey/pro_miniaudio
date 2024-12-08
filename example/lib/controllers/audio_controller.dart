@@ -5,9 +5,7 @@ import 'package:pro_miniaudio/pro_miniaudio.dart';
 import 'playback_device.dart';
 
 class AudioController extends ChangeNotifier {
-  final _context = AudioContext();
-
-  bool get contextIsInitialized => _context.contextIsInitialized;
+  final _context = Context();
 
   bool get dataIsRefreshed => _deviceInfos != null;
 

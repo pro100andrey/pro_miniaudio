@@ -3,7 +3,7 @@ library;
 
 export 'src/library.dart'
     show
-        AudioContext,
+        Context,
         DeviceInfo,
         PlaybackDevice,
         SampleFormat,

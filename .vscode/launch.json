@@ -6,7 +6,7 @@
       "name": "C/C++ bin/main",
       "type": "cppdbg",
       "request": "launch",
-      "program": "${workspaceFolder}/build/main",
+      "program": "${workspaceFolder}/native/build/main",
       "args": [],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}",

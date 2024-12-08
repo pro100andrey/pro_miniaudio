@@ -6,12 +6,12 @@
 #include "../include/miniaudio.h"
 
 FFI_PLUGIN_EXPORT
-result_t waveform_create(sample_format_t format,
-                         u_int32_t channels,
-                         uint32_t sampleRate,
-                         waveform_type_t waveformType,
-                         double amplitude,
-                         double frequency) {
+void *waveform_create(sample_format_t format,
+                      u_int32_t channels,
+                      uint32_t sampleRate,
+                      waveform_type_t waveformType,
+                      double amplitude,
+                      double frequency) {
     ma_waveform_type type = (ma_waveform_type)waveformType;
 
     ma_waveform_config waveformConfig = ma_waveform_config_init(
@@ -24,9 +24,8 @@ result_t waveform_create(sample_format_t format,
 
     ma_waveform *waveform = (ma_waveform *)malloc(sizeof(ma_waveform));
     if (waveform == NULL) {
-        return result_error(
-            error_waveform,
-            "Failed to allocate memory for waveform");
+        LOG_ERROR("Failed to allocate memory for waveform", "");
+        return NULL;
     }
 
     ma_result waveformInitResult = ma_waveform_init(&waveformConfig,
@@ -35,57 +34,56 @@ result_t waveform_create(sample_format_t format,
     if (waveformInitResult != MA_SUCCESS) {
         free(waveform);
 
-        return result_error(
-            error_waveform,
-            "Failed to create waveform - %s",
-            ma_result_description(waveformInitResult));
+        LOG_ERROR("Failed to initialize waveform - %s",
+                  ma_result_description(waveformInitResult));
+
+        return NULL;
     }
 
     LOG_INFO("Waveform created <%p>.", waveform);
 
-    return result_ptr(waveform);
+    return waveform;
 }
 
 FFI_PLUGIN_EXPORT
-void waveform_destroy(void *waveform) {
-    if (waveform == NULL) {
+void waveform_destroy(void *pWaveform) {
+    if (pWaveform == NULL) {
         LOG_ERROR("Invalid waveform provided for destruction", "");
         return;
     }
 
-    ma_waveform *pWaveform = (ma_waveform *)waveform;
+    ma_waveform * pWf = (ma_waveform *)pWaveform;
 
-    ma_waveform_uninit(pWaveform);
+    ma_waveform_uninit(pWf);
 
-    free(pWaveform);
+    free(pWf);
 
-    LOG_INFO("Waveform destroyed <%p>.", waveform);
+    LOG_INFO("Waveform destroyed <%p>.", pWf);
 }
 
 FFI_PLUGIN_EXPORT
-result_t waveform_read_pcm_frames_with_buffer(void *waveform,
-                                              void *pFramesOut,
-                                              uint64_t framesCount,
-                                              uint64_t *pFramesRead) {
-    if (waveform == NULL || pFramesOut == NULL) {
-        return result_error(error_waveform,
-                            "Invalid parameters");
+void waveform_read_pcm_frames_with_buffer(void *pWaveform,
+                                          void *pFramesOut,
+                                          uint64_t framesCount,
+                                          uint64_t *pFramesRead) {
+    if (pFramesRead == NULL) {
+        LOG_ERROR("Invalid pointer to frames read", "");
     }
 
-    ma_waveform *pWaveform = (ma_waveform *)waveform;
+    if (pFramesOut == NULL) {
+        LOG_ERROR("Invalid pointer to output buffer", "");
+    }
+
+    ma_waveform *pWF = (ma_waveform *)pWaveform;
 
     ma_result readResult =
-        ma_waveform_read_pcm_frames(pWaveform,
+        ma_waveform_read_pcm_frames(pWF,
                                     pFramesOut,
                                     framesCount,
                                     pFramesRead);
 
     if (readResult != MA_SUCCESS) {
-        return result_error(
-            error_waveform,
-            "Failed to read waveform PCM frames - %s",
-            ma_result_description(readResult));
+        LOG_ERROR("Failed to read waveform PCM frames - %s",
+                  ma_result_description(readResult));
     }
-
-    return (result_t){0};
 }
