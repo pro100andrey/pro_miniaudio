@@ -48,7 +48,7 @@ final class Waveform extends NativeResource<Void> with EquatableMixin {
 
     final rWaveform = switch (cfg) {
       WaveformSineConfig() => _bindings.waveform_create(
-          cfg.format.toNative(),
+          cfg.sampleFormat.toNative(),
           cfg.channels,
           cfg.sampleRate,
           cfg.type.toNative(),
@@ -56,7 +56,7 @@ final class Waveform extends NativeResource<Void> with EquatableMixin {
           cfg.frequency,
         ),
       WaveformSquareConfig() => _bindings.waveform_create(
-          cfg.format.toNative(),
+          cfg.sampleFormat.toNative(),
           cfg.channels,
           cfg.sampleRate,
           cfg.type.toNative(),
@@ -64,7 +64,7 @@ final class Waveform extends NativeResource<Void> with EquatableMixin {
           cfg.frequency,
         ),
       WaveformSawtoothConfig() => _bindings.waveform_create(
-          cfg.format.toNative(),
+          cfg.sampleFormat.toNative(),
           cfg.channels,
           cfg.sampleRate,
           cfg.type.toNative(),
@@ -72,7 +72,7 @@ final class Waveform extends NativeResource<Void> with EquatableMixin {
           cfg.frequency,
         ),
       WaveformTriangleConfig() => _bindings.waveform_create(
-          cfg.format.toNative(),
+          cfg.sampleFormat.toNative(),
           cfg.channels,
           cfg.sampleRate,
           cfg.type.toNative(),
@@ -128,10 +128,7 @@ final class Waveform extends NativeResource<Void> with EquatableMixin {
     required int frameCount,
   }) {
     final resource = ensureResourceIsNotFinalized();
-    final bytesPerFrame = _bindings.get_bytes_per_frame(
-      config.format.toNative(),
-      config.channels,
-    );
+    final bytesPerFrame = config.sampleFormat.bytesPerSample * config.channels;
 
     final pFramesOut = malloc.allocate<Void>(frameCount * bytesPerFrame);
     final pFramesRead = malloc.allocate<Uint64>(1);

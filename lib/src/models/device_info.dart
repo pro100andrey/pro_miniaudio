@@ -1,5 +1,3 @@
-
-
 part of '../library.dart';
 
 /// Represents information about an audio device.
@@ -13,12 +11,12 @@ final class DeviceInfo extends Equatable {
   /// - [id]: The unique identifier of the device.
   /// - [name]: The name of the device.
   /// - [isDefault]: Whether this device is the default audio device.
-  /// - [supportedFormats]: A list of supported audio data formats.
+  /// - [audioFormats]: A list of supported audio data formats.
   const DeviceInfo({
     required this.id,
     required this.name,
     required this.isDefault,
-    required this.supportedFormats,
+    required this.audioFormats,
   });
 
   /// The unique identifier of the device.
@@ -41,10 +39,10 @@ final class DeviceInfo extends Equatable {
   /// Each entry in the list describes a specific format that the device can
   /// handle, including its sample rate, channel configuration, and sample
   /// format.
-  final List<SupportedFormat> supportedFormats;
+  final List<AudioFormat> audioFormats;
 
   @override
-  List<Object?> get props => [name, isDefault, supportedFormats];
+  List<Object?> get props => [name, isDefault, audioFormats];
 }
 
 /// Represents a supported audio data format.
@@ -52,10 +50,10 @@ final class DeviceInfo extends Equatable {
 /// This class provides detailed information about a specific audio data format
 /// that a device supports, including sample format, channel count, sample rate,
 /// and more.
-final class SupportedFormat extends Equatable {
-  /// Creates a new [SupportedFormat] instance with the given properties.
+final class AudioFormat extends Equatable {
+  /// Creates a new [AudioFormat] instance with the given properties.
   ///
-  /// - [format]: The audio sample format (e.g., 16-bit signed integer).
+  /// - [sampleFormat]: The audio sample format (e.g., 16-bit signed integer).
   /// - [channels]: The number of audio channels (e.g., 1 for mono, 2 for
   /// stereo).
   /// - [sampleRate]: The sample rate in Hertz.
@@ -63,20 +61,17 @@ final class SupportedFormat extends Equatable {
   /// - [nativeFormat]: The native format representation (platform-specific).
   /// - [bytesPerSample]: The number of bytes per individual sample.
   /// - [bytesPerFrame]: The number of bytes per frame (sample × channels).
-  const SupportedFormat({
-    required this.format,
+  const AudioFormat({
+    required this.sampleFormat,
     required this.channels,
     required this.sampleRate,
     required this.flags,
-    required this.nativeFormat,
-    required this.bytesPerSample,
-    required this.bytesPerFrame,
   });
 
   /// The audio sample format.
   ///
   /// Examples include 16-bit signed integer (`s16`) or 32-bit float (`f32`).
-  final SampleFormat format;
+  final SampleFormat sampleFormat;
 
   /// The number of audio channels.
   ///
@@ -99,25 +94,14 @@ final class SupportedFormat extends Equatable {
   /// extensions.
   final int flags;
 
-  /// The native format representation.
-  ///
-  /// This is a platform-specific representation of the format. For example,
-  /// on some platforms, this might be an integer code or a string.
-  final dynamic nativeFormat;
-
-  /// The number of bytes per individual sample.
-  ///
-  /// This depends on the sample format. For example:
-  /// - `2`: For 16-bit signed integer samples.
-  /// - `4`: For 32-bit float samples.
-  final int bytesPerSample;
-
-  /// The number of bytes per audio frame.
-  ///
-  /// This is calculated as `bytesPerSample × channels`.
-  final int bytesPerFrame;
+  /// The number of bytes pef frame.
+  int get bytesPerFrame => sampleFormat.bytesPerSample * channels;
 
   @override
-  List<Object?> get props =>
-      [format, channels, sampleRate, flags, bytesPerSample, bytesPerFrame];
+  List<Object?> get props => [
+        sampleFormat,
+        channels,
+        sampleRate,
+        flags,
+      ];
 }

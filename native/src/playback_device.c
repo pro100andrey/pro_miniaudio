@@ -125,10 +125,9 @@ void notification_callback(const ma_device_notification *pNotification) {
 }
 
 FFI_PLUGIN_EXPORT
-void *playback_device_create(
-    size_t bufferSizeInBytes,
-    device_id_t deviceId,
-    supported_format_t supportedFormat) {
+void *playback_device_create(device_id_t deviceId,
+                             audio_format_t audioFormat,
+                             size_t bufferSizeInBytes) {
     if (bufferSizeInBytes == 0) {
         LOG_ERROR("`bufferSizeInBytes` must be greater than 0.\n", "");
 
@@ -146,9 +145,9 @@ void *playback_device_create(
     ma_device_id pDeviceId;
     memcpy(&pDeviceId, &deviceId, sizeof(deviceId));
 
-    uint32_t channels = supportedFormat.channels;
-    uint32_t sampleRate = supportedFormat.sampleRate;
-    ma_format format = (ma_format)supportedFormat.format;
+    uint32_t channels = audioFormat.channels;
+    uint32_t sampleRate = audioFormat.sampleRate;
+    ma_format format = (ma_format)audioFormat.sampleFormat;
 
     // Initialize the playback playbackDevice
     ma_device_config config =

@@ -9,9 +9,9 @@ class DeviceFormatDropdownVm extends Equatable {
     required this.formats,
   });
 
-  final SupportedFormat? selectedFormat;
-  final ValueChanged<SupportedFormat> onChanged;
-  final List<SupportedFormat> formats;
+  final AudioFormat? selectedFormat;
+  final ValueChanged<AudioFormat> onChanged;
+  final List<AudioFormat> formats;
 
   @override
   List<Object?> get props => [selectedFormat, formats];
@@ -39,13 +39,13 @@ class DeviceFormatDropdown extends StatelessWidget {
                     color: Colors.grey.shade700,
                   ),
             ),
-          DropdownButton<SupportedFormat>(
+          DropdownButton<AudioFormat>(
             isExpanded: true,
             isDense: true,
             value: vm.selectedFormat,
             items: vm.formats
                 .map(
-                  (value) => DropdownMenuItem<SupportedFormat>(
+                  (value) => DropdownMenuItem<AudioFormat>(
                     value: value,
                     child: Text(
                       _supportedFormatLabel(value),
@@ -60,8 +60,8 @@ class DeviceFormatDropdown extends StatelessWidget {
         ],
       );
 
-  String _supportedFormatLabel(SupportedFormat device) =>
-      '${device.format.name}, '
+  String _supportedFormatLabel(AudioFormat device) =>
+      '${device.sampleFormat.name}, '
       '${device.channels} ch${device.channels > 1 ? "'s" : ''}, '
       '${device.sampleRate} Hz';
 }

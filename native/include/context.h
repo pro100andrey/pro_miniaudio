@@ -3,8 +3,8 @@
 
 #include <stdbool.h>
 
-#include "platform.h"
 #include "common.h"
+#include "platform.h"
 
 /**
  * union device_id_t
@@ -52,17 +52,17 @@ typedef enum {
 } sample_format_t;
 
 /**
- * @struct supported_format_t
- * @brief Structure to describe a supported audio data format.
+ * @struct audio_format_t
+ * @brief Structure to describe a audio data format.
  *
  * Provides details about the sample format, number of channels, sample rate, and additional flags.
  */
 typedef struct {
-    sample_format_t format; /* Audio sample format. */
-    uint32_t channels;      /* Number of audio channels. */
-    uint32_t sampleRate;    /* Sample rate in Hertz. */
-    uint32_t flags;         /* Format flags (reserved for future use). */
-} supported_format_t;
+    sample_format_t sampleFormat; /* Audio sample format. */
+    uint32_t channels;            /* Number of audio channels. */
+    uint32_t sampleRate;          /* Sample rate in Hertz. */
+    uint32_t flags;               /* Format flags (reserved for future use). */
+} audio_format_t;
 
 /**
  * @struct device_info_t
@@ -75,8 +75,8 @@ typedef struct {
     device_id_t id;                        /* Unique identifier for the device. */
     char name[MAX_DEVICE_NAME_LENGTH + 1]; /* Null-terminated string representing the device name. */
     bool isDefault;                        /* Indicates if this is the default device. */
-    uint32_t dataFormatCount;              /* Number of supported audio formats. */
-    supported_format_t dataFormats[64];    /* Array of supported audio formats. */
+    uint32_t formatCount;                  /* Number of audio formats. */
+    audio_format_t audioFormats[64];       /* Array of audio formats. */
 } device_info_t;
 
 /**
@@ -142,24 +142,5 @@ device_info_t *context_get_playback_device_infos(const void *pContext);
  */
 FFI_PLUGIN_EXPORT
 device_info_t *context_get_capture_device_infos(const void *pContext);
-
-/**
- * @brief Gets the number of bytes per sample for a given format.
- *
- * @param format The audio sample format.
- * @return The number of bytes per sample.
- */
-FFI_PLUGIN_EXPORT
-uint32_t get_bytes_per_sample(sample_format_t format);
-
-/**
- * @brief Gets the number of bytes per audio frame.
- *
- * @param format The audio sample format.
- * @param channels The number of channels in the audio frame.
- * @return The number of bytes per frame.
- */
-FFI_PLUGIN_EXPORT
-uint32_t get_bytes_per_frame(sample_format_t format, uint32_t channels);
 
 #endif  // CONTEXT_H

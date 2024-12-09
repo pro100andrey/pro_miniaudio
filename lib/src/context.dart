@@ -122,20 +122,20 @@ final class Context extends NativeResource<Void> {
           id: nativeDeviceInfo.id,
           name: arrayCharToString(nativeDeviceInfo.name),
           isDefault: nativeDeviceInfo.isDefault,
-          supportedFormats: _extractSupportedFormats(nativeDeviceInfo),
+          audioFormats: _extractSupportedFormats(nativeDeviceInfo),
         );
       });
 
-  /// Converts native formats into a list of [SupportedFormat].
+  /// Converts native formats into a list of [AudioFormat].
   ///
   /// This method iterates over the supported formats of a native device and
-  /// converts each format into a Dart [SupportedFormat] object.
+  /// converts each format into a Dart [AudioFormat] object.
   ///
   /// - [nativeDeviceInfo]: A native structure containing device information,
   ///   including supported formats.
   ///
   /// Returns:
-  /// A list of [SupportedFormat] objects, each containing:
+  /// A list of [AudioFormat] objects, each containing:
   /// - [format]: The sample format.
   /// - [channels]: The number of audio channels.
   /// - [sampleRate]: The sampling rate in Hz.
@@ -144,24 +144,21 @@ final class Context extends NativeResource<Void> {
   /// - [bytesPerSample]: The size of one sample in bytes.
   /// - [bytesPerFrame]: The size of one audio frame in bytes
   /// (sample size * channels).
-  List<SupportedFormat> _extractSupportedFormats(
+  List<AudioFormat> _extractSupportedFormats(
     device_info_t nativeDeviceInfo,
   ) =>
       List.generate(
-        nativeDeviceInfo.dataFormatCount,
+        nativeDeviceInfo.formatCount,
         (i) {
-          final nativeFormat = nativeDeviceInfo.dataFormats[i];
-          final bps = _bindings.get_bytes_per_sample(nativeFormat.format);
-          final bpf = bps * nativeFormat.channels;
+          final nativeAudioFormat = nativeDeviceInfo.audioFormats[i];
 
-          return SupportedFormat(
-            format: SampleFormat.fromValue(nativeFormat.formatAsInt),
-            channels: nativeFormat.channels,
-            sampleRate: nativeFormat.sampleRate,
-            flags: nativeFormat.flags,
-            nativeFormat: nativeFormat,
-            bytesPerSample: bps,
-            bytesPerFrame: bpf,
+          return AudioFormat(
+            sampleFormat: SampleFormat.fromValue(
+              nativeAudioFormat.sampleFormatAsInt,
+            ),
+            channels: nativeAudioFormat.channels,
+            sampleRate: nativeAudioFormat.sampleRate,
+            flags: nativeAudioFormat.flags,
           );
         },
       );

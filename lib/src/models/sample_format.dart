@@ -1,4 +1,5 @@
 part of '../library.dart';
+
 /// Enum representing different audio sample formats.
 ///
 /// Sample formats define the data type and bit depth of individual audio
@@ -73,6 +74,21 @@ enum SampleFormat {
         return 'count $value';
       case _:
         return 'unknown';
+    }
+  }
+
+  int get bytesPerSample {
+    switch (this) {
+      case SampleFormat.u8:
+        return 1;
+      case SampleFormat.s16:
+        return 2;
+      case SampleFormat.s24:
+        return 3;
+      case SampleFormat.s32 || SampleFormat.f32:
+        return 4;
+      case _:
+        return 0;
     }
   }
 }

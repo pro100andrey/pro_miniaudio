@@ -45,6 +45,21 @@ Pointer<Char> stringToCharPointer(String string) {
   return pointer;
 }
 
+extension AudioFormatExt on AudioFormat {
+  Pointer<audio_format_t> toNative() {
+    final nativeAudioFormat = malloc.allocate<audio_format_t>(
+      sizeOf<audio_format_t>(),
+    );
+
+    nativeAudioFormat.ref.sampleFormatAsInt = sampleFormat.index;
+    nativeAudioFormat.ref.channels = channels;
+    nativeAudioFormat.ref.sampleRate = sampleRate;
+    nativeAudioFormat.ref.flags = flags;
+
+    return nativeAudioFormat;
+  }
+}
+
 extension SampleFormatExt on SampleFormat {
   sample_format_t toNative() => sample_format_t.values[index];
 }

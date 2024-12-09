@@ -9,27 +9,32 @@ final class PlaybackDevice extends NativeResource<Void> with EquatableMixin {
   /// Creates a new playback device instance.
   ///
   /// - [deviceInfo]: The device information for the playback device.
+  /// - [audioFormat]: The audio format that this device will use for
   /// - [bufferSizeInBytes]: The size of the audio buffer in bytes.
-  /// - [supportedFormat]: The audio format that this device will use for
   /// playback.
   ///
   /// Throws an exception if the [Context] is not initialized or
   /// if the device creation fails.
   factory PlaybackDevice({
     required DeviceInfo deviceInfo,
+    required AudioFormat audioFormat,
     required int bufferSizeInBytes,
-    required SupportedFormat supportedFormat,
   }) {
+
+    final nativeAudioFormat = audioFormat.toNative();
+
     final device = _bindings.playback_device_create(
-      bufferSizeInBytes,
       deviceInfo.id as device_id_t,
-      supportedFormat.nativeFormat,
+      nativeAudioFormat.ref,
+      bufferSizeInBytes,
     );
+
+    malloc.free(nativeAudioFormat);
 
     return PlaybackDevice._(
       device,
       deviceInfo: deviceInfo,
-      supportedFormat: supportedFormat,
+      audioFormat: audioFormat,
       bufferSizeInBytes: bufferSizeInBytes,
     );
   }
@@ -38,14 +43,14 @@ final class PlaybackDevice extends NativeResource<Void> with EquatableMixin {
   PlaybackDevice._(
     super.ptr, {
     required this.deviceInfo,
-    required this.supportedFormat,
+    required this.audioFormat,
     required this.bufferSizeInBytes,
   }) : super._();
 
   /// The audio format supported by this playback device.
   ///
   /// This format defines the sample rate, channels, and data representation.
-  final SupportedFormat supportedFormat;
+  final AudioFormat audioFormat;
 
   /// The size of the audio buffer in bytes.
   final int bufferSizeInBytes;
@@ -62,7 +67,7 @@ final class PlaybackDevice extends NativeResource<Void> with EquatableMixin {
 
   @override
   List<Object?> get props => [
-        supportedFormat,
+        audioFormat,
         bufferSizeInBytes,
         deviceInfo,
       ];
@@ -115,13 +120,13 @@ final class PlaybackDevice extends NativeResource<Void> with EquatableMixin {
   void pushBuffer({required Float32List buffer, required int framesCount}) {
     final resource = ensureResourceIsNotFinalized();
     final data = malloc.allocate<playback_data_t>(sizeOf<playback_data_t>());
-
-    final sizeInBytes = framesCount * supportedFormat.bytesPerFrame;
+    
+    final sizeInBytes = framesCount * audioFormat.bytesPerFrame;
 
     final pUserData = malloc<Float>(sizeInBytes);
     // Fill the allocated memory with audio buffer data.
     pUserData
-        .asTypedList(framesCount * supportedFormat.channels)
+        .asTypedList(framesCount * audioFormat.channels)
         .setAll(0, buffer);
 
     // Set data properties for the native structure.

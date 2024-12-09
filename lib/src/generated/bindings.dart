@@ -134,38 +134,6 @@ class ProMiniaudioBindings {
       _context_get_capture_device_infosPtr.asFunction<
           ffi.Pointer<device_info_t> Function(ffi.Pointer<ffi.Void>)>();
 
-  /// Gets the number of bytes per sample for a given format.
-  int get_bytes_per_sample(
-    sample_format_t format,
-  ) {
-    return _get_bytes_per_sample(
-      format.value,
-    );
-  }
-
-  late final _get_bytes_per_samplePtr =
-      _lookup<ffi.NativeFunction<ffi.Uint32 Function(ffi.UnsignedInt)>>(
-          'get_bytes_per_sample');
-  late final _get_bytes_per_sample =
-      _get_bytes_per_samplePtr.asFunction<int Function(int)>();
-
-  /// Gets the number of bytes per audio frame.
-  int get_bytes_per_frame(
-    sample_format_t format,
-    int channels,
-  ) {
-    return _get_bytes_per_frame(
-      format.value,
-      channels,
-    );
-  }
-
-  late final _get_bytes_per_framePtr = _lookup<
-          ffi.NativeFunction<ffi.Uint32 Function(ffi.UnsignedInt, ffi.Uint32)>>(
-      'get_bytes_per_frame');
-  late final _get_bytes_per_frame =
-      _get_bytes_per_framePtr.asFunction<int Function(int, int)>();
-
   /// Set the log level.
   void set_log_level(
     LogLevel level,
@@ -268,23 +236,23 @@ class ProMiniaudioBindings {
 
   /// Creates a playback device with the specified parameters.
   ffi.Pointer<ffi.Void> playback_device_create(
-    int bufferSizeInBytes,
     device_id_t deviceId,
-    supported_format_t supportedFormat,
+    audio_format_t audioFormat,
+    int bufferSizeInBytes,
   ) {
     return _playback_device_create(
-      bufferSizeInBytes,
       deviceId,
-      supportedFormat,
+      audioFormat,
+      bufferSizeInBytes,
     );
   }
 
   late final _playback_device_createPtr = _lookup<
       ffi.NativeFunction<
-          ffi.Pointer<ffi.Void> Function(ffi.Size, device_id_t,
-              supported_format_t)>>('playback_device_create');
+          ffi.Pointer<ffi.Void> Function(device_id_t, audio_format_t,
+              ffi.Size)>>('playback_device_create');
   late final _playback_device_create = _playback_device_createPtr.asFunction<
-      ffi.Pointer<ffi.Void> Function(int, device_id_t, supported_format_t)>();
+      ffi.Pointer<ffi.Void> Function(device_id_t, audio_format_t, int)>();
 
   /// Destroys a playback device and releases its resources.
   void playback_device_destroy(
@@ -543,12 +511,13 @@ enum sample_format_t {
       };
 }
 
-/// Structure to describe a supported audio data format.
-final class supported_format_t extends ffi.Struct {
+/// Structure to describe a audio data format.
+final class audio_format_t extends ffi.Struct {
   @ffi.UnsignedInt()
-  external int formatAsInt;
+  external int sampleFormatAsInt;
 
-  sample_format_t get format => sample_format_t.fromValue(formatAsInt);
+  sample_format_t get sampleFormat =>
+      sample_format_t.fromValue(sampleFormatAsInt);
 
   @ffi.Uint32()
   external int channels;
@@ -571,10 +540,10 @@ final class device_info_t extends ffi.Struct {
   external bool isDefault;
 
   @ffi.Uint32()
-  external int dataFormatCount;
+  external int formatCount;
 
   @ffi.Array.multi([64])
-  external ffi.Array<supported_format_t> dataFormats;
+  external ffi.Array<audio_format_t> audioFormats;
 }
 
 enum LogLevel {

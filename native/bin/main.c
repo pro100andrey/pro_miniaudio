@@ -8,6 +8,7 @@
 #include "../include/logger.h"
 #include "../include/playback_device.h"
 #include "../include/waveform.h"
+#include "../include/miniaudio.h"
 
 volatile bool running = true;
 
@@ -41,23 +42,29 @@ int main(int argc, char const* argv[]) {
         return 1;
     }
 
-    device_info_t playbackDeviceInfo = pPlaybackDevices[0];
-    supported_format_t supportedFormat = playbackDeviceInfo.dataFormats[0];
+    device_info_t playback = pPlaybackDevices[0];
+    audio_format_t audioFormat = playback.audioFormats[0];
 
-    uint32_t bpf =
-        get_bytes_per_frame(supportedFormat.format, supportedFormat.channels);
+    uint32_t channels = audioFormat.channels;
+    uint32_t sampleRate = 8000;  // audioFormat.sampleRate;
+    uint32_t sampleFormat = audioFormat.sampleFormat;
 
-    uint32_t framesCount =
-        calculateFrameCount(supportedFormat.sampleRate,
-                            100);
+    uint32_t bpf =  ma_get_bytes_per_frame(sampleFormat, channels);
+    uint32_t framesCount = calculateFrameCount(sampleRate, 100);
 
     uint32_t dataSizeInBytes = framesCount * bpf;
     size_t bufferSizeInBytes = dataSizeInBytes * 10;
 
+    audio_format_t customAudioFormat;
+    customAudioFormat.sampleFormat = sampleFormat;
+    customAudioFormat.channels = channels;
+    customAudioFormat.sampleRate = sampleRate;
+    customAudioFormat.flags = 0;
+
     void* pPlaybackDevice = playback_device_create(
-        bufferSizeInBytes,
-        playbackDeviceInfo.id,
-        supportedFormat);
+        playback.id,
+        customAudioFormat,
+        bufferSizeInBytes);
 
     if (!pPlaybackDevice) {
         context_destroy(pContext);
@@ -68,14 +75,12 @@ int main(int argc, char const* argv[]) {
     double amplitude = 1.0;
     double frequency = 300;
 
-    void* pWaveform = waveform_create(
-        supportedFormat.format,
-        supportedFormat.channels,
-        supportedFormat.sampleRate,
-        waveform_type_sine,
-        amplitude,
-        frequency);
-
+    void* pWaveform = waveform_create(sampleFormat,
+                                      channels,
+                                      sampleRate,
+                                      waveform_type_sine,
+                                      amplitude,
+                                      frequency);
     if (!pWaveform) {
         context_destroy(pContext);
 

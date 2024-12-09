@@ -49,9 +49,23 @@ enum DeviceState {
     return DeviceState.values[value];
   }
 
+  /// Returns `true` if the state is [DeviceState.uninitialized], `false`
+  ///  otherwise.
+  bool get isUninitialized => this == DeviceState.uninitialized;
+
+  /// Returns `true` if the state is [DeviceState.stopped], `false` otherwise.
+  bool get isStopped => this == DeviceState.stopped;
+
+  /// Returns `true` if the state is [DeviceState.started], `false` otherwise.
+  bool get isStarted => this == DeviceState.started;
+
+  /// Returns `true` if the state is [DeviceState.starting], `false` otherwise.
+  bool get isStarting => this == DeviceState.starting;
+
+  /// Returns `true` if the state is [DeviceState.stopping], `false` otherwise.
+  bool get isStopping => this == DeviceState.stopping;
+
   /// Returns the name of the device state as a string.
-  ///
-  /// For unknown states, it returns `'unknown'`.
   String get name {
     switch (this) {
       case DeviceState.uninitialized:

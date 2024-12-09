@@ -22,15 +22,15 @@ typedef struct {
  * Initializes a playback device for audio output with the given configuration.
  * Allocates internal buffers for audio processing.
  *
- * @param bufferSizeInBytes Size of the internal audio buffer in bytes.
  * @param deviceId Identifier of the playback device to use.
- * @param supportedFormat Configuration of the supported audio format (sample rate, channels, etc.).
+ * @param audioFormat Configuration of the device audio format (sample rate, channels, etc.).
+ * @param bufferSizeInBytes Size of the internal audio buffer in bytes.
  * @return A pointer to the created playback device, or NULL if creation fails.
  */
 FFI_PLUGIN_EXPORT
-void *playback_device_create(size_t bufferSizeInBytes,
-                             device_id_t deviceId,
-                             supported_format_t supportedFormat);
+void *playback_device_create(device_id_t deviceId,
+                             audio_format_t audioFormat,
+                             size_t bufferSizeInBytes);
 
 /**
  * @brief Destroys a playback device and releases its resources.

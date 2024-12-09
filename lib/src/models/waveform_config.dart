@@ -7,19 +7,19 @@ part of '../library.dart';
 sealed class BaseWaveformConfig extends Equatable {
   /// Creates a waveform configuration with the given properties.
   ///
-  /// - [format]: The audio sample format.
+  /// - [sampleFormat]: The audio sample format.
   /// - [sampleRate]: The sample rate in Hertz.
   /// - [channels]: The number of audio channels.
   /// - [amplitude]: The amplitude of the waveform.
   const BaseWaveformConfig({
-    required this.format,
+    required this.sampleFormat,
     required this.sampleRate,
     required this.channels,
     required this.amplitude,
   });
 
   /// The audio sample format.
-  final SampleFormat format;
+  final SampleFormat sampleFormat;
 
   /// The sample rate in Hertz.
   final int sampleRate;
@@ -34,7 +34,13 @@ sealed class BaseWaveformConfig extends Equatable {
   WaveformType get type;
 
   @override
-  List<Object?> get props => [format, amplitude, sampleRate, channels];
+  List<Object?> get props => [
+        sampleFormat,
+        amplitude,
+        sampleRate,
+        channels,
+        type,
+      ];
 }
 
 /// Configuration for a sine waveform.
@@ -43,13 +49,13 @@ sealed class BaseWaveformConfig extends Equatable {
 final class WaveformSineConfig extends BaseWaveformConfig {
   /// Creates a sine waveform configuration with the given properties.
   ///
-  /// - [format]: The audio sample format.
+  /// - [sampleFormat]: The audio sample format.
   /// - [sampleRate]: The sample rate in Hertz.
   /// - [channels]: The number of audio channels.
   /// - [amplitude]: The amplitude of the sine wave.
   /// - [frequency]: The frequency of the sine wave in Hertz.
   const WaveformSineConfig({
-    required super.format,
+    required super.sampleFormat,
     required super.sampleRate,
     required super.channels,
     required super.amplitude,
@@ -72,13 +78,13 @@ final class WaveformSineConfig extends BaseWaveformConfig {
 final class WaveformSquareConfig extends BaseWaveformConfig {
   /// Creates a square waveform configuration with the given properties.
   ///
-  /// - [format]: The audio sample format.
+  /// - [sampleFormat]: The audio sample format.
   /// - [sampleRate]: The sample rate in Hertz.
   /// - [channels]: The number of audio channels.
   /// - [amplitude]: The amplitude of the square wave.
   /// - [frequency]: The frequency of the square wave in Hertz.
   const WaveformSquareConfig({
-    required super.format,
+    required super.sampleFormat,
     required super.sampleRate,
     required super.channels,
     required super.amplitude,
@@ -101,13 +107,13 @@ final class WaveformSquareConfig extends BaseWaveformConfig {
 final class WaveformTriangleConfig extends BaseWaveformConfig {
   /// Creates a triangle waveform configuration with the given properties.
   ///
-  /// - [format]: The audio sample format.
+  /// - [sampleFormat]: The audio sample format.
   /// - [sampleRate]: The sample rate in Hertz.
   /// - [channels]: The number of audio channels.
   /// - [amplitude]: The amplitude of the triangle wave.
   /// - [frequency]: The frequency of the triangle wave in Hertz.
   const WaveformTriangleConfig({
-    required super.format,
+    required super.sampleFormat,
     required super.sampleRate,
     required super.channels,
     required super.amplitude,
@@ -130,13 +136,13 @@ final class WaveformTriangleConfig extends BaseWaveformConfig {
 final class WaveformSawtoothConfig extends BaseWaveformConfig {
   /// Creates a sawtooth waveform configuration with the given properties.
   ///
-  /// - [format]: The audio sample format.
+  /// - [sampleFormat]: The audio sample format.
   /// - [sampleRate]: The sample rate in Hertz.
   /// - [channels]: The number of audio channels.
   /// - [amplitude]: The amplitude of the sawtooth wave.
   /// - [frequency]: The frequency of the sawtooth wave in Hertz.
   const WaveformSawtoothConfig({
-    required super.format,
+    required super.sampleFormat,
     required super.sampleRate,
     required super.channels,
     required super.amplitude,

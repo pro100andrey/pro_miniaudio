@@ -13,12 +13,12 @@ int _calculateFamesCount({
 class PlaybackWaveformDevice {
   PlaybackWaveformDevice({
     required this.deviceInfo,
-    required SupportedFormat supportedFormat,
-  }) : _supportedFormat = supportedFormat {
-    final bpf = _supportedFormat.bytesPerFrame;
+    required AudioFormat audioFormat,
+  }) : _audioFormat = audioFormat {
+    final bpf = audioFormat.bytesPerFrame;
 
     final frameCount = _calculateFamesCount(
-      sampleRate: _supportedFormat.sampleRate,
+      sampleRate: audioFormat.sampleRate,
       durationInMs: _durationInMs,
     );
 
@@ -28,7 +28,7 @@ class PlaybackWaveformDevice {
     _playbackDevice = PlaybackDevice(
       deviceInfo: deviceInfo,
       bufferSizeInBytes: bufferSizeInBytes,
-      supportedFormat: _supportedFormat,
+      audioFormat: audioFormat,
     );
 
     _applyConfig();
@@ -40,8 +40,8 @@ class PlaybackWaveformDevice {
   WaveformType get waveformType => _waveformType;
   WaveformType _waveformType = WaveformType.sine;
 
-  SupportedFormat get supportedFormat => _supportedFormat;
-  SupportedFormat _supportedFormat;
+  AudioFormat get audioFormat => _audioFormat;
+  AudioFormat _audioFormat;
 
   double get frequency => _frequency;
   double _frequency = 500;
@@ -53,12 +53,12 @@ class PlaybackWaveformDevice {
 
   bool get isPlaying => _timer != null;
 
-  void setSupportedFormat(SupportedFormat format) {
-    if (format == _supportedFormat) {
+  void setAudioFormat(AudioFormat format) {
+    if (format == _audioFormat) {
       return;
     }
 
-    _supportedFormat = format;
+    _audioFormat = format;
 
     _applyConfig();
   }
@@ -98,32 +98,36 @@ class PlaybackWaveformDevice {
     _waveform?.dispose();
     _waveform = null;
 
+    final sampleFormat = _audioFormat.sampleFormat;
+    final sampleRate = _audioFormat.sampleRate;
+    final channels = _audioFormat.channels;
+
     final config = switch (_waveformType) {
       WaveformType.sine => WaveformSineConfig(
-          format: _supportedFormat.format,
-          sampleRate: _supportedFormat.sampleRate,
-          channels: _supportedFormat.channels,
+          sampleFormat: sampleFormat,
+          sampleRate: sampleRate,
+          channels: channels,
           amplitude: _amplitude,
           frequency: _frequency,
         ),
       WaveformType.square => WaveformSquareConfig(
-          format: _supportedFormat.format,
-          sampleRate: _supportedFormat.sampleRate,
-          channels: _supportedFormat.channels,
+          sampleFormat: sampleFormat,
+          sampleRate: sampleRate,
+          channels: channels,
           amplitude: _amplitude,
           frequency: _frequency,
         ),
       WaveformType.triangle => WaveformTriangleConfig(
-          format: _supportedFormat.format,
-          sampleRate: _supportedFormat.sampleRate,
-          channels: _supportedFormat.channels,
+          sampleFormat: sampleFormat,
+          sampleRate: sampleRate,
+          channels: channels,
           amplitude: _amplitude,
           frequency: _frequency,
         ),
       WaveformType.sawtooth => WaveformSawtoothConfig(
-          format: _supportedFormat.format,
-          sampleRate: _supportedFormat.sampleRate,
-          channels: _supportedFormat.channels,
+          sampleFormat: sampleFormat,
+          sampleRate: sampleRate,
+          channels: channels,
           amplitude: _amplitude,
           frequency: _frequency,
         ),
@@ -156,7 +160,7 @@ class PlaybackWaveformDevice {
       (timer) {
         assert(_waveform != null, 'Waveform is null');
         final frameCount = _calculateFamesCount(
-          sampleRate: _supportedFormat.sampleRate,
+          sampleRate: _audioFormat.sampleRate,
           durationInMs: _durationInMs,
         );
 

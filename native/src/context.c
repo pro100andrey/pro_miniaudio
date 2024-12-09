@@ -28,8 +28,22 @@ typedef struct {
 void _onLog(void *pUserData, ma_uint32 level, const char *pMessage) {
     (void)pUserData;
 
-    const char *levelStr = ma_log_level_to_string(level);
-    LOG_INFO("%s: %s", levelStr, pMessage);
+    switch (level) {
+        case MA_LOG_LEVEL_DEBUG:
+            LOG_DEBUG("%s", pMessage);
+            break;
+        case MA_LOG_LEVEL_INFO:
+            LOG_INFO("%s", pMessage);
+            break;
+        case MA_LOG_LEVEL_WARNING:
+            LOG_WARN("%s", pMessage);
+            break;
+        case MA_LOG_LEVEL_ERROR:
+            LOG_ERROR("%s", pMessage);
+            break;
+        default:
+            break;
+    }
 }
 
 FFI_PLUGIN_EXPORT
@@ -121,16 +135,16 @@ static void process_device_info(const ma_device_info *maDeviceInfo,
     memcpy(&deviceInfo->id, &maDeviceInfo->id, sizeof(device_id_t));
 
     deviceInfo->isDefault = maDeviceInfo->isDefault;
-    deviceInfo->dataFormatCount = maDeviceInfo->nativeDataFormatCount;
+    deviceInfo->formatCount = maDeviceInfo->nativeDataFormatCount;
 
     for (uint32_t j = 0; j < maDeviceInfo->nativeDataFormatCount; j++) {
-        deviceInfo->dataFormats[j].format =
+        deviceInfo->audioFormats[j].sampleFormat =
             (sample_format_t)maDeviceInfo->nativeDataFormats[j].format;
-        deviceInfo->dataFormats[j].channels =
+        deviceInfo->audioFormats[j].channels =
             maDeviceInfo->nativeDataFormats[j].channels;
-        deviceInfo->dataFormats[j].sampleRate =
+        deviceInfo->audioFormats[j].sampleRate =
             maDeviceInfo->nativeDataFormats[j].sampleRate;
-        deviceInfo->dataFormats[j].flags =
+        deviceInfo->audioFormats[j].flags =
             maDeviceInfo->nativeDataFormats[j].flags;
     }
 }
@@ -273,18 +287,4 @@ device_info_t *context_get_capture_device_infos(const void *pContext) {
     context_t *context = (context_t *)pContext;
 
     return context->captureCache.deviceInfo;
-}
-
-FFI_PLUGIN_EXPORT
-uint32_t get_bytes_per_sample(sample_format_t format) {
-    ma_format maFormat = (ma_format)format;
-
-    return ma_get_bytes_per_sample(maFormat);
-}
-
-FFI_PLUGIN_EXPORT
-uint32_t get_bytes_per_frame(sample_format_t format, uint32_t channels) {
-    ma_format maFormat = (ma_format)format;
-
-    return ma_get_bytes_per_frame(maFormat, channels);
 }

@@ -5,12 +5,12 @@ import 'package:pro_miniaudio/pro_miniaudio.dart';
 class FormatsInfoDialog extends StatelessWidget {
   const FormatsInfoDialog({
     required this.title,
-    required this.formats,
+    required this.audioFormats,
     super.key,
   });
 
   final String title;
-  final List<SupportedFormat> formats;
+  final List<AudioFormat> audioFormats;
 
   @override
   Widget build(BuildContext context) => AlertDialog(
@@ -29,12 +29,12 @@ class FormatsInfoDialog extends StatelessWidget {
                 DataColumn(label: Text('Channels')),
                 DataColumn(label: Text('Sample Rate')),
               ],
-              rows: formats
+              rows: audioFormats
                   .mapIndexed(
                     (index, format) => DataRow(
                       cells: [
                         DataCell(Text('$index')),
-                        DataCell(Text(format.format.name)),
+                        DataCell(Text(format.sampleFormat.name)),
                         DataCell(Text('${format.channels}')),
                         DataCell(Text('${format.sampleRate}')),
                       ],

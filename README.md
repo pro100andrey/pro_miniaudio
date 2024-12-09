@@ -19,7 +19,7 @@ Add the following to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  pro_miniaudio: 0.0.5
+  pro_miniaudio: 0.0.6
 ```
 
 ## Context
@@ -64,12 +64,13 @@ void main() {
 
   final device = PlaybackDevice(
     deviceInfo: deviceInfo,
-    bufferSizeInBytes: 4096,
-    supportedFormat: SupportedFormat(
-      channels: 2,
-      sampleRate: 44100,
-      format: SampleFormat.f32,
-    ),
+    audioFormat: AudioFormat(
+        sampleFormat: SampleFormat.f32,
+        sampleRate: 8000,
+        channels: 2
+        flags: 0
+      ),
+      bufferSizeInBytes: 4096,
   );
 
   // Generate a sample audio buffer (stereo sine wave)

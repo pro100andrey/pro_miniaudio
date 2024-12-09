@@ -132,13 +132,13 @@ class _HomePageState extends State<HomePage> {
                           onClosePressed: () =>
                               notifier.removePlaybackDevice(index),
                           deviceFormatDropdown: DeviceFormatDropdownVm(
-                            selectedFormat: device.supportedFormat,
+                            selectedFormat: device.audioFormat,
                             onChanged: (format) =>
-                                notifier.setPlaybackDeviceSupportedFormat(
+                                notifier.setPlaybackDeviceAudioFormat(
                               index,
                               format,
                             ),
-                            formats: device.deviceInfo.supportedFormats,
+                            formats: device.deviceInfo.audioFormats,
                           ),
                           waveformSelector: WaveformSelectorVm(
                             type: device.waveformType,
@@ -196,7 +196,7 @@ class _HomePageState extends State<HomePage> {
 
         return FormatsInfoDialog(
           title: title,
-          formats: device.supportedFormats,
+          audioFormats: device.audioFormats,
         );
       },
     );
