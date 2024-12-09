@@ -1,14 +1,18 @@
+## 0.0.5
+
+* Improvements.
+
 ## 0.0.4
 
-* Bugs fix.
+* Improvements.
 
 ## 0.0.3
 
-* Bugs fix.
+* Improvements.
 
 ## 0.0.2
 
-* Bugs fix.
+* Improvements.
 
 ## 0.0.1
 

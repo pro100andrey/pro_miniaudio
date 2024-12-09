@@ -19,7 +19,7 @@ Add the following to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  pro_miniaudio: 0.0.4
+  pro_miniaudio: 0.0.5
 ```
 
 ## Context
@@ -34,10 +34,14 @@ import 'package:pro_miniaudio/pro_miniaudio.dart';
 void main() {
   final context = Context();
 
-  // Refresh and get devices
-  final devices = context.refreshAndReturnDevices();
-  print('Playback Devices: ${devices.playback.length}');
-  print('Capture Devices: ${devices.capture.length}');
+  // Refresh devices
+  context.refreshDevices();
+
+  final playback = context.playbackDeviceInfos;
+  final capture = context.captureDeviceInfos;
+
+  print('Playback devices: $playbackDevices');
+  print('Capture devices: $captureDevices');
 
   // Clean up
   context.dispose();
@@ -56,10 +60,12 @@ import 'package:pro_miniaudio/pro_miniaudio.dart';
 
 void main() {
 
+  final deviceInfo = ...;
+
   final device = PlaybackDevice(
-    deviceId: 0, // Use default device
+    deviceInfo: deviceInfo,
     bufferSizeInBytes: 4096,
-    format: SupportedFormat(
+    supportedFormat: SupportedFormat(
       channels: 2,
       sampleRate: 44100,
       format: SampleFormat.f32,

@@ -4,6 +4,7 @@
 #include <stdbool.h>
 
 #include "platform.h"
+#include "common.h"
 
 /**
  * union device_id_t
@@ -62,12 +63,6 @@ typedef struct {
     uint32_t sampleRate;    /* Sample rate in Hertz. */
     uint32_t flags;         /* Format flags (reserved for future use). */
 } supported_format_t;
-
-/**
- * @def MAX_DEVICE_NAME_LENGTH
- * @brief Defines the maximum length of a device name, including the null terminator.
- */
-#define MAX_DEVICE_NAME_LENGTH 255
 
 /**
  * @struct device_info_t

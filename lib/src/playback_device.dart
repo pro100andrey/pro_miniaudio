@@ -8,38 +8,39 @@ part of 'library.dart';
 final class PlaybackDevice extends NativeResource<Void> with EquatableMixin {
   /// Creates a new playback device instance.
   ///
-  /// - [deviceId]: The unique identifier of the playback device.
+  /// - [deviceInfo]: The device information for the playback device.
   /// - [bufferSizeInBytes]: The size of the audio buffer in bytes.
-  /// - [format]: The audio format that this device will use for playback.
+  /// - [supportedFormat]: The audio format that this device will use for
+  /// playback.
   ///
   /// Throws an exception if the [Context] is not initialized or
   /// if the device creation fails.
   factory PlaybackDevice({
-    required Object deviceId,
+    required DeviceInfo deviceInfo,
     required int bufferSizeInBytes,
-    required SupportedFormat format,
+    required SupportedFormat supportedFormat,
   }) {
-    final result = _bindings.playback_device_create(
+    final device = _bindings.playback_device_create(
       bufferSizeInBytes,
-      deviceId as device_id_t,
-      format.nativeFormat,
+      deviceInfo.id as device_id_t,
+      supportedFormat.nativeFormat,
     );
 
     return PlaybackDevice._(
-      result,
-      deviceId,
-      format,
-      bufferSizeInBytes,
+      device,
+      deviceInfo: deviceInfo,
+      supportedFormat: supportedFormat,
+      bufferSizeInBytes: bufferSizeInBytes,
     );
   }
 
   /// Internal constructor.
   PlaybackDevice._(
-    super.ptr,
-    this.deviceId,
-    this.supportedFormat,
-    this.sizeInBytes,
-  ) : super._();
+    super.ptr, {
+    required this.deviceInfo,
+    required this.supportedFormat,
+    required this.bufferSizeInBytes,
+  }) : super._();
 
   /// The audio format supported by this playback device.
   ///
@@ -47,10 +48,10 @@ final class PlaybackDevice extends NativeResource<Void> with EquatableMixin {
   final SupportedFormat supportedFormat;
 
   /// The size of the audio buffer in bytes.
-  final int sizeInBytes;
+  final int bufferSizeInBytes;
 
-  /// The unique identifier of the playback device.
-  final Object deviceId;
+  /// Device information.
+  final DeviceInfo deviceInfo;
 
   /// The finalizer for the playback device.
   ///
@@ -60,7 +61,11 @@ final class PlaybackDevice extends NativeResource<Void> with EquatableMixin {
   );
 
   @override
-  List<Object?> get props => [supportedFormat, sizeInBytes];
+  List<Object?> get props => [
+        supportedFormat,
+        bufferSizeInBytes,
+        deviceInfo,
+      ];
 
   @override
   NativeFinalizer get finalizer => _finalizer;
@@ -86,6 +91,17 @@ final class PlaybackDevice extends NativeResource<Void> with EquatableMixin {
   void start() => _bindings.playback_device_start(
         ensureResourceIsNotFinalized(),
       );
+
+  /// Gets the current state of the playback device.
+  ///
+  /// Throws an exception if resource is not initialized.
+  DeviceState get state {
+    final state = _bindings.playback_device_get_state(
+      ensureResourceIsNotFinalized(),
+    );
+
+    return DeviceState.values[state.index];
+  }
 
   /// Pushes an audio buffer to the playback device for playback.
   ///

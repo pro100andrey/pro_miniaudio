@@ -78,13 +78,14 @@ abstract class NativeResource<T extends NativeType> implements Finalizable {
       throw StateError('Resource already disposed');
     }
 
-    _isFinalized = true;
-
     // Detach the finalizer to avoid double release.
     finalizer.detach(this);
 
     // Explicitly release the resource.
     releaseResource();
+
+    // Mark the resource as finalized.
+    _isFinalized = true;
   }
 
   /// Releases the native resource.

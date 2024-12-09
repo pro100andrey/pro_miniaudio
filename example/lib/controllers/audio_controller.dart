@@ -79,16 +79,13 @@ class AudioController extends ChangeNotifier {
   List<PlaybackWaveformDevice> playbackDevices = [];
 
   void createPlaybackDevice() {
-    final deviceId = _selectedPlaybackDevice!.id;
     final supportedFormats = selectedPlaybackDevice!.supportedFormats;
     final supportedFormat = supportedFormats.first;
 
     playbackDevices.add(
       PlaybackWaveformDevice(
-        deviceId: deviceId,
-        supportedFormats: supportedFormats,
+        deviceInfo: _selectedPlaybackDevice!,
         supportedFormat: supportedFormat,
-        name: 'Playback device ${playbackDevices.length + 1}',
       ),
     );
 
@@ -116,19 +113,12 @@ class AudioController extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setPlaybackDeviceFormats(int index, List<SupportedFormat> formats) {
-    playbackDevices[index].setFormats(formats);
-    notifyListeners();
-  }
-
   void setPlaybackDeviceSupportedFormat(int index, SupportedFormat format) {
     playbackDevices.removeAt(index).dispose();
 
     final device = PlaybackWaveformDevice(
-      deviceId: _selectedPlaybackDevice!.id,
-      supportedFormats: selectedPlaybackDevice!.supportedFormats,
+      deviceInfo: _selectedPlaybackDevice!,
       supportedFormat: format,
-      name: 'Playback device ${playbackDevices.length + 1}',
     );
 
     playbackDevices.insert(index, device);

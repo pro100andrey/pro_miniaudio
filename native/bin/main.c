@@ -99,6 +99,8 @@ int main(int argc, char const* argv[]) {
 
     playback_device_start(pPlaybackDevice);
 
+    device_state_t deviceState = playback_device_get_state(pPlaybackDevice);
+
     while (running) {
         if (!data.pUserData) {
             break;

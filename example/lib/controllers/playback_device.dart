@@ -12,12 +12,9 @@ int _calculateFamesCount({
 
 class PlaybackWaveformDevice {
   PlaybackWaveformDevice({
-    required Object deviceId,
-    required List<SupportedFormat> supportedFormats,
+    required this.deviceInfo,
     required SupportedFormat supportedFormat,
-    required this.name,
-  })  : _formats = supportedFormats,
-        _supportedFormat = supportedFormat {
+  }) : _supportedFormat = supportedFormat {
     final bpf = _supportedFormat.bytesPerFrame;
 
     final frameCount = _calculateFamesCount(
@@ -29,20 +26,16 @@ class PlaybackWaveformDevice {
     final bufferSizeInBytes = dataSizeInBytes * 5;
 
     _playbackDevice = PlaybackDevice(
-      deviceId: deviceId,
+      deviceInfo: deviceInfo,
       bufferSizeInBytes: bufferSizeInBytes,
-      format: _supportedFormat,
+      supportedFormat: _supportedFormat,
     );
 
     _applyConfig();
   }
 
-  final String name;
-
-  PlaybackDevice? _playbackDevice;
-
-  List<SupportedFormat> get formats => _formats;
-  List<SupportedFormat> _formats;
+  final DeviceInfo deviceInfo;
+  late final PlaybackDevice _playbackDevice;
 
   WaveformType get waveformType => _waveformType;
   WaveformType _waveformType = WaveformType.sine;
@@ -66,16 +59,6 @@ class PlaybackWaveformDevice {
     }
 
     _supportedFormat = format;
-
-    _applyConfig();
-  }
-
-  void setFormats(List<SupportedFormat> formats) {
-    _formats = formats;
-
-    if (!_formats.contains(_supportedFormat)) {
-      _supportedFormat = _formats.first;
-    }
 
     _applyConfig();
   }
@@ -108,7 +91,7 @@ class PlaybackWaveformDevice {
     _waveformType = type;
 
     _applyConfig();
-    _playbackDevice?.resetBuffer();
+    _playbackDevice.resetBuffer();
   }
 
   void _applyConfig() {
@@ -150,8 +133,7 @@ class PlaybackWaveformDevice {
   }
 
   void dispose() {
-    _playbackDevice?.dispose();
-    _playbackDevice = null;
+    _playbackDevice.dispose();
 
     _waveform?.dispose();
     _waveform = null;
@@ -166,15 +148,13 @@ class PlaybackWaveformDevice {
 
   void play() {
     assert(_waveform != null, 'Waveform is null');
-    assert(_playbackDevice != null, 'Playback device is null');
 
-    _playbackDevice!.start();
+    _playbackDevice.start();
 
     _timer = Timer.periodic(
       const Duration(milliseconds: 100),
       (timer) {
         assert(_waveform != null, 'Waveform is null');
-        assert(_playbackDevice != null, 'Playback device is null');
         final frameCount = _calculateFamesCount(
           sampleRate: _supportedFormat.sampleRate,
           durationInMs: _durationInMs,
@@ -184,7 +164,7 @@ class PlaybackWaveformDevice {
           frameCount: frameCount,
         );
 
-        _playbackDevice!.pushBuffer(
+        _playbackDevice.pushBuffer(
           buffer: result.frames,
           framesCount: result.framesRead,
         );
@@ -193,7 +173,7 @@ class PlaybackWaveformDevice {
   }
 
   void stop() {
-    _playbackDevice?.stop();
+    _playbackDevice.stop();
     _timer?.cancel();
     _timer = null;
   }

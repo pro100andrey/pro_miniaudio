@@ -27,10 +27,10 @@ typedef struct {
  * @param supportedFormat Configuration of the supported audio format (sample rate, channels, etc.).
  * @return A pointer to the created playback device, or NULL if creation fails.
  */
-FFI_PLUGIN_EXPORT void *playback_device_create(
-    size_t bufferSizeInBytes,
-    device_id_t deviceId,
-    supported_format_t supportedFormat);
+FFI_PLUGIN_EXPORT
+void *playback_device_create(size_t bufferSizeInBytes,
+                             device_id_t deviceId,
+                             supported_format_t supportedFormat);
 
 /**
  * @brief Destroys a playback device and releases its resources.
@@ -39,7 +39,8 @@ FFI_PLUGIN_EXPORT void *playback_device_create(
  *
  * @param pDevice Pointer to the playback device to destroy.
  */
-FFI_PLUGIN_EXPORT void playback_device_destroy(void *pDevice);
+FFI_PLUGIN_EXPORT
+void playback_device_destroy(void *pDevice);
 
 /**
  * @brief Resets the playback device's internal buffer.
@@ -59,7 +60,8 @@ void *playback_device_reset_buffer(void *pDevice);
  *
  * @param pDevice Pointer to the playback device.
  */
-FFI_PLUGIN_EXPORT void playback_device_start(void *pDevice);
+FFI_PLUGIN_EXPORT
+void playback_device_start(void *pDevice);
 
 /**
  * @brief Stops audio playback on the specified device.
@@ -68,7 +70,8 @@ FFI_PLUGIN_EXPORT void playback_device_start(void *pDevice);
  *
  * @param pDevice Pointer to the playback device.
  */
-FFI_PLUGIN_EXPORT void playback_device_stop(void *pDevice);
+FFI_PLUGIN_EXPORT
+void playback_device_stop(void *pDevice);
 
 /**
  * @brief Pushes audio data into the playback device's buffer.
@@ -79,6 +82,16 @@ FFI_PLUGIN_EXPORT void playback_device_stop(void *pDevice);
  * @param pDevice Pointer to the playback device.
  * @param pData Pointer to a `playback_data_t` structure containing the audio data.
  */
-FFI_PLUGIN_EXPORT void playback_device_push_buffer(void *pDevice, playback_data_t *pData);
+FFI_PLUGIN_EXPORT
+void playback_device_push_buffer(void *pDevice, playback_data_t *pData);
+
+/**
+ * @brief Retrieves the current state of the playback device.
+ *
+ * @param pDevice Pointer to the playback device.
+ * @return The current state of the playback device.
+ */
+FFI_PLUGIN_EXPORT
+device_state_t playback_device_get_state(void *pDevice);
 
 #endif  // PLAYBACK_DEVICE_H

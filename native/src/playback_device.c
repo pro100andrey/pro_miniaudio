@@ -32,7 +32,7 @@ void data_callback(ma_device *pDevice,
     }
 
     if (!playback->isReadingEnabled) {
-        LOG_DEBUG("Reading is disabled. Buffer not sufficiently filled.\n");
+        LOG_DEBUG("Reading is disabled. Buffer not sufficiently filled.\n", "");
         return;
     }
 
@@ -42,7 +42,7 @@ void data_callback(ma_device *pDevice,
         ma_rb_available_read(&playback->rb);
 
     if (availableRead < playback->minThreshold) {
-        LOG_DEBUG("Reading is disabled. Buffer not sufficiently filled.\n");
+        LOG_DEBUG("Reading is disabled. Buffer not sufficiently filled.\n", "");
         playback->isReadingEnabled = false;
         return;
     }
@@ -89,7 +89,7 @@ void data_callback(ma_device *pDevice,
             LOG_WARN("`ma_rb_commit_read`: %s.\n",
                      ma_result_description(commitResult));
             playback->isReadingEnabled = false;
-            LOG_DEBUG("Reading is disabled. Buffer not sufficiently filled.\n");
+            LOG_DEBUG("Reading is disabled. Buffer not sufficiently filled.\n", "");
             break;
         } else if (commitResult != MA_SUCCESS) {
             LOG_ERROR("`ma_rb_commit_read`: %s.\n",
@@ -357,7 +357,6 @@ void playback_device_push_buffer(void *pDevice, playback_data_t *pData) {
     float bufferAvailableInSec = (float)availableWrite / (sampleRate * bpf);
     float fullBufferInSec = (float)bufferSize / (sampleRate * bpf);
     float bufferFillInPercent = 100.0f - bufferAvailableInPercent;
-    float bufferFillInSec = fullBufferInSec - bufferAvailableInSec;
 
     LOG_DEBUG("Buffer: %.3fs, %.1f%%, %.3fs.\n",
               fullBufferInSec,
@@ -416,4 +415,18 @@ void playback_device_push_buffer(void *pDevice, playback_data_t *pData) {
         playback->isReadingEnabled = true;
         LOG_INFO("Buffer filled to %zu bytes. Reading enabled.\n", availableRead);
     }
+}
+
+FFI_PLUGIN_EXPORT
+device_state_t playback_device_get_state(void *pDevice) {
+    if (!pDevice) {
+        LOG_ERROR("invalid parameter: `pDevice` is NULL.\n", "");
+        return false;
+    }
+
+    playback_device_t *playback = (playback_device_t *)pDevice;
+
+    ma_device_state state = ma_device_get_state(&playback->device);
+
+    return (device_state_t)state;
 }

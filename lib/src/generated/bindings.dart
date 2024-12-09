@@ -366,6 +366,21 @@ class ProMiniaudioBindings {
       _playback_device_push_bufferPtr.asFunction<
           void Function(ffi.Pointer<ffi.Void>, ffi.Pointer<playback_data_t>)>();
 
+  /// Retrieves the current state of the playback device.
+  device_state_t playback_device_get_state(
+    ffi.Pointer<ffi.Void> pDevice,
+  ) {
+    return device_state_t.fromValue(_playback_device_get_state(
+      pDevice,
+    ));
+  }
+
+  late final _playback_device_get_statePtr = _lookup<
+          ffi.NativeFunction<ffi.UnsignedInt Function(ffi.Pointer<ffi.Void>)>>(
+      'playback_device_get_state');
+  late final _playback_device_get_state = _playback_device_get_statePtr
+      .asFunction<int Function(ffi.Pointer<ffi.Void>)>();
+
   /// Creates a waveform generator with the specified parameters.
   ffi.Pointer<ffi.Void> waveform_create(
     sample_format_t format,
@@ -588,6 +603,27 @@ final class playback_data_t extends ffi.Struct {
   external int sizeInBytes;
 }
 
+/// Enumeration of possible states for a playback device.
+enum device_state_t {
+  device_state_uninitialized(0),
+  device_state_stopped(1),
+  device_state_started(2),
+  device_state_starting(3),
+  device_state_stopping(4);
+
+  final int value;
+  const device_state_t(this.value);
+
+  static device_state_t fromValue(int value) => switch (value) {
+        0 => device_state_uninitialized,
+        1 => device_state_stopped,
+        2 => device_state_started,
+        3 => device_state_starting,
+        4 => device_state_stopping,
+        _ => throw ArgumentError("Unknown value for device_state_t: $value"),
+      };
+}
+
 /// Enum representing different types of waveforms.
 enum waveform_type_t {
   waveform_type_sine(0),
@@ -609,5 +645,3 @@ enum waveform_type_t {
 
 typedef u_int32_t = ffi.UnsignedInt;
 typedef Dartu_int32_t = int;
-
-const int MAX_DEVICE_NAME_LENGTH = 255;

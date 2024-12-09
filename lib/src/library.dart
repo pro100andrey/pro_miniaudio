@@ -15,6 +15,7 @@ part 'models/sample_format.dart';
 part 'models/waveform_config.dart';
 part 'models/waveform_type.dart';
 part 'models/log_level.dart';
+part 'models/device_state.dart';
 part 'native_resource.dart';
 part 'playback_device.dart';
 part 'waveform.dart';
