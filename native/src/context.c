@@ -25,12 +25,19 @@ typedef struct {
     devices_cache_t captureCache;   // Capture device cache
 } context_t;
 
+void _onLog(void *pUserData, ma_uint32 level, const char *pMessage) {
+    (void)pUserData;
+
+    const char *levelStr = ma_log_level_to_string(level);
+    LOG_INFO("%s: %s", levelStr, pMessage);
+}
+
 FFI_PLUGIN_EXPORT
 void *context_create(void) {
     context_t *context = (context_t *)malloc(sizeof(context_t));
 
     if (!context) {
-        LOG_DEBUG("failed to allocate memory for context", "");
+        LOG_DEBUG("failed to allocate memory for context.\n", "");
         return NULL;
     }
 
@@ -42,6 +49,16 @@ void *context_create(void) {
         ma_ios_session_category_option_allow_bluetooth |
         ma_ios_session_category_option_mix_with_others;
 
+    ma_log log;
+    if (ma_log_init(
+            &context->maContext.allocationCallbacks,
+            &log) == MA_SUCCESS) {
+        ma_log_callback log_callback;
+        log_callback.onLog = _onLog;
+        ma_log_register_callback(&log, log_callback);
+        config.pLog = &log;
+    }
+
     ma_result contextInitResult =
         ma_context_init(NULL,
                         0,
@@ -51,7 +68,7 @@ void *context_create(void) {
     if (contextInitResult != MA_SUCCESS) {
         free(context);
 
-        LOG_ERROR("ma_context_init failed - %s",
+        LOG_ERROR("ma_context_init failed - %s.\n",
                   ma_result_description(contextInitResult));
 
         return NULL;
@@ -60,7 +77,7 @@ void *context_create(void) {
     context->playbackCache.count = 0;
     context->captureCache.count = 0;
 
-    LOG_INFO("<%p>(context_t *) created.", context);
+    LOG_INFO("<%p>(context_t *) created.\n", context);
 
     return context;
 }
@@ -68,7 +85,7 @@ void *context_create(void) {
 FFI_PLUGIN_EXPORT
 void context_destroy(void *pContext) {
     if (!pContext) {
-        LOG_ERROR("invalid parameter: `pContext` is NULL", "");
+        LOG_ERROR("invalid parameter: `pContext` is NULL.\n", "");
         return;
     }
 
@@ -78,7 +95,7 @@ void context_destroy(void *pContext) {
         ma_context_uninit(&context->maContext);
 
     if (contextUninitResult != MA_SUCCESS) {
-        LOG_ERROR("ma_context_uninit failed - %s",
+        LOG_ERROR("ma_context_uninit failed - %s.\n",
                   ma_result_description(contextUninitResult));
     }
 
@@ -92,7 +109,7 @@ void context_destroy(void *pContext) {
 
     free(context);
 
-    LOG_INFO("<%p>(context_t *) destroyed.", context);
+    LOG_INFO("<%p>(context_t *) destroyed.\n", context);
 }
 
 static void process_device_info(const ma_device_info *maDeviceInfo,
@@ -138,7 +155,7 @@ static void process_device_list(context_t *pContext,
                                        &deviceInfo);
 
         if (getDeviceInfoResult != MA_SUCCESS) {
-            LOG_ERROR("failed to get device info for %s device - %s",
+            LOG_ERROR("failed to get device info for %s device - %s.\n",
                       deviceType == ma_device_type_playback ? "playback" : "capture",
                       ma_result_description(getDeviceInfoResult));
 
@@ -153,7 +170,7 @@ static void process_device_list(context_t *pContext,
 FFI_PLUGIN_EXPORT
 void context_refresh_devices(const void *pContext) {
     if (!pContext) {
-        LOG_ERROR("invalid parameter: `pContext` is NULL", "");
+        LOG_ERROR("invalid parameter: `pContext` is NULL.\n", "");
         return;
     }
 
@@ -164,6 +181,7 @@ void context_refresh_devices(const void *pContext) {
     ma_uint32 captureDeviceCount;
 
     context_t *context = (context_t *)pContext;
+
     // Get playback and capture devices
     ma_result getDevicesResult =
         ma_context_get_devices(&context->maContext,
@@ -173,7 +191,7 @@ void context_refresh_devices(const void *pContext) {
                                &captureDeviceCount);
 
     if (getDevicesResult != MA_SUCCESS) {
-        LOG_ERROR("ma_context_get_devices failed - %s",
+        LOG_ERROR("ma_context_get_devices failed - %s.\n",
                   ma_result_description(getDevicesResult));
 
         return;
@@ -208,7 +226,7 @@ void context_refresh_devices(const void *pContext) {
 FFI_PLUGIN_EXPORT
 uint32_t context_get_playback_device_count(const void *pContext) {
     if (!pContext) {
-        LOG_ERROR("invalid parameter: `pContext` is NULL", "");
+        LOG_ERROR("invalid parameter: `pContext` is NULL.\n", "");
         return -1;
     }
 
@@ -220,7 +238,7 @@ uint32_t context_get_playback_device_count(const void *pContext) {
 FFI_PLUGIN_EXPORT
 uint32_t context_get_capture_device_count(const void *pContext) {
     if (!pContext) {
-        LOG_ERROR("invalid parameter: `pContext` is NULL", "");
+        LOG_ERROR("invalid parameter: `pContext` is NULL.\n", "");
         return -1;
     }
 
@@ -232,7 +250,7 @@ uint32_t context_get_capture_device_count(const void *pContext) {
 FFI_PLUGIN_EXPORT
 device_info_t *context_get_playback_device_infos(const void *pContext) {
     if (!pContext) {
-        LOG_ERROR("invalid parameter: `pContext` is NULL", "");
+        LOG_ERROR("invalid parameter: `pContext` is NULL.\n", "");
         return NULL;
     }
 
@@ -244,7 +262,7 @@ device_info_t *context_get_playback_device_infos(const void *pContext) {
 FFI_PLUGIN_EXPORT
 device_info_t *context_get_capture_device_infos(const void *pContext) {
     if (!pContext) {
-        LOG_ERROR("invalid parameter: `pContext` is NULL", "");
+        LOG_ERROR("invalid parameter: `pContext` is NULL.\n", "");
         return NULL;
     }
 

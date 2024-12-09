@@ -26,7 +26,6 @@ final class PlaybackDevice extends NativeResource<Void> {
     }
 
     final result = _bindings.playback_device_create(
-      context._resource,
       bufferSizeInBytes,
       deviceId as device_id_t,
       format.nativeFormat,

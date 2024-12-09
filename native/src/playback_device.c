@@ -21,7 +21,7 @@ void data_callback(ma_device *pDevice,
         (playback_device_t *)pDevice->pUserData;
 
     if (!playback) {
-        LOG_ERROR("invalid parameter: `pDevice->pUserData` is NULL", "");
+        LOG_ERROR("invalid parameter: `pDevice->pUserData` is NULL.\n", "");
         return;
     }
 
@@ -31,14 +31,13 @@ void data_callback(ma_device *pDevice,
         ma_rb_available_read(&playback->rb);
 
     if (availableRead == 0) {
-        LOG_WARN("No data available for playback", "");
+        LOG_WARN("No data available for playback.\n", "");
 
         return;
     }
 
     ma_uint32 bytesPerFrames = frameCount * bpf;
     size_t bytesToRead = (availableRead < bytesPerFrames) ? availableRead : bytesPerFrames;
-    size_t totalProcessed = 0;
 
     while (bytesToRead > 0) {
         void *bufferOut;
@@ -49,13 +48,13 @@ void data_callback(ma_device *pDevice,
                                &chunkSize,
                                &bufferOut);
         if (acquireReadResult != MA_SUCCESS) {
-            LOG_ERROR("`ma_rb_acquire_read` failed: %s",
+            LOG_ERROR("`ma_rb_acquire_read` failed: %s.\n",
                       ma_result_description(acquireReadResult));
             break;
         }
 
         if (chunkSize == 0) {
-            LOG_ERROR("No data available for playback.");
+            LOG_ERROR("No data available for playback.\n", "");
             break;
         }
 
@@ -63,8 +62,6 @@ void data_callback(ma_device *pDevice,
         memcpy(pOutput, bufferOut, chunkSize);
         // Move the output pointer
         pOutput = (char *)pOutput + chunkSize;
-
-        totalProcessed += chunkSize;
         bytesToRead -= chunkSize;
 
         ma_result commitResult = ma_rb_commit_read(
@@ -72,10 +69,10 @@ void data_callback(ma_device *pDevice,
             chunkSize);
 
         if (commitResult == MA_AT_END) {
-            LOG_WARN("`ma_rb_commit_read`: end of buffer reached", "");
+            LOG_WARN("`ma_rb_commit_read`: end of buffer reached.\n", "");
             break;
         } else if (commitResult != MA_SUCCESS) {
-            LOG_ERROR("failed to commit read: %s",
+            LOG_ERROR("failed to commit read: %s.\n",
                       ma_result_description(commitResult));
             break;
         }
@@ -85,22 +82,22 @@ void data_callback(ma_device *pDevice,
 void notification_callback(const ma_device_notification *pNotification) {
     switch (pNotification->type) {
         case ma_device_notification_type_started:
-            LOG_INFO("playbackDevice started <%p>.", pNotification->pDevice);
+            LOG_INFO("playbackDevice started <%p>.\n", pNotification->pDevice);
             break;
         case ma_device_notification_type_stopped:
-            LOG_INFO("playbackDevice stopped <%p>.", pNotification->pDevice);
+            LOG_INFO("playbackDevice stopped <%p>.\n", pNotification->pDevice);
             break;
         case ma_device_notification_type_rerouted:
-            LOG_INFO("playbackDevice rerouted <%p>.", pNotification->pDevice);
+            LOG_INFO("playbackDevice rerouted <%p>.\n", pNotification->pDevice);
             break;
         case ma_device_notification_type_interruption_began:
-            LOG_INFO("playbackDevice interruption began <%p>.", pNotification->pDevice);
+            LOG_INFO("playbackDevice interruption began <%p>.\n", pNotification->pDevice);
             break;
         case ma_device_notification_type_interruption_ended:
-            LOG_INFO("playbackDevice interruption ended <%p>.", pNotification->pDevice);
+            LOG_INFO("playbackDevice interruption ended <%p>.\n", pNotification->pDevice);
             break;
         case ma_device_notification_type_unlocked:
-            LOG_INFO("playbackDevice unlocked <%p>.", pNotification->pDevice);
+            LOG_INFO("playbackDevice unlocked <%p>.\n", pNotification->pDevice);
             break;
         default:
             break;
@@ -108,27 +105,20 @@ void notification_callback(const ma_device_notification *pNotification) {
 }
 
 FFI_PLUGIN_EXPORT
-void *playback_device_create(const void *pMaContext,
-                             size_t bufferSizeInBytes,
-                             device_id_t deviceId,
-                             supported_format_t supportedFormat) {
-    if (!pMaContext) {
-        LOG_ERROR("invalid parameter: `pMaContext` is NULL", "");
-
-        return NULL;
-    }
-
+void *playback_device_create(
+    size_t bufferSizeInBytes,
+    device_id_t deviceId,
+    supported_format_t supportedFormat) {
     if (bufferSizeInBytes == 0) {
-        LOG_ERROR("`bufferSizeInBytes` must be greater than 0", "");
+        LOG_ERROR("`bufferSizeInBytes` must be greater than 0.\n", "");
 
         return NULL;
     }
 
-    ma_context *maContext = (ma_context *)pMaContext;
     playback_device_t *playback = malloc(sizeof(playback_device_t));
 
     if (!playback) {
-        LOG_ERROR("Failed to allocate memory for playback_device_t", "");
+        LOG_ERROR("Failed to allocate memory for `playback_device_t`.\n", "");
 
         return NULL;
     }
@@ -153,14 +143,14 @@ void *playback_device_create(const void *pMaContext,
     config.pUserData = playback;
 
     ma_result maDeviceInitResult =
-        ma_device_init(maContext,
+        ma_device_init(NULL,
                        &config,
                        &playback->device);
 
     if (maDeviceInitResult != MA_SUCCESS) {
         free(playback);
 
-        LOG_ERROR("ma_device_init failed - %s",
+        LOG_ERROR("`ma_device_init` failed - %s.\n",
                   ma_result_description(maDeviceInitResult));
 
         return NULL;
@@ -177,16 +167,16 @@ void *playback_device_create(const void *pMaContext,
         ma_device_uninit(&playback->device);
         free(playback);
 
-        LOG_ERROR("`ma_rb_init` failed - %s",
+        LOG_ERROR("`ma_rb_init` failed - %s.\n",
                   ma_result_description(maRbInitResult));
 
         return NULL;
     }
 
-    LOG_INFO("<%p>(ma_device *) created.", &playback->device);
-    LOG_INFO("<%p>(ma_rb *) created.", &playback->rb);
-    LOG_INFO("<%p>(playback_device_t *) created.",
-             "buffer size: %zu (bytes) <%p>.",
+    LOG_INFO("<%p>(ma_device *) created.\n", &playback->device);
+    LOG_INFO("<%p>(ma_rb *) created.\n", &playback->rb);
+    LOG_INFO("<%p>(playback_device_t *) created.\n",
+             "buffer size: %zu (bytes) <%p>.\n",
              playback,
              bufferSizeInBytes,
              &playback);
@@ -197,7 +187,7 @@ void *playback_device_create(const void *pMaContext,
 FFI_PLUGIN_EXPORT
 void playback_device_destroy(void *pDevice) {
     if (!pDevice) {
-        LOG_ERROR("invalid parameter: `pDevice` is NULL", "");
+        LOG_ERROR("invalid parameter: `pDevice` is NULL.\n", "");
         return;
     }
 
@@ -207,23 +197,23 @@ void playback_device_destroy(void *pDevice) {
         ma_device_stop(&playback->device);
 
     if (maDeviceStopResult != MA_SUCCESS) {
-        LOG_WARN("`ma_device_stop` failed - %s",
+        LOG_WARN("`ma_device_stop` failed - %s.\n",
                  ma_result_description(maDeviceStopResult));
     }
 
-    ma_device_uninit(&playback->device);
-    LOG_INFO("<%p>(ma_device *) destroyed.", &playback->device);
-
     ma_rb_uninit(&playback->rb);
-    LOG_INFO("<%p>(ma_rb *) destroyed.", &playback->rb);
+    LOG_INFO("<%p>(ma_rb *) destroyed.\n", &playback->rb);
+
+    ma_device_uninit(&playback->device);
+    LOG_INFO("<%p>(ma_device *) destroyed.\n", &playback->device);
 
     free(playback);
-    LOG_INFO("<%p>(playback_device_t *) destroyed.", playback);
+    LOG_INFO("<%p>(playback_device_t *) destroyed.\n", playback);
 }
 
 FFI_PLUGIN_EXPORT void playback_device_start(void *pDevice) {
     if (!pDevice) {
-        LOG_ERROR("invalid parameter: `pDevice` is NULL", "");
+        LOG_ERROR("invalid parameter: `pDevice` is NULL.\n", "");
 
         return;
     }
@@ -231,14 +221,14 @@ FFI_PLUGIN_EXPORT void playback_device_start(void *pDevice) {
     playback_device_t *playback = (playback_device_t *)pDevice;
 
     if (playback->device.type != ma_device_type_playback) {
-        LOG_ERROR("invalid playback type %d != %d",
+        LOG_ERROR("invalid playback type %d != %d.\n",
                   playback->device.type, ma_device_type_playback);
 
         return;
     }
 
     if (ma_device_is_started(&playback->device)) {
-        LOG_INFO("playback <%p> already started", playback);
+        LOG_INFO("playback <%p> already started.\n", playback);
         return;
     }
 
@@ -246,7 +236,7 @@ FFI_PLUGIN_EXPORT void playback_device_start(void *pDevice) {
         ma_device_start(&playback->device);
 
     if (maStartResult != MA_SUCCESS) {
-        LOG_ERROR("`ma_device_start` failed - %s",
+        LOG_ERROR("`ma_device_start` failed - %s.\n",
                   ma_result_description(maStartResult));
 
         return;
@@ -256,7 +246,7 @@ FFI_PLUGIN_EXPORT void playback_device_start(void *pDevice) {
 FFI_PLUGIN_EXPORT
 void playback_device_stop(void *pDevice) {
     if (!pDevice) {
-        LOG_ERROR("invalid parameter: `pDevice` is NULL", "");
+        LOG_ERROR("invalid parameter: `pDevice` is NULL.\n", "");
 
         return;
     }
@@ -267,7 +257,7 @@ void playback_device_stop(void *pDevice) {
         ma_device_stop(&playbackDevice->device);
 
     if (stopResult != MA_SUCCESS) {
-        LOG_ERROR("`ma_device_stop` failed - %s",
+        LOG_ERROR("`ma_device_stop` failed - %s.\n",
                   ma_result_description(stopResult));
 
         return;
@@ -277,17 +267,17 @@ void playback_device_stop(void *pDevice) {
 FFI_PLUGIN_EXPORT
 void playback_device_push_buffer(void *pDevice, playback_data_t *pData) {
     if (!pDevice) {
-        LOG_ERROR("invalid parameter: `pDevice` is NULL", "");
+        LOG_ERROR("invalid parameter: `pDevice` is NULL.\n", "");
         return;
     }
 
     if (!pData) {
-        LOG_ERROR("invalid parameter: `pData` is NULL", "");
+        LOG_ERROR("invalid parameter: `pData` is NULL.\n", "");
         return;
     }
 
     if (pData->sizeInBytes == 0) {
-        LOG_ERROR("invalid parameter: `pData->sizeInBytes` is 0", "");
+        LOG_ERROR("invalid parameter: `pData->sizeInBytes` is 0.\n", "");
         return;
     }
 
@@ -313,7 +303,7 @@ void playback_device_push_buffer(void *pDevice, playback_data_t *pData) {
         "buffer: "
         "full: %.2fs, "
         "available: %.2f%% (%.2fs), "
-        "filled: %.2f%% (%.2fs)",
+        "filled: %.2f%% (%.2fs).\n",
         fullBufferInSec,
         bufferAvailableInPercent,
         bufferAvailableInSec,
@@ -326,7 +316,7 @@ void playback_device_push_buffer(void *pDevice, playback_data_t *pData) {
         if (bytesToSkip > availableRead) {
             LOG_WARN(
                 "Not enough space in the buffer to write data: "
-                "skipping %zu bytes, available read: %zu",
+                "skipping %zu bytes, available read: %zu.\n",
                 bytesToSkip,
                 availableRead);
             bytesToSkip = availableRead;
@@ -336,7 +326,7 @@ void playback_device_push_buffer(void *pDevice, playback_data_t *pData) {
             ma_rb_seek_read(&playback->rb, bytesToSkip);
 
         if (maRbSeekResult != MA_SUCCESS) {
-            LOG_ERROR("`ma_rb_seek_read` failed: %s",
+            LOG_ERROR("`ma_rb_seek_read` failed: %s.\n",
                       ma_result_description(maRbSeekResult));
             return;
         }
@@ -346,7 +336,7 @@ void playback_device_push_buffer(void *pDevice, playback_data_t *pData) {
             "BS size: %u  "
             "[AR %u]  "
             "[AW %u] "
-            "DS: %u",
+            "DS: %u.\n",
             bytesToSkip,
             bufferSize,
             availableRead,
@@ -363,7 +353,7 @@ void playback_device_push_buffer(void *pDevice, playback_data_t *pData) {
                             &bufferOut);
 
     if (writeResult != MA_SUCCESS) {
-        LOG_ERROR("`ma_rb_acquire_write` failed - %s",
+        LOG_ERROR("`ma_rb_acquire_write` failed - %s.\n",
                   ma_result_description(writeResult));
 
         return;
@@ -376,7 +366,7 @@ void playback_device_push_buffer(void *pDevice, playback_data_t *pData) {
                            sizeInBytes);
 
     if (maRbCommitResult != MA_SUCCESS) {
-        LOG_ERROR("`ma_rb_commit_write` failed - %s",
+        LOG_ERROR("`ma_rb_commit_write` failed - %s.\n",
                   ma_result_description(maRbCommitResult));
     }
 }

@@ -46,7 +46,6 @@ int main(int argc, char const* argv[]) {
     size_t bufferSizeInBytes = dataSizeInBytes * 5;
 
     void* pPlaybackDevice = playback_device_create(
-        pContext,
         bufferSizeInBytes,
         playbackDeviceInfo.id,
         supportedFormat);
@@ -90,8 +89,14 @@ int main(int argc, char const* argv[]) {
     playback_device_push_buffer(pPlaybackDevice, &data);
 
     playback_device_start(pPlaybackDevice);
-
+    int tik = 0;
     while (running) {
+        tik++;
+
+        if (tik == 10) {
+            break;
+        }
+
         if (!data.pUserData) {
             break;
         }
@@ -109,13 +114,10 @@ int main(int argc, char const* argv[]) {
         usleep(96500);
     }
 
-    playback_device_stop(pPlaybackDevice);
-
+    context_destroy(pContext);
     playback_device_destroy(pPlaybackDevice);
-
     waveform_destroy(pWaveform);
 
-    context_destroy(pContext);
 
     return 0;
 }

@@ -25,7 +25,7 @@ void *waveform_create(sample_format_t format,
     ma_waveform *waveform = (ma_waveform *)malloc(sizeof(ma_waveform));
 
     if (!waveform) {
-        LOG_ERROR("failed to allocate memory for ma_waveform", "");
+        LOG_ERROR("failed to allocate memory for `ma_waveform`.\n", "");
         return NULL;
     }
 
@@ -36,13 +36,13 @@ void *waveform_create(sample_format_t format,
     if (waveformInitResult != MA_SUCCESS) {
         free(waveform);
 
-        LOG_ERROR("ma_waveform_init failed - %s",
+        LOG_ERROR("`ma_waveform_init` failed - %s.\n",
                   ma_result_description(waveformInitResult));
 
         return NULL;
     }
 
-    LOG_INFO("<%p>(ma_waveform) created.", waveform);
+    LOG_INFO("<%p>(ma_waveform) created.\n", waveform);
 
     return waveform;
 }
@@ -50,7 +50,7 @@ void *waveform_create(sample_format_t format,
 FFI_PLUGIN_EXPORT
 void waveform_destroy(void *pWaveform) {
     if (!pWaveform) {
-        LOG_ERROR("invalid parameter: `pWaveform` is NULL", "");
+        LOG_ERROR("invalid parameter: `pWaveform` is NULL.\n", "");
         return;
     }
 
@@ -60,7 +60,7 @@ void waveform_destroy(void *pWaveform) {
 
     free(waveform);
 
-    LOG_INFO("<%p>(ma_waveform) destroyed.", waveform);
+    LOG_INFO("<%p>(ma_waveform) destroyed.\n", waveform);
 }
 
 FFI_PLUGIN_EXPORT
@@ -69,18 +69,18 @@ void waveform_read_pcm_frames_with_buffer(void *pWaveform,
                                           uint64_t framesCount,
                                           uint64_t *pFramesRead) {
     if (!pWaveform) {
-        LOG_ERROR("invalid parameter: `pWaveform` is NULL", "");
+        LOG_ERROR("invalid parameter: `pWaveform` is NULL.\n", "");
 
         return;
     }
 
     if (!pFramesOut) {
-        LOG_ERROR("invalid parameter: `pFramesOut` is NULL", "");
+        LOG_ERROR("invalid parameter: `pFramesOut` is NULL.\n", "");
         return;
     }
 
     if (!pFramesRead) {
-        LOG_ERROR("invalid parameter: `pFramesRead` is NULL", "");
+        LOG_ERROR("invalid parameter: `pFramesRead` is NULL.\n", "");
         return;
     }
 
@@ -93,7 +93,7 @@ void waveform_read_pcm_frames_with_buffer(void *pWaveform,
                                     pFramesRead);
 
     if (maWaveformReadResult != MA_SUCCESS) {
-        LOG_ERROR("ma_waveform_read_pcm_frames failed - %s",
+        LOG_ERROR("`ma_waveform_read_pcm_frames` failed - %s.\n",
                   ma_result_description(maWaveformReadResult));
     }
 }

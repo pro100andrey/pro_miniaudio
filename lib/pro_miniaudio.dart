@@ -14,5 +14,4 @@ export 'src/library.dart'
         WaveformSineConfig,
         WaveformSquareConfig,
         WaveformTriangleConfig,
-        WaveformType,
-        kEmptyDevicesInfos;
+        WaveformType;

@@ -8,9 +8,7 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   final temp = await getTemporaryDirectory();
-
   final path = '${temp.path}/log.txt';
-
   FileLogger.instance.enable(path);
 
   runApp(const MyApp());

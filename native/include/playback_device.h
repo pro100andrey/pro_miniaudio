@@ -12,8 +12,8 @@
  * a pointer to the data itself, and its size in bytes.
  */
 typedef struct {
-    void *pUserData;        /* Pointer to the audio data to be played. */
-    uint32_t sizeInBytes;   /* Size of the audio data in bytes. */
+    void *pUserData;      /* Pointer to the audio data to be played. */
+    uint32_t sizeInBytes; /* Size of the audio data in bytes. */
 } playback_data_t;
 
 /**
@@ -22,16 +22,15 @@ typedef struct {
  * Initializes a playback device for audio output with the given configuration.
  * Allocates internal buffers for audio processing.
  *
- * @param maContext Pointer to the `ma_context` used for audio device management.
  * @param bufferSizeInBytes Size of the internal audio buffer in bytes.
  * @param deviceId Identifier of the playback device to use.
  * @param supportedFormat Configuration of the supported audio format (sample rate, channels, etc.).
  * @return A pointer to the created playback device, or NULL if creation fails.
  */
-FFI_PLUGIN_EXPORT void *playback_device_create(const void *maContext,
-                                               size_t bufferSizeInBytes,
-                                               device_id_t deviceId,
-                                               supported_format_t supportedFormat);
+FFI_PLUGIN_EXPORT void *playback_device_create(
+    size_t bufferSizeInBytes,
+    device_id_t deviceId,
+    supported_format_t supportedFormat);
 
 /**
  * @brief Destroys a playback device and releases its resources.

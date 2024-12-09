@@ -1,20 +1,5 @@
 part of 'library.dart';
 
-/// A constant representing an empty result for device information.
-///
-/// This is used as a default or fallback value when no devices are available.
-///
-/// - playback: An empty list of playback devices.
-/// - capture: An empty list of capture devices.
-///
-/// Example usage:
-/// ```dart
-/// final devices = kEmptyDevicesInfos;
-/// print('Playback devices count: ${devices.playback.length}');
-/// print('Capture devices count: ${devices.capture.length}');
-/// ```
-const kEmptyDevicesInfos = (playback: <DeviceInfo>[], capture: <DeviceInfo>[]);
-
 /// A class for managing contexts and devices.
 ///
 /// The `Context` is responsible for initializing the audio system,
@@ -62,31 +47,6 @@ final class Context extends NativeResource<Void> {
         _ensureContextInitialized(),
       );
 
-  /// Refreshes the list of devices and retrieves updated information.
-  ///
-  /// This method calls [refreshDevices] to query the system for updated
-  /// playback and capture devices. It then retrieves the device details
-  /// as two separate lists.
-  ///
-  /// Returns:
-  /// - A Record, which contains:
-  ///   - playback: A list of playback devices.
-  ///   - capture: A list of capture devices.
-  ///
-  /// Throws:
-  /// - An exception if the refresh operation or data retrieval fails.
-  ({
-    List<DeviceInfo> playback,
-    List<DeviceInfo> capture,
-  }) refreshAndReturnDevices() {
-    refreshDevices();
-
-    final playbackDevices = playbackDeviceInfos;
-    final captureDevices = captureDevicesInfo;
-
-    return (playback: playbackDevices, capture: captureDevices);
-  }
-
   /// Gets the number of available playback devices.
   ///
   /// Throws an exception if the context is not initialized.
@@ -126,7 +86,7 @@ final class Context extends NativeResource<Void> {
   ///
   /// Returns:
   /// A list of [DeviceInfo] objects representing capture devices.
-  List<DeviceInfo> get captureDevicesInfo => _extractDeviceInfoList(
+  List<DeviceInfo> get captureDeviceInfos => _extractDeviceInfoList(
         _bindings.context_get_capture_device_infos(
           _ensureContextInitialized(),
         ),

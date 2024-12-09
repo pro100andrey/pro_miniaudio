@@ -5,6 +5,7 @@
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <sys/time.h>
 #include <time.h>
 
 // Global variables
@@ -75,11 +76,14 @@ void log_message(LogLevel level, const char *funcName, const char *format, ...) 
 
     pthread_mutex_lock(&g_logMutex);
 
-    // Get the current time
-    time_t now = time(NULL);
-    struct tm *localTime = localtime(&now);
-    char timeStr[64];
-    strftime(timeStr, sizeof(timeStr), "%Y-%m-%d %H:%M:%S", localTime);
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    struct tm *localTime = localtime(&tv.tv_sec);
+
+    char timeStr[16];
+    strftime(timeStr, sizeof(timeStr), "%H:%M:%S", localTime);
+    char finalTimeStr[32];
+    snprintf(finalTimeStr, sizeof(finalTimeStr), "%s.%03d", timeStr, tv.tv_usec / 1000);
 
     // Determine log level
     const char *levelStr = NULL;
@@ -106,23 +110,21 @@ void log_message(LogLevel level, const char *funcName, const char *format, ...) 
 
     // Write to file if enabled
     if (g_logToFileEnabled && g_logFile != NULL) {
-        fprintf(g_logFile, "%s %s [%s] ", timeStr, levelStr, funcName);
+        fprintf(g_logFile, "%s %s [%s] - ", finalTimeStr, levelStr, funcName);
         va_list args;
         va_start(args, format);
         vfprintf(g_logFile, format, args);
         va_end(args);
-        fprintf(g_logFile, "\n");
         fflush(g_logFile);
     }
 
     // Write to console if enabled
     if (g_logToConsoleEnabled) {
-        printf("%s %s [%s] ", timeStr, levelStr, funcName);
+        printf("%s %s [%s] - ", finalTimeStr, levelStr, funcName);
         va_list args;
         va_start(args, format);
         vprintf(format, args);
         va_end(args);
-        printf("\n");
     }
 
     pthread_mutex_unlock(&g_logMutex);

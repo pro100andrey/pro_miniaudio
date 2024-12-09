@@ -268,13 +268,11 @@ class ProMiniaudioBindings {
 
   /// Creates a playback device with the specified parameters.
   ffi.Pointer<ffi.Void> playback_device_create(
-    ffi.Pointer<ffi.Void> maContext,
     int bufferSizeInBytes,
     device_id_t deviceId,
     supported_format_t supportedFormat,
   ) {
     return _playback_device_create(
-      maContext,
       bufferSizeInBytes,
       deviceId,
       supportedFormat,
@@ -283,11 +281,10 @@ class ProMiniaudioBindings {
 
   late final _playback_device_createPtr = _lookup<
       ffi.NativeFunction<
-          ffi.Pointer<ffi.Void> Function(ffi.Pointer<ffi.Void>, ffi.Size,
-              device_id_t, supported_format_t)>>('playback_device_create');
+          ffi.Pointer<ffi.Void> Function(ffi.Size, device_id_t,
+              supported_format_t)>>('playback_device_create');
   late final _playback_device_create = _playback_device_createPtr.asFunction<
-      ffi.Pointer<ffi.Void> Function(
-          ffi.Pointer<ffi.Void>, int, device_id_t, supported_format_t)>();
+      ffi.Pointer<ffi.Void> Function(int, device_id_t, supported_format_t)>();
 
   /// Destroys a playback device and releases its resources.
   void playback_device_destroy(

@@ -5,13 +5,12 @@ import 'package:pro_miniaudio/pro_miniaudio.dart';
 import 'playback_device.dart';
 
 class AudioController extends ChangeNotifier {
-
   final _context = Context();
 
   bool get dataIsRefreshed => _deviceInfos != null;
 
   ({List<DeviceInfo> capture, List<DeviceInfo> playback}) get devicesInfos =>
-      _deviceInfos ?? kEmptyDevicesInfos;
+      _deviceInfos ?? (capture: [], playback: []);
 
   ({List<DeviceInfo> capture, List<DeviceInfo> playback})? _deviceInfos;
 
@@ -28,34 +27,37 @@ class AudioController extends ChangeNotifier {
   SupportedFormat? get selectedCaptureFormat => _selectedCaptureFormat;
 
   void refreshDevices() {
-    final result = _context.refreshAndReturnDevices();
+    _context.refreshDevices();
 
-    if (listEquals(result.playback, _deviceInfos?.playback) &&
-        listEquals(result.capture, _deviceInfos?.capture)) {
+    final playback = _context.playbackDeviceInfos;
+    final capture = _context.captureDeviceInfos;
+
+    if (listEquals(playback, _deviceInfos?.playback) &&
+        listEquals(capture, _deviceInfos?.capture)) {
       return;
     }
 
-    if (!result.playback.contains(_selectedPlaybackDevice)) {
+    if (!playback.contains(_selectedPlaybackDevice)) {
       _selectedPlaybackDevice = null;
     }
 
-    if (!result.capture.contains(_selectedCaptureDevice)) {
+    if (!capture.contains(_selectedCaptureDevice)) {
       _selectedCaptureDevice = null;
     }
 
-    _deviceInfos = result;
+    _deviceInfos = (capture: capture, playback: playback);
 
-    _selectedPlaybackDevice ??= result.playback.isNotEmpty
-        ? result.playback.firstWhere(
+    _selectedPlaybackDevice ??= playback.isNotEmpty
+        ? playback.firstWhere(
             (device) => device.isDefault,
-            orElse: () => result.playback.first,
+            orElse: () => playback.first,
           )
         : null;
 
-    _selectedCaptureDevice ??= result.capture.isNotEmpty
-        ? result.capture.firstWhere(
+    _selectedCaptureDevice ??= capture.isNotEmpty
+        ? capture.firstWhere(
             (device) => device.isDefault,
-            orElse: () => result.capture.first,
+            orElse: () => capture.first,
           )
         : null;
 
@@ -140,6 +142,17 @@ class AudioController extends ChangeNotifier {
   }
 
   void setPlaybackDeviceSupportedFormat(int index, SupportedFormat format) {
+    playbackDevices.removeAt(index).dispose();
+
+    final device = PlaybackWaveformDevice(
+      deviceId: _selectedPlaybackDevice!.id,
+      context: _context,
+      supportedFormats: selectedPlaybackDevice!.supportedFormats,
+      name: 'Playback device ${playbackDevices.length + 1}',
+    );
+
+    playbackDevices.insert(index, device);
+
     playbackDevices[index].setSupportedFormat(format);
     notifyListeners();
   }

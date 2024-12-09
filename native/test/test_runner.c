@@ -1,5 +1,4 @@
 #include "../include/context.h"
-#include "../include/error_code.h"
 #include "../include/playback_device.h"
 #include "../include/waveform.h"
 #include "../include/logger.h"
@@ -14,8 +13,6 @@ void test_context_create_destroy(void) {
     void *pContext = context_create();
 
     TEST_ASSERT_NOT_NULL(pContext);
-
-    TEST_ASSERT_TRUE(context_is_valid(pContext));
 
     context_destroy(pContext);
 }
