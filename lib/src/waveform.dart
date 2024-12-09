@@ -23,7 +23,7 @@ part of 'library.dart';
 ///
 /// waveform.dispose();
 /// ```
-final class Waveform extends NativeResource<Void> {
+final class Waveform extends NativeResource<Void> with EquatableMixin {
   /// Creates a new waveform instance based on the provided configuration.
   ///
   /// - [config]: A configuration object that defines the waveform type,
@@ -81,16 +81,16 @@ final class Waveform extends NativeResource<Void> {
         ),
     };
 
-    final waveform = Waveform._(rWaveform)..config = cfg;
+    final waveform = Waveform._(rWaveform, cfg);
 
     return waveform;
   }
 
   /// Internal constructor.
-  Waveform._(super.ptr) : super._();
+  Waveform._(super.ptr, this.config) : super._();
 
   /// The waveform configuration used for generating PCM frames.
-  late final BaseWaveformConfig config;
+  final BaseWaveformConfig config;
 
   /// The finalizer for the `Waveform` class.
   static final _finalizer = NativeFinalizer(
@@ -98,12 +98,15 @@ final class Waveform extends NativeResource<Void> {
   );
 
   @override
+  List<Object?> get props => [config];
+
+  @override
   NativeFinalizer get finalizer => _finalizer;
 
   @override
-  void releaseResource() {
-    _bindings.waveform_destroy(_resource);
-  }
+  void releaseResource() => _bindings.waveform_destroy(
+        ensureResourceIsNotFinalized(),
+      );
 
   /// Reads PCM frames from the waveform generator.
   ///
@@ -124,6 +127,7 @@ final class Waveform extends NativeResource<Void> {
   ({Float32List frames, int framesRead}) readWaveformPcmFrames({
     required int frameCount,
   }) {
+    final resource = ensureResourceIsNotFinalized();
     final bytesPerFrame = _bindings.get_bytes_per_frame(
       config.format.toNative(),
       config.channels,
@@ -134,7 +138,7 @@ final class Waveform extends NativeResource<Void> {
 
     try {
       _bindings.waveform_read_pcm_frames_with_buffer(
-        _resource,
+        resource,
         pFramesOut,
         frameCount,
         pFramesRead,

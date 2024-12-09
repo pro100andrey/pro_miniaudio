@@ -30,7 +30,7 @@ final class Context extends NativeResource<Void> {
 
   @override
   void releaseResource() => _bindings.context_destroy(
-        _ensureContextInitialized(),
+        ensureResourceIsNotFinalized(),
       );
 
   /// Refreshes the list of available audio devices.
@@ -39,71 +39,61 @@ final class Context extends NativeResource<Void> {
   /// the internal state of the `Context`. Throws an exception if the
   /// operation fails.
   ///
+  /// Throws an exception if the context is finalized.
+  ///
   /// Example:
   /// ```dart
   /// context.refreshDevices();
   /// ```
   void refreshDevices() => _bindings.context_refresh_devices(
-        _ensureContextInitialized(),
+        ensureResourceIsNotFinalized(),
       );
 
   /// Gets the number of available playback devices.
   ///
-  /// Throws an exception if the context is not initialized.
+  /// Throws an exception if the context is finalized.
   ///
   /// Returns:
   /// The count of playback devices available on the system.
   int get playbackDeviceCount => _bindings.context_get_playback_device_count(
-        _ensureContextInitialized(),
+        ensureResourceIsNotFinalized(),
       );
 
+  /// Gets the number of available capture devices.
   ///
-  ///
-  /// Throws an exception if the context is not initialized.
+  /// Throws an exception if the context is finalized.
   ///
   /// Returns:
   /// The count of capture devices available on the system.
   int get captureDeviceCount => _bindings.context_get_capture_device_count(
-        _ensureContextInitialized(),
+        ensureResourceIsNotFinalized(),
       );
 
   /// Retrieves information about all available playback devices.
   ///
-  /// Throws an exception if the context is not initialized.
+  /// Throws an exception if the context is finalized.
   ///
   /// Returns:
   /// A list of [DeviceInfo] objects representing playback devices.
   List<DeviceInfo> get playbackDeviceInfos => _extractDeviceInfoList(
         _bindings.context_get_playback_device_infos(
-          _ensureContextInitialized(),
+          ensureResourceIsNotFinalized(),
         ),
         playbackDeviceCount,
       );
 
   /// Retrieves information about all available capture devices.
   ///
-  /// Throws an exception if the context is not initialized.
+  /// Throws an exception if the context is finalized.
   ///
   /// Returns:
   /// A list of [DeviceInfo] objects representing capture devices.
   List<DeviceInfo> get captureDeviceInfos => _extractDeviceInfoList(
         _bindings.context_get_capture_device_infos(
-          _ensureContextInitialized(),
+          ensureResourceIsNotFinalized(),
         ),
         captureDeviceCount,
       );
-
-  /// Ensures that the context is initialized and returns its pointer.
-  ///
-  /// Throws a [StateError] if the context is not initialized.
-  @pragma('vm:prefer-inline')
-  Pointer<Void> _ensureContextInitialized() {
-    if (_isFinalized) {
-      throw StateError('Context is finalized');
-    }
-
-    return _resource;
-  }
 
   /// Extracts a list of [DeviceInfo] objects from a pointer to an array of
   /// native devices.

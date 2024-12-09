@@ -103,4 +103,13 @@ abstract class NativeResource<T extends NativeType> implements Finalizable {
   /// ```
   @protected
   void releaseResource();
+
+  @pragma('vm:prefer-inline')
+  Pointer<T> ensureResourceIsNotFinalized() {
+    if (_isFinalized) {
+      throw StateError('Resource is finalized');
+    }
+
+    return _resource;
+  }
 }

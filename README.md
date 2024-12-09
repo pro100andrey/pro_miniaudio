@@ -19,7 +19,7 @@ Add the following to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  pro_miniaudio: 0.0.3
+  pro_miniaudio: 0.0.4
 ```
 
 ## Context
