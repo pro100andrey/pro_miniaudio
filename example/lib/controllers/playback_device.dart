@@ -2,20 +2,32 @@ import 'dart:async';
 
 import 'package:pro_miniaudio/pro_miniaudio.dart';
 
-const _framesCount = 4410;
-const _milliseconds = 100;
+const _durationInMs = 100;
+
+int _calculateFamesCount({
+  required int sampleRate,
+  required int durationInMs,
+}) =>
+    sampleRate * durationInMs ~/ 1000;
 
 class PlaybackWaveformDevice {
   PlaybackWaveformDevice({
     required Object deviceId,
     required Context context,
     required List<SupportedFormat> supportedFormats,
+    required SupportedFormat supportedFormat,
     required this.name,
   })  : _formats = supportedFormats,
-        _supportedFormat = supportedFormats.first {
+        _supportedFormat = supportedFormat {
     final bpf = _supportedFormat.bytesPerFrame;
-    final dataSizeInBytes = _framesCount * bpf;
-    final bufferSizeInBytes = dataSizeInBytes * 10;
+
+    final frameCount = _calculateFamesCount(
+      sampleRate: _supportedFormat.sampleRate,
+      durationInMs: _durationInMs,
+    );
+
+    final dataSizeInBytes = frameCount * bpf;
+    final bufferSizeInBytes = dataSizeInBytes * 5;
 
     _playbackDevice = PlaybackDevice(
       deviceId: deviceId,
@@ -98,6 +110,7 @@ class PlaybackWaveformDevice {
     _waveformType = type;
 
     _applyConfig();
+    _playbackDevice?.resetBuffer();
   }
 
   void _applyConfig() {
@@ -160,13 +173,17 @@ class PlaybackWaveformDevice {
     _playbackDevice!.start();
 
     _timer = Timer.periodic(
-      const Duration(milliseconds: _milliseconds),
+      const Duration(milliseconds: 100),
       (timer) {
         assert(_waveform != null, 'Waveform is null');
         assert(_playbackDevice != null, 'Playback device is null');
+        final frameCount = _calculateFamesCount(
+          sampleRate: _supportedFormat.sampleRate,
+          durationInMs: _durationInMs,
+        );
 
         final result = _waveform!.readWaveformPcmFrames(
-          frameCount: _framesCount,
+          frameCount: frameCount,
         );
 
         _playbackDevice!.pushBuffer(

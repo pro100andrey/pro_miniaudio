@@ -15,6 +15,10 @@ void handle_signal(int sig) {
     running = false;
 }
 
+int calculateFrameCount(uint32_t sampleRate, uint32_t milliseconds) {
+    return sampleRate * milliseconds / 1000;
+}
+
 int main(int argc, char const* argv[]) {
     signal(SIGINT, handle_signal);
 
@@ -39,11 +43,16 @@ int main(int argc, char const* argv[]) {
 
     device_info_t playbackDeviceInfo = pPlaybackDevices[0];
     supported_format_t supportedFormat = playbackDeviceInfo.dataFormats[0];
-    uint32_t bpf = get_bytes_per_frame(supportedFormat.format, supportedFormat.channels);
 
-    uint32_t framesCount = 4410;
+    uint32_t bpf =
+        get_bytes_per_frame(supportedFormat.format, supportedFormat.channels);
+
+    uint32_t framesCount =
+        calculateFrameCount(supportedFormat.sampleRate,
+                            100);
+
     uint32_t dataSizeInBytes = framesCount * bpf;
-    size_t bufferSizeInBytes = dataSizeInBytes * 5;
+    size_t bufferSizeInBytes = dataSizeInBytes * 10;
 
     void* pPlaybackDevice = playback_device_create(
         bufferSizeInBytes,
@@ -89,14 +98,8 @@ int main(int argc, char const* argv[]) {
     playback_device_push_buffer(pPlaybackDevice, &data);
 
     playback_device_start(pPlaybackDevice);
-    int tik = 0;
+
     while (running) {
-        tik++;
-
-        if (tik == 10) {
-            break;
-        }
-
         if (!data.pUserData) {
             break;
         }
@@ -111,13 +114,12 @@ int main(int argc, char const* argv[]) {
 
         playback_device_push_buffer(pPlaybackDevice, &data);
 
-        usleep(96500);
+        usleep(98000);
     }
 
     context_destroy(pContext);
     playback_device_destroy(pPlaybackDevice);
     waveform_destroy(pWaveform);
-
 
     return 0;
 }

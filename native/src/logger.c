@@ -91,9 +91,6 @@ void log_message(LogLevel level, const char *funcName, const char *format, ...) 
         case LOG_LEVEL_DEBUG:
             levelStr = "[DEBUG]";
             break;
-        case LOG_LEVEL_STATS:
-            levelStr = "[STATS]";
-            break;
         case LOG_LEVEL_INFO:
             levelStr = "[INFO]";
             break;

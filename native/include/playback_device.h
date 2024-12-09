@@ -42,6 +42,16 @@ FFI_PLUGIN_EXPORT void *playback_device_create(
 FFI_PLUGIN_EXPORT void playback_device_destroy(void *pDevice);
 
 /**
+ * @brief Resets the playback device's internal buffer.
+ *
+ * Clears any audio data currently in the buffer and ensures that the buffer is ready for new data.
+ *
+ * @param pDevice Pointer to the playback device.
+ */
+FFI_PLUGIN_EXPORT
+void *playback_device_reset_buffer(void *pDevice);
+
+/**
  * @brief Starts audio playback on the specified device.
  *
  * Begins playback using the audio data in the internal buffer.

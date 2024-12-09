@@ -3,12 +3,18 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "../include/internal.h"
 #include "../include/logger.h"
 #include "../include/miniaudio.h"
 
 typedef struct {
-    ma_device device;  // Playback playbackDevice
-    ma_rb rb;          // Ring buffer
+    ma_device device;
+    ma_rb rb;
+
+    bool isReadingEnabled;
+    size_t bufferSize;
+    size_t midThreshold;
+    size_t minThreshold;
 } playback_device_t;
 
 void data_callback(ma_device *pDevice,
@@ -25,10 +31,21 @@ void data_callback(ma_device *pDevice,
         return;
     }
 
+    if (!playback->isReadingEnabled) {
+        LOG_DEBUG("Reading is disabled. Buffer not sufficiently filled.\n");
+        return;
+    }
+
     ma_uint32 bpf = ma_get_bytes_per_frame(pDevice->playback.format,
                                            pDevice->playback.channels);
     ma_uint32 availableRead =
         ma_rb_available_read(&playback->rb);
+
+    if (availableRead < playback->minThreshold) {
+        LOG_DEBUG("Reading is disabled. Buffer not sufficiently filled.\n");
+        playback->isReadingEnabled = false;
+        return;
+    }
 
     if (availableRead == 0) {
         LOG_WARN("No data available for playback.\n", "");
@@ -69,10 +86,13 @@ void data_callback(ma_device *pDevice,
             chunkSize);
 
         if (commitResult == MA_AT_END) {
-            LOG_WARN("`ma_rb_commit_read`: end of buffer reached.\n", "");
+            LOG_WARN("`ma_rb_commit_read`: %s.\n",
+                     ma_result_description(commitResult));
+            playback->isReadingEnabled = false;
+            LOG_DEBUG("Reading is disabled. Buffer not sufficiently filled.\n");
             break;
         } else if (commitResult != MA_SUCCESS) {
-            LOG_ERROR("failed to commit read: %s.\n",
+            LOG_ERROR("`ma_rb_commit_read`: %s.\n",
                       ma_result_description(commitResult));
             break;
         }
@@ -173,8 +193,26 @@ void *playback_device_create(
         return NULL;
     }
 
-    LOG_INFO("<%p>(ma_device *) created.\n", &playback->device);
-    LOG_INFO("<%p>(ma_rb *) created.\n", &playback->rb);
+    playback->bufferSize = bufferSizeInBytes;
+    playback->midThreshold = bufferSizeInBytes / 2;
+    playback->minThreshold = bufferSizeInBytes / 10;
+    playback->isReadingEnabled = false;
+
+    LOG_INFO(
+        "<%p>(ma_device *) created - format: %s, channels: %d, sample_rate: %d.\n",
+        &playback->device,
+        describe_ma_format(format),
+        channels,
+        sampleRate);
+
+    ma_uint32 bpf = ma_get_bytes_per_frame(format, channels);
+    float fullBufferInSec = (float)bufferSizeInBytes / (sampleRate * bpf);
+
+    LOG_INFO("<%p>(ma_rb *) created - buffer size: %zu (bytes) %f (sec).\n",
+             &playback->rb,
+             bufferSizeInBytes,
+             fullBufferInSec);
+
     LOG_INFO("<%p>(playback_device_t *) created.\n",
              "buffer size: %zu (bytes) <%p>.\n",
              playback,
@@ -211,7 +249,25 @@ void playback_device_destroy(void *pDevice) {
     LOG_INFO("<%p>(playback_device_t *) destroyed.\n", playback);
 }
 
-FFI_PLUGIN_EXPORT void playback_device_start(void *pDevice) {
+FFI_PLUGIN_EXPORT
+void *playback_device_reset_buffer(void *pDevice) {
+    if (!pDevice) {
+        LOG_ERROR("invalid parameter: `pDevice` is NULL.\n", "");
+        return NULL;
+    }
+
+    playback_device_t *playback = (playback_device_t *)pDevice;
+
+    ma_rb_reset(&playback->rb);
+    playback->isReadingEnabled = false;
+
+    LOG_INFO("<%p>(ma_rb *) reset.\n", &playback->rb);
+
+    return &playback->rb;
+}
+
+FFI_PLUGIN_EXPORT
+void playback_device_start(void *pDevice) {
     if (!pDevice) {
         LOG_ERROR("invalid parameter: `pDevice` is NULL.\n", "");
 
@@ -241,6 +297,8 @@ FFI_PLUGIN_EXPORT void playback_device_start(void *pDevice) {
 
         return;
     }
+
+    LOG_INFO("playback <%p> started.\n", playback);
 }
 
 FFI_PLUGIN_EXPORT
@@ -262,6 +320,8 @@ void playback_device_stop(void *pDevice) {
 
         return;
     }
+
+    LOG_INFO("playback <%p> stopped.\n", playbackDevice);
 }
 
 FFI_PLUGIN_EXPORT
@@ -299,16 +359,10 @@ void playback_device_push_buffer(void *pDevice, playback_data_t *pData) {
     float bufferFillInPercent = 100.0f - bufferAvailableInPercent;
     float bufferFillInSec = fullBufferInSec - bufferAvailableInSec;
 
-    LOG_STATS(
-        "buffer: "
-        "full: %.2fs, "
-        "available: %.2f%% (%.2fs), "
-        "filled: %.2f%% (%.2fs).\n",
-        fullBufferInSec,
-        bufferAvailableInPercent,
-        bufferAvailableInSec,
-        bufferFillInPercent,
-        bufferFillInSec);
+    LOG_DEBUG("Buffer: %.3fs, %.1f%%, %.3fs.\n",
+              fullBufferInSec,
+              bufferFillInPercent,
+              bufferAvailableInSec);
 
     if (availableWrite < sizeInBytes) {
         size_t bytesToSkip = sizeInBytes - availableWrite;
@@ -330,18 +384,6 @@ void playback_device_push_buffer(void *pDevice, playback_data_t *pData) {
                       ma_result_description(maRbSeekResult));
             return;
         }
-
-        LOG_STATS(
-            "Skipped %zu "
-            "BS size: %u  "
-            "[AR %u]  "
-            "[AW %u] "
-            "DS: %u.\n",
-            bytesToSkip,
-            bufferSize,
-            availableRead,
-            availableWrite,
-            sizeInBytes);
     }
 
     // Acquire write buffer
@@ -368,5 +410,10 @@ void playback_device_push_buffer(void *pDevice, playback_data_t *pData) {
     if (maRbCommitResult != MA_SUCCESS) {
         LOG_ERROR("`ma_rb_commit_write` failed - %s.\n",
                   ma_result_description(maRbCommitResult));
+    }
+
+    if (!playback->isReadingEnabled && availableRead >= playback->midThreshold) {
+        playback->isReadingEnabled = true;
+        LOG_INFO("Buffer filled to %zu bytes. Reading enabled.\n", availableRead);
     }
 }

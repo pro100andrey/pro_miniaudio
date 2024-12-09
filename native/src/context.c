@@ -37,7 +37,7 @@ void *context_create(void) {
     context_t *context = (context_t *)malloc(sizeof(context_t));
 
     if (!context) {
-        LOG_DEBUG("failed to allocate memory for context.\n", "");
+        LOG_ERROR("failed to allocate memory for context.\n", "");
         return NULL;
     }
 
@@ -232,6 +232,8 @@ uint32_t context_get_playback_device_count(const void *pContext) {
 
     context_t *context = (context_t *)pContext;
 
+    LOG_DEBUG("playback device count: %d\n", context->playbackCache.count);
+
     return context->playbackCache.count;
 }
 
@@ -243,6 +245,8 @@ uint32_t context_get_capture_device_count(const void *pContext) {
     }
 
     context_t *context = (context_t *)pContext;
+
+    LOG_DEBUG("capture device count: %d\n", context->captureCache.count);
 
     return context->captureCache.count;
 }

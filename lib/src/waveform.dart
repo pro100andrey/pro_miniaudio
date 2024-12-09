@@ -141,8 +141,9 @@ final class Waveform extends NativeResource<Void> {
       );
 
       final framesRead = pFramesRead.value;
-      final frames =
-          pFramesOut.cast<Float>().asTypedList(framesRead * config.channels);
+      final frames = pFramesOut.cast<Float>().asTypedList(
+            framesRead * config.channels,
+          );
       final result = Float32List.fromList(frames);
 
       return (frames: result, framesRead: framesRead);

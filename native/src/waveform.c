@@ -4,6 +4,7 @@
 
 #include "../include/logger.h"
 #include "../include/miniaudio.h"
+#include "../include/internal.h"
 
 FFI_PLUGIN_EXPORT
 void *waveform_create(sample_format_t format,
@@ -42,7 +43,11 @@ void *waveform_create(sample_format_t format,
         return NULL;
     }
 
-    LOG_INFO("<%p>(ma_waveform) created.\n", waveform);
+    LOG_INFO("<%p>(ma_waveform) created - format: %s, channels: %d, sample_rate: %d.\n",
+             waveform,
+             describe_ma_format((ma_format)format),
+             channels,
+             sampleRate);
 
     return waveform;
 }

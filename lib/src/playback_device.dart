@@ -57,10 +57,12 @@ final class PlaybackDevice extends NativeResource<Void> {
     _bindings.playback_device_destroy(_resource);
   }
 
+  /// Resets the playback device's internal buffer.
+  void resetBuffer() {
+    _bindings.playback_device_reset_buffer(_resource);
+  }
+
   /// Starts audio playback on the device.
-  ///
-  /// Throws an exception if the operation fails or if the device is not
-  /// properly initialized.
   void start() {
     _bindings.playback_device_start(_resource);
   }
@@ -72,9 +74,6 @@ final class PlaybackDevice extends NativeResource<Void> {
   ///
   /// Each frame contains samples for all channels. For example, in a stereo
   /// configuration (2 channels), one frame includes 2 samples.
-  ///
-  /// Throws an exception if the operation fails or if the buffer cannot be
-  /// processed.
   void pushBuffer({required Float32List buffer, required int framesCount}) {
     final data = malloc.allocate<playback_data_t>(sizeOf<playback_data_t>());
 
@@ -102,9 +101,6 @@ final class PlaybackDevice extends NativeResource<Void> {
   ///
   /// This method halts any ongoing playback and prepares the device
   /// for further operations if needed.
-  ///
-  /// Throws an exception if the operation fails or if the device is not
-  /// properly initialized.
   void stop() {
     _bindings.playback_device_stop(_resource);
   }

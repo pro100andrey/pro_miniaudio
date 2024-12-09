@@ -301,6 +301,22 @@ class ProMiniaudioBindings {
   late final _playback_device_destroy = _playback_device_destroyPtr
       .asFunction<void Function(ffi.Pointer<ffi.Void>)>();
 
+  /// Resets the playback device's internal buffer.
+  ffi.Pointer<ffi.Void> playback_device_reset_buffer(
+    ffi.Pointer<ffi.Void> pDevice,
+  ) {
+    return _playback_device_reset_buffer(
+      pDevice,
+    );
+  }
+
+  late final _playback_device_reset_bufferPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Pointer<ffi.Void> Function(
+              ffi.Pointer<ffi.Void>)>>('playback_device_reset_buffer');
+  late final _playback_device_reset_buffer = _playback_device_reset_bufferPtr
+      .asFunction<ffi.Pointer<ffi.Void> Function(ffi.Pointer<ffi.Void>)>();
+
   /// Starts audio playback on the specified device.
   void playback_device_start(
     ffi.Pointer<ffi.Void> pDevice,
@@ -548,20 +564,18 @@ final class device_info_t extends ffi.Struct {
 
 enum LogLevel {
   LOG_LEVEL_DEBUG(0),
-  LOG_LEVEL_STATS(1),
-  LOG_LEVEL_INFO(2),
-  LOG_LEVEL_WARNING(3),
-  LOG_LEVEL_ERROR(4);
+  LOG_LEVEL_INFO(1),
+  LOG_LEVEL_WARNING(2),
+  LOG_LEVEL_ERROR(3);
 
   final int value;
   const LogLevel(this.value);
 
   static LogLevel fromValue(int value) => switch (value) {
         0 => LOG_LEVEL_DEBUG,
-        1 => LOG_LEVEL_STATS,
-        2 => LOG_LEVEL_INFO,
-        3 => LOG_LEVEL_WARNING,
-        4 => LOG_LEVEL_ERROR,
+        1 => LOG_LEVEL_INFO,
+        2 => LOG_LEVEL_WARNING,
+        3 => LOG_LEVEL_ERROR,
         _ => throw ArgumentError("Unknown value for LogLevel: $value"),
       };
 }

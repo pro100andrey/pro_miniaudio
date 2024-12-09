@@ -1,4 +1,3 @@
-import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:pro_miniaudio/pro_miniaudio.dart';
 
@@ -19,12 +18,6 @@ class AudioController extends ChangeNotifier {
 
   DeviceInfo? _selectedCaptureDevice;
   DeviceInfo? get selectedCaptureDevice => _selectedCaptureDevice;
-
-  SupportedFormat? _selectedPlaybackFormat;
-  SupportedFormat? get selectedPlaybackFormat => _selectedPlaybackFormat;
-
-  SupportedFormat? _selectedCaptureFormat;
-  SupportedFormat? get selectedCaptureFormat => _selectedCaptureFormat;
 
   void refreshDevices() {
     _context.refreshDevices();
@@ -61,11 +54,6 @@ class AudioController extends ChangeNotifier {
           )
         : null;
 
-    _selectedCaptureFormat ??=
-        selectedCaptureDevice?.supportedFormats.firstOrNull;
-    _selectedPlaybackFormat ??=
-        selectedPlaybackDevice?.supportedFormats.firstOrNull;
-
     notifyListeners();
   }
 
@@ -81,18 +69,6 @@ class AudioController extends ChangeNotifier {
     notifyListeners();
   }
 
-  void selectPlaybackFormat(SupportedFormat format) {
-    _selectedPlaybackFormat = format;
-
-    notifyListeners();
-  }
-
-  void selectCaptureFormat(SupportedFormat format) {
-    _selectedCaptureFormat = format;
-
-    notifyListeners();
-  }
-
   @override
   void dispose() {
     _context.dispose();
@@ -103,11 +79,16 @@ class AudioController extends ChangeNotifier {
   List<PlaybackWaveformDevice> playbackDevices = [];
 
   void createPlaybackDevice() {
+    final deviceId = _selectedPlaybackDevice!.id;
+    final supportedFormats = selectedPlaybackDevice!.supportedFormats;
+    final supportedFormat = supportedFormats.first;
+
     playbackDevices.add(
       PlaybackWaveformDevice(
-        deviceId: _selectedPlaybackDevice!.id,
+        deviceId: deviceId,
         context: _context,
-        supportedFormats: selectedPlaybackDevice!.supportedFormats,
+        supportedFormats: supportedFormats,
+        supportedFormat: supportedFormat,
         name: 'Playback device ${playbackDevices.length + 1}',
       ),
     );
@@ -148,6 +129,7 @@ class AudioController extends ChangeNotifier {
       deviceId: _selectedPlaybackDevice!.id,
       context: _context,
       supportedFormats: selectedPlaybackDevice!.supportedFormats,
+      supportedFormat: format,
       name: 'Playback device ${playbackDevices.length + 1}',
     );
 
