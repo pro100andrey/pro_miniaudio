@@ -9,7 +9,6 @@ final class PlaybackDevice extends NativeResource<Void> {
   /// Creates a new playback device instance.
   ///
   /// - [deviceId]: The unique identifier of the playback device.
-  /// - [context]: The [Context] associated with this device.
   /// - [bufferSizeInBytes]: The size of the audio buffer in bytes.
   /// - [format]: The audio format that this device will use for playback.
   ///
@@ -17,14 +16,9 @@ final class PlaybackDevice extends NativeResource<Void> {
   /// if the device creation fails.
   factory PlaybackDevice({
     required Object deviceId,
-    required Context context,
     required int bufferSizeInBytes,
     required SupportedFormat format,
   }) {
-    if (context.isFinalized) {
-      throw Exception('Audio context is finalized');
-    }
-
     final result = _bindings.playback_device_create(
       bufferSizeInBytes,
       deviceId as device_id_t,

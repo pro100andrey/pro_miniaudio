@@ -86,7 +86,6 @@ class AudioController extends ChangeNotifier {
     playbackDevices.add(
       PlaybackWaveformDevice(
         deviceId: deviceId,
-        context: _context,
         supportedFormats: supportedFormats,
         supportedFormat: supportedFormat,
         name: 'Playback device ${playbackDevices.length + 1}',
@@ -127,7 +126,6 @@ class AudioController extends ChangeNotifier {
 
     final device = PlaybackWaveformDevice(
       deviceId: _selectedPlaybackDevice!.id,
-      context: _context,
       supportedFormats: selectedPlaybackDevice!.supportedFormats,
       supportedFormat: format,
       name: 'Playback device ${playbackDevices.length + 1}',

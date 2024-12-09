@@ -53,17 +53,17 @@ final class Context extends NativeResource<Void> {
   ///
   /// Returns:
   /// The count of playback devices available on the system.
-  int get playbackDevicesCount => _bindings.context_get_playback_device_count(
+  int get playbackDeviceCount => _bindings.context_get_playback_device_count(
         _ensureContextInitialized(),
       );
 
-  /// Gets the number of available capture devices.
+  ///
   ///
   /// Throws an exception if the context is not initialized.
   ///
   /// Returns:
   /// The count of capture devices available on the system.
-  int get captureDevicesCount => _bindings.context_get_capture_device_count(
+  int get captureDeviceCount => _bindings.context_get_capture_device_count(
         _ensureContextInitialized(),
       );
 
@@ -77,7 +77,7 @@ final class Context extends NativeResource<Void> {
         _bindings.context_get_playback_device_infos(
           _ensureContextInitialized(),
         ),
-        playbackDevicesCount,
+        playbackDeviceCount,
       );
 
   /// Retrieves information about all available capture devices.
@@ -90,7 +90,7 @@ final class Context extends NativeResource<Void> {
         _bindings.context_get_capture_device_infos(
           _ensureContextInitialized(),
         ),
-        captureDevicesCount,
+        captureDeviceCount,
       );
 
   /// Ensures that the context is initialized and returns its pointer.

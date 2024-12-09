@@ -52,3 +52,7 @@ extension SampleFormatExt on SampleFormat {
 extension WaveformTypeExt on WaveformType {
   waveform_type_t toNative() => waveform_type_t.values[index];
 }
+
+extension LogLevelExt on FileLogLevel {
+  LogLevel toNative() => LogLevel.values[index];
+}

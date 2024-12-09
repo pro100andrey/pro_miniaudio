@@ -5,11 +5,11 @@ final class FileLogger {
 
   static final instance = FileLogger._();
 
-  void enable(String path) {
+  void enable(String path, {FileLogLevel level = FileLogLevel.info}) {
     final filepath = stringToCharPointer(path);
     _bindings
       ..set_log_to_file_enabled(true)
-      ..set_log_level(LogLevel.LOG_LEVEL_DEBUG)
+      ..set_log_level(level.toNative())
       ..init_file_log(filepath);
 
     malloc.free(filepath);

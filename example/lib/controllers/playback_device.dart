@@ -13,7 +13,6 @@ int _calculateFamesCount({
 class PlaybackWaveformDevice {
   PlaybackWaveformDevice({
     required Object deviceId,
-    required Context context,
     required List<SupportedFormat> supportedFormats,
     required SupportedFormat supportedFormat,
     required this.name,
@@ -31,7 +30,6 @@ class PlaybackWaveformDevice {
 
     _playbackDevice = PlaybackDevice(
       deviceId: deviceId,
-      context: context,
       bufferSizeInBytes: bufferSizeInBytes,
       format: _supportedFormat,
     );

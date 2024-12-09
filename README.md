@@ -19,7 +19,7 @@ Add the following to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  pro_miniaudio: 0.0.1
+  pro_miniaudio: 0.0.3
 ```
 
 ## Context
@@ -55,10 +55,8 @@ import 'dart:typed_data';
 import 'package:pro_miniaudio/pro_miniaudio.dart';
 
 void main() {
-  final context = Context();
 
   final device = PlaybackDevice(
-    context: context,
     deviceId: 0, // Use default device
     bufferSizeInBytes: 4096,
     format: SupportedFormat(
@@ -82,7 +80,6 @@ void main() {
 
   // Clean up
   device.dispose();
-  context.dispose();
 }
 ```
 
