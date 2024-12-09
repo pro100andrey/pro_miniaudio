@@ -22,9 +22,5 @@
         "wasapi",
         "webaudio",
         "winmm"
-    ],
-    "files.associations": {
-        "*.arb": "json",
-        "playback_device.h": "c"
-    }
+    ]
 }
