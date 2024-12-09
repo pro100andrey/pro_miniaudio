@@ -1,6 +1,11 @@
 name: pro_miniaudio
-description: "A new Flutter FFI plugin project."
+description: "A Flutter plugin for miniaudio."
 version: 0.0.1
+
+repository: https://github.com/pro100andrey/pro_miniaudio
+issue_tracker: https://github.com/pro100andrey/pro_miniaudio/issues
+homepage: https://github.com/pro100andrey/pro_miniaudio
+documentation: https://github.com/pro100andrey/pro_miniaudio/blob/main/README.md
 
 
 environment:
@@ -20,6 +25,19 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   pro_lints: ^2.0.4
+
+platforms:
+  android:
+  ios:
+  linux:
+  macos:
+  windows:
+
+topics:
+  - miniaudio
+  - audio
+  - playback
+  - capture
 
 flutter:
   plugin:
