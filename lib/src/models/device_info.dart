@@ -57,15 +57,12 @@ final class AudioFormat extends Equatable {
   /// - [channels]: The number of audio channels (e.g., 1 for mono, 2 for
   /// stereo).
   /// - [sampleRate]: The sample rate in Hertz.
-  /// - [flags]: Format flags (reserved for future use).
-  /// - [nativeFormat]: The native format representation (platform-specific).
-  /// - [bytesPerSample]: The number of bytes per individual sample.
-  /// - [bytesPerFrame]: The number of bytes per frame (sample × channels).
+  /// /// - [flags]: Format flags (reserved for future use).
   const AudioFormat({
     required this.sampleFormat,
     required this.channels,
     required this.sampleRate,
-    required this.flags,
+    this.flags = 0,
   });
 
   /// The audio sample format.

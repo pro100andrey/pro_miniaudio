@@ -127,8 +127,8 @@ class _HomePageState extends State<HomePage> {
                     [
                       ...notifier.playbackDevices.mapIndexed(
                         (index, device) => PlaybackDeviceItem(
-                          name:
-                              'Playback ${index + 1} - ${device.deviceInfo.name}',
+                          name: 'Playback ${index + 1} '
+                              '- ${device.deviceInfo.name}',
                           onClosePressed: () =>
                               notifier.removePlaybackDevice(index),
                           deviceFormatDropdown: DeviceFormatDropdownVm(

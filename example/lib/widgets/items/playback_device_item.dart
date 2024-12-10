@@ -18,7 +18,6 @@ class PlaybackDeviceItem extends StatelessWidget {
 
   final String name;
   final VoidCallback onClosePressed;
-
   final DeviceFormatDropdownVm deviceFormatDropdown;
   final WaveformSelectorVm waveformSelector;
   final FrequencyInputVm frequencyInput;

@@ -207,10 +207,12 @@ void *playback_device_create(device_id_t deviceId,
     ma_uint32 bpf = ma_get_bytes_per_frame(format, channels);
     float fullBufferInSec = (float)bufferSizeInBytes / (sampleRate * bpf);
 
-    LOG_INFO("<%p>(ma_rb *) created - buffer size: %zu (bytes) %f (sec).\n",
+    LOG_INFO("<%p>(ma_rb *) created - buffer size: %zu (bytes) %f (sec). mid: %zu (bytes), min: %zu (bytes).\n",
              &playback->rb,
              bufferSizeInBytes,
-             fullBufferInSec);
+             fullBufferInSec,
+             playback->midThreshold,
+             playback->minThreshold);
 
     LOG_INFO("<%p>(playback_device_t *) created.\n",
              "buffer size: %zu (bytes) <%p>.\n",
@@ -356,11 +358,13 @@ void playback_device_push_buffer(void *pDevice, playback_data_t *pData) {
     float bufferAvailableInSec = (float)availableWrite / (sampleRate * bpf);
     float fullBufferInSec = (float)bufferSize / (sampleRate * bpf);
     float bufferFillInPercent = 100.0f - bufferAvailableInPercent;
+    float pushBufferInSec = (float)sizeInBytes / (sampleRate * bpf);
 
-    LOG_DEBUG("Buffer: %.3fs, %.1f%%, %.3fs.\n",
+    LOG_DEBUG("Buffer: %.3fs, %.1f%%, %.3fs. Push: %.3fs \n",
               fullBufferInSec,
               bufferFillInPercent,
-              bufferAvailableInSec);
+              bufferAvailableInSec,
+              pushBufferInSec);
 
     if (availableWrite < sizeInBytes) {
         size_t bytesToSkip = sizeInBytes - availableWrite;

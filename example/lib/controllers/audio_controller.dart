@@ -61,6 +61,30 @@ class AudioController extends ChangeNotifier {
     _selectedPlaybackDevice = device;
 
     notifyListeners();
+
+    final devices = List<PlaybackWaveformDevice>.from(playbackDevices);
+
+    for (var i = 0; i < devices.length; i++) {
+      final current = playbackDevices.removeAt(i);
+      final currentWaveformType = current.waveformType;
+      final currentIsPlaying = current.isPlaying;
+
+      current.dispose();
+
+      final newDevice = PlaybackWaveformDevice(
+        deviceInfo: _selectedPlaybackDevice!,
+        audioFormat: device.audioFormats.first,
+      );
+
+      playbackDevices.insert(i, newDevice);
+      newDevice.setWaveformType(currentWaveformType);
+
+      if (currentIsPlaying) {
+        newDevice.play();
+      }
+    }
+
+    notifyListeners();
   }
 
   void selectCaptureDevice(DeviceInfo device) {
@@ -114,21 +138,22 @@ class AudioController extends ChangeNotifier {
   }
 
   void setPlaybackDeviceAudioFormat(int index, AudioFormat audioFormat) {
-    playbackDevices.removeAt(index).dispose();
+    final previousDevice = playbackDevices.removeAt(index);
+    final isPlaying = previousDevice.isPlaying;
+    previousDevice.dispose();
 
     final device = PlaybackWaveformDevice(
       deviceInfo: _selectedPlaybackDevice!,
-      audioFormat: AudioFormat(
-        sampleFormat: audioFormat.sampleFormat,
-        sampleRate: 8000,
-        channels: audioFormat.channels,
-        flags: audioFormat.flags,
-      ),
+      audioFormat: audioFormat,
     );
 
     playbackDevices.insert(index, device);
-
     playbackDevices[index].setAudioFormat(audioFormat);
+
+    if (isPlaying) {
+      device.play();
+    }
+
     notifyListeners();
   }
 

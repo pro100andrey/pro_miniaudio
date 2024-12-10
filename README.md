@@ -19,7 +19,7 @@ Add the following to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  pro_miniaudio: 0.0.6
+  pro_miniaudio: 0.0.7
 ```
 
 ## Context
@@ -67,8 +67,7 @@ void main() {
     audioFormat: AudioFormat(
         sampleFormat: SampleFormat.f32,
         sampleRate: 8000,
-        channels: 2
-        flags: 0
+        channels: 2,
       ),
       bufferSizeInBytes: 4096,
   );

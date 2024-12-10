@@ -58,9 +58,10 @@ void *context_create(void) {
     ma_context_config config = ma_context_config_init();
     config.coreaudio.sessionCategory =
         ma_ios_session_category_play_and_record;
-
     config.coreaudio.sessionCategoryOptions =
         ma_ios_session_category_option_allow_bluetooth |
+        ma_ios_session_category_option_allow_bluetooth_a2dp |
+        ma_ios_session_category_option_allow_air_play |
         ma_ios_session_category_option_mix_with_others;
 
     ma_log log;
