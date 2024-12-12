@@ -53,7 +53,7 @@ extension PlaybackConfigExt on PlaybackConfig {
 
     nativePlaybackConfig.ref.channels = channels;
     nativePlaybackConfig.ref.sampleRate = sampleRate;
-    nativePlaybackConfig.ref.sampleFormatAsInt = sampleFormat.index;
+    nativePlaybackConfig.ref.pcmFormatAsInt = sampleFormat.index;
     nativePlaybackConfig.ref.rbMinThreshold = ringBufferMinThreshold;
     nativePlaybackConfig.ref.rbMaxThreshold = ringBufferMaxThreshold;
     nativePlaybackConfig.ref.rbSizeInBytes = ringBufferSizeInBytes;
@@ -65,7 +65,7 @@ extension PlaybackConfigExt on PlaybackConfig {
 }
 
 extension SampleFormatExt on SampleFormat {
-  sample_format_t toNative() => sample_format_t.values[index];
+  pcm_format_t toNative() => pcm_format_t.values[index];
 }
 
 extension WaveformTypeExt on WaveformType {

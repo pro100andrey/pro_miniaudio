@@ -2,12 +2,12 @@
 
 #include <stdlib.h>
 
+#include "../include/internal.h"
 #include "../include/logger.h"
 #include "../include/miniaudio.h"
-#include "../include/internal.h"
 
 FFI_PLUGIN_EXPORT
-void *waveform_create(sample_format_t format,
+void *waveform_create(pcm_format_t pcmFormat,
                       u_int32_t channels,
                       uint32_t sampleRate,
                       waveform_type_t waveformType,
@@ -16,7 +16,7 @@ void *waveform_create(sample_format_t format,
     ma_waveform_type type = (ma_waveform_type)waveformType;
 
     ma_waveform_config config =
-        ma_waveform_config_init((ma_format)format,
+        ma_waveform_config_init((ma_format)pcmFormat,
                                 channels,
                                 sampleRate,
                                 type,
@@ -45,7 +45,7 @@ void *waveform_create(sample_format_t format,
 
     LOG_INFO("<%p>(ma_waveform) created - format: %s, channels: %d, sample_rate: %d.\n",
              waveform,
-             describe_ma_format((ma_format)format),
+             describe_ma_format((ma_format)pcmFormat),
              channels,
              sampleRate);
 

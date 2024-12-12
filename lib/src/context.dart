@@ -137,7 +137,7 @@ final class Context extends NativeResource<Void> {
 
           return AudioFormat(
             sampleFormat: SampleFormat.fromValue(
-              nativeAudioFormat.sampleFormatAsInt,
+              nativeAudioFormat.pcmFormatAsInt,
             ),
             channels: nativeAudioFormat.channels,
             sampleRate: nativeAudioFormat.sampleRate,

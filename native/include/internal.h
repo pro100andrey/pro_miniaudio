@@ -1,27 +1,14 @@
 #ifndef INTERNAL_H
 #define INTERNAL_H
 
-#include "context.h"
 #include "miniaudio.h"
-#include "stdint.h"
 
-static const char *describe_ma_format(ma_format format) {
-    switch (format) {
-        case ma_format_unknown:
-            return "unknown";
-        case ma_format_u8:
-            return "u8";
-        case ma_format_s16:
-            return "s16";
-        case ma_format_s24:
-            return "s24";
-        case ma_format_s32:
-            return "s32";
-        case ma_format_f32:
-            return "f32";
-        default:
-            return "unknown";
-    }
-}
+/**
+ * @brief Returns a string representation of a `ma_format` value.
+ *
+ * @param format The `ma_format` to describe.
+ * @return A string describing the `ma_format`, or "unknown" for invalid values.
+ */
+const char *describe_ma_format(ma_format format);
 
-#endif  // !INTERNAL_H
+#endif  // INTERNAL_H

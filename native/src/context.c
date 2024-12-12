@@ -3,7 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../include/context_internal.h"
+#include "../include/context_private.h"
+#include "../include/internal.h"
 #include "../include/logger.h"
 #include "../include/miniaudio.h"
 
@@ -36,6 +37,9 @@ void *context_create(void) {
         LOG_ERROR("failed to allocate memory for context.\n", "");
         return NULL;
     }
+
+    context->audioDevices = NULL;
+    context->deviceCount = 0;
 
     ma_context_config config = ma_context_config_init();
     config.coreaudio.sessionCategory =
@@ -87,6 +91,14 @@ void context_destroy(void *pContext) {
     }
 
     context_t *context = (context_t *)pContext;
+    // Stop and free each device
+    for (size_t i = 0; i < context->deviceCount; i++) {
+        audio_device_t *device = context->audioDevices[i];
+        if (device->vtable && device->vtable->destroy) {
+            LOG_INFO("Destroying device <%p>(audio_device_t *)\n", device);
+            device->vtable->destroy(device);
+        }
+    }
 
     ma_result contextUninitResult =
         ma_context_uninit(&context->maContext);
@@ -104,8 +116,8 @@ void context_destroy(void *pContext) {
         free(context->captureCache.deviceInfo);
     }
 
+    free(context->audioDevices);
     free(context->maContext.pLog);
-
     free(context);
 
     LOG_INFO("<%p>(context_t *) destroyed.\n", context);
@@ -160,8 +172,8 @@ static void process_device_list(context_t *pContext,
         pDevicesCache->deviceInfo[i].formatCount = pMaDeviceInfos[i].nativeDataFormatCount;
 
         for (uint32_t j = 0; j < pMaDeviceInfos[i].nativeDataFormatCount; j++) {
-            pDevicesCache->deviceInfo[i].audioFormats[j].sampleFormat =
-                (sample_format_t)pMaDeviceInfos[i].nativeDataFormats[j].format;
+            pDevicesCache->deviceInfo[i].audioFormats[j].pcmFormat =
+                (pcm_format_t)pMaDeviceInfos[i].nativeDataFormats[j].format;
             pDevicesCache->deviceInfo[i].audioFormats[j].channels =
                 pMaDeviceInfos[i].nativeDataFormats[j].channels;
             pDevicesCache->deviceInfo[i].audioFormats[j].sampleRate =

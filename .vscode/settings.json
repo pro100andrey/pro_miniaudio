@@ -23,14 +23,5 @@
         "wasapi",
         "webaudio",
         "winmm"
-    ],
-    "files.associations": {
-        "*.arb": "json",
-        "vector": "c",
-        "miniaudio.h": "c",
-        "context_internal.h": "c",
-        "__locale": "c",
-        "locale": "c",
-        "typeinfo": "c"
-    }
+    ]
 }

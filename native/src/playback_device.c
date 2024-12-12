@@ -3,19 +3,36 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../include/context_internal.h"
+#include "../include/context_private.h"
 #include "../include/internal.h"
 #include "../include/logger.h"
 #include "../include/miniaudio.h"
+#include "../include/playback_device_private.h"
 
+// Playback device vtable
+typedef struct {
+    audio_device_vtable_t base;
+    void (*pushBuffer)(void *self, playback_data_t *pData);
+    void (*resetBuffer)(void *self);
+} playback_device_vtable_t;
+
+static playback_device_vtable_t g_playback_device_vtable = {
+    .base = {
+        .start = playback_device_start,
+        .stop = playback_device_stop,
+        .destroy = playback_device_destroy,
+        .get_state = playback_device_get_state},
+    .pushBuffer = playback_device_push_buffer,
+    .resetBuffer = playback_device_reset_buffer};
+
+// Playback device data callback
 void data_callback(ma_device *pDevice,
                    void *pOutput,
                    const void *pInput,
                    ma_uint32 frameCount) {
     (void)pInput;
 
-    playback_device_t *playback =
-        (playback_device_t *)pDevice->pUserData;
+    playback_device_t *playback = (playback_device_t *)pDevice->pUserData;
 
     if (!playback) {
         LOG_ERROR("invalid parameter: `pDevice->pUserData` is NULL.\n", "");
@@ -41,8 +58,9 @@ void data_callback(ma_device *pDevice,
         return;
     }
     ma_uint32 bpf =
-        ma_get_bytes_per_frame((ma_format)playback->config.sampleFormat,
+        ma_get_bytes_per_frame((ma_format)playback->config.pcmFormat,
                                playback->config.channels);
+
     ma_uint32 bytesPerFrames = frameCount * bpf;
     size_t bytesToRead = (availableRead < bytesPerFrames) ? availableRead : bytesPerFrames;
 
@@ -54,6 +72,7 @@ void data_callback(ma_device *pDevice,
             ma_rb_acquire_read(&playback->rb,
                                &chunkSize,
                                &bufferOut);
+
         if (acquireReadResult != MA_SUCCESS) {
             LOG_ERROR("`ma_rb_acquire_read` failed: %s.\n",
                       ma_result_description(acquireReadResult));
@@ -79,7 +98,9 @@ void data_callback(ma_device *pDevice,
         if (commitResult == MA_AT_END) {
             LOG_WARN("`ma_rb_commit_read`: %s.\n",
                      ma_result_description(commitResult));
+
             playback->isReadingEnabled = false;
+
             LOG_DEBUG("Reading is disabled. Buffer not sufficiently filled.\n", "");
             break;
         } else if (commitResult != MA_SUCCESS) {
@@ -117,7 +138,7 @@ void notification_callback(const ma_device_notification *pNotification) {
 
 bool validate_playback_config(playback_config_t config) {
     LOG_INFO("config: \n", "");
-    LOG_INFO("  sampleFormat: %s\n", describe_ma_format((ma_format)config.sampleFormat));
+    LOG_INFO("  sampleFormat: %s\n", describe_ma_format((ma_format)config.pcmFormat));
     LOG_INFO("  channels: %d\n", config.channels);
     LOG_INFO("  sampleRate: %d\n", config.sampleRate);
     LOG_INFO("  rbMinThreshold: %d\n", config.rbMinThreshold);
@@ -153,6 +174,7 @@ void *playback_device_create(void *pContext,
         return NULL;
     }
 
+    // Copy the config
     memcpy(&playback->config, &config, sizeof(config));
 
     // Initialize the playback playbackDevice
@@ -160,7 +182,7 @@ void *playback_device_create(void *pContext,
         ma_device_config_init(ma_device_type_playback);
 
     deviceConfig.playback.pDeviceID = (ma_device_id *)pDeviceId;
-    deviceConfig.playback.format = (ma_format)config.sampleFormat;
+    deviceConfig.playback.format = (ma_format)config.pcmFormat;
     deviceConfig.playback.channels = config.channels;
     deviceConfig.sampleRate = config.sampleRate;
 
@@ -170,15 +192,13 @@ void *playback_device_create(void *pContext,
 
     context_t *context = (context_t *)pContext;
 
-    LOG_INFO("Creating playback device for device id: <%p>.\n", deviceConfig.playback.pDeviceID);
-    LOG_INFO("Using context: <%p>.\n", context);
-
     ma_result maDeviceInitResult =
         ma_device_init(&context->maContext,
                        &deviceConfig,
                        &playback->device);
 
     if (maDeviceInitResult != MA_SUCCESS) {
+        free(playback);
         free(playback);
 
         LOG_ERROR("`ma_device_init` failed - %s.\n",
@@ -196,6 +216,7 @@ void *playback_device_create(void *pContext,
 
     if (maRbInitResult != MA_SUCCESS) {
         ma_device_uninit(&playback->device);
+
         free(playback);
 
         LOG_ERROR("`ma_rb_init` failed - %s.\n",
@@ -206,15 +227,20 @@ void *playback_device_create(void *pContext,
 
     playback->isReadingEnabled = false;
 
+    audio_device_create(&playback->base, pDeviceId, context);
+    playback->base.vtable = (audio_device_vtable_t *)&g_playback_device_vtable;
+
+    context_register_device(context, (audio_device_t *)playback);
+
     LOG_INFO(
         "<%p>(ma_device *) created - format: %s, channels: %d, sample_rate: %d.\n",
         &playback->device,
-        describe_ma_format((ma_format)config.sampleFormat),
+        describe_ma_format((ma_format)config.pcmFormat),
         config.channels,
         config.sampleRate);
 
     ma_uint32 bpf = ma_get_bytes_per_frame(
-        (ma_format)config.sampleFormat,
+        (ma_format)config.pcmFormat,
         config.channels);
 
     float fullBufferInSec =
@@ -245,6 +271,17 @@ void playback_device_destroy(void *pDevice) {
 
     playback_device_t *playback = (playback_device_t *)pDevice;
 
+    context_t *pContext = (context_t *)playback->base.owner;
+
+    if (!pContext) {
+        LOG_WARN("`pContext` is NULL. Skipping device unregistration and destroy.\n", "");
+        return;
+    }
+
+    context_unregister_device(pContext, (audio_device_t *)playback);
+    playback->base.vtable = NULL;
+    playback->base.owner = NULL;
+
     ma_result maDeviceStopResult =
         ma_device_stop(&playback->device);
 
@@ -264,10 +301,10 @@ void playback_device_destroy(void *pDevice) {
 }
 
 FFI_PLUGIN_EXPORT
-void *playback_device_reset_buffer(void *pDevice) {
+void playback_device_reset_buffer(void *pDevice) {
     if (!pDevice) {
         LOG_ERROR("invalid parameter: `pDevice` is NULL.\n", "");
-        return NULL;
+        return;
     }
 
     playback_device_t *playback = (playback_device_t *)pDevice;
@@ -277,7 +314,7 @@ void *playback_device_reset_buffer(void *pDevice) {
 
     LOG_INFO("<%p>(ma_rb *) reset.\n", &playback->rb);
 
-    return &playback->rb;
+    return;
 }
 
 FFI_PLUGIN_EXPORT
@@ -323,10 +360,10 @@ void playback_device_stop(void *pDevice) {
         return;
     }
 
-    playback_device_t *playbackDevice = (playback_device_t *)pDevice;
+    playback_device_t *playback = (playback_device_t *)pDevice;
 
     ma_result stopResult =
-        ma_device_stop(&playbackDevice->device);
+        ma_device_stop(&playback->device);
 
     if (stopResult != MA_SUCCESS) {
         LOG_ERROR("`ma_device_stop` failed - %s.\n",
@@ -335,7 +372,7 @@ void playback_device_stop(void *pDevice) {
         return;
     }
 
-    LOG_INFO("playback <%p> stopped.\n", playbackDevice);
+    LOG_INFO("playback <%p> stopped.\n", playback);
 }
 
 FFI_PLUGIN_EXPORT
@@ -362,7 +399,7 @@ void playback_device_push_buffer(void *pDevice, playback_data_t *pData) {
     size_t bufferSize = ma_rb_get_subbuffer_size(&playback->rb);
     size_t sizeInBytes = pData->sizeInBytes;
 
-    ma_format format = (ma_format)playback->config.sampleFormat;
+    ma_format format = (ma_format)playback->config.pcmFormat;
     ma_uint32 channels = playback->config.channels;
     ma_uint32 sampleRate = playback->config.sampleRate;
     size_t bpf = ma_get_bytes_per_frame(format, channels);

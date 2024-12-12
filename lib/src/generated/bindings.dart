@@ -68,7 +68,7 @@ class ProMiniaudioBindings {
   late final _context_refresh_devices = _context_refresh_devicesPtr
       .asFunction<void Function(ffi.Pointer<ffi.Void>)>();
 
-  /// Gets the number of playback devices.
+  /// Retrieves the number of playback devices.
   int context_get_playback_device_count(
     ffi.Pointer<ffi.Void> pContext,
   ) {
@@ -84,7 +84,7 @@ class ProMiniaudioBindings {
       _context_get_playback_device_countPtr
           .asFunction<int Function(ffi.Pointer<ffi.Void>)>();
 
-  /// Gets the number of capture devices.
+  /// Retrieves the number of capture devices.
   int context_get_capture_device_count(
     ffi.Pointer<ffi.Void> pContext,
   ) {
@@ -100,7 +100,7 @@ class ProMiniaudioBindings {
       _context_get_capture_device_countPtr
           .asFunction<int Function(ffi.Pointer<ffi.Void>)>();
 
-  /// Retrieves playback device information.
+  /// Gets detailed information about playback devices.
   ffi.Pointer<device_info_t> context_get_playback_device_infos(
     ffi.Pointer<ffi.Void> pContext,
   ) {
@@ -117,7 +117,7 @@ class ProMiniaudioBindings {
       _context_get_playback_device_infosPtr.asFunction<
           ffi.Pointer<device_info_t> Function(ffi.Pointer<ffi.Void>)>();
 
-  /// Retrieves capture device information.
+  /// Gets detailed information about capture devices.
   ffi.Pointer<device_info_t> context_get_capture_device_infos(
     ffi.Pointer<ffi.Void> pContext,
   ) {
@@ -134,7 +134,7 @@ class ProMiniaudioBindings {
       _context_get_capture_device_infosPtr.asFunction<
           ffi.Pointer<device_info_t> Function(ffi.Pointer<ffi.Void>)>();
 
-  /// Set the log level.
+  /// Sets the current log level.
   void set_log_level(
     LogLevel level,
   ) {
@@ -149,7 +149,7 @@ class ProMiniaudioBindings {
   late final _set_log_level =
       _set_log_levelPtr.asFunction<void Function(int)>();
 
-  /// Enable or disable logging to a file.
+  /// Enables or disables logging to a file.
   void set_log_to_file_enabled(
     bool enabled,
   ) {
@@ -164,7 +164,7 @@ class ProMiniaudioBindings {
   late final _set_log_to_file_enabled =
       _set_log_to_file_enabledPtr.asFunction<void Function(bool)>();
 
-  /// Check if logging to a file is enabled.
+  /// Checks if file logging is currently enabled.
   bool is_log_to_file_enabled() {
     return _is_log_to_file_enabled();
   }
@@ -175,7 +175,7 @@ class ProMiniaudioBindings {
   late final _is_log_to_file_enabled =
       _is_log_to_file_enabledPtr.asFunction<bool Function()>();
 
-  /// Initialize logging to a file.
+  /// Initializes logging to a file.
   void init_file_log(
     ffi.Pointer<ffi.Char> filename,
   ) {
@@ -190,7 +190,7 @@ class ProMiniaudioBindings {
   late final _init_file_log =
       _init_file_logPtr.asFunction<void Function(ffi.Pointer<ffi.Char>)>();
 
-  /// Close the log file.
+  /// Closes the currently opened log file.
   void close_file_log() {
     return _close_file_log();
   }
@@ -199,7 +199,7 @@ class ProMiniaudioBindings {
       _lookup<ffi.NativeFunction<ffi.Void Function()>>('close_file_log');
   late final _close_file_log = _close_file_logPtr.asFunction<void Function()>();
 
-  /// Enable or disable logging to the console.
+  /// Enables or disables logging to the console.
   void set_log_to_console_enabled(
     bool enabled,
   ) {
@@ -214,7 +214,7 @@ class ProMiniaudioBindings {
   late final _set_log_to_console_enabled =
       _set_log_to_console_enabledPtr.asFunction<void Function(bool)>();
 
-  /// Log a message with a specified level.
+  /// Logs a message with the specified severity level.
   void log_message(
     LogLevel level,
     ffi.Pointer<ffi.Char> funcName,
@@ -273,7 +273,7 @@ class ProMiniaudioBindings {
       .asFunction<void Function(ffi.Pointer<ffi.Void>)>();
 
   /// Resets the playback device's internal buffer.
-  ffi.Pointer<ffi.Void> playback_device_reset_buffer(
+  void playback_device_reset_buffer(
     ffi.Pointer<ffi.Void> pDevice,
   ) {
     return _playback_device_reset_buffer(
@@ -281,12 +281,11 @@ class ProMiniaudioBindings {
     );
   }
 
-  late final _playback_device_reset_bufferPtr = _lookup<
-      ffi.NativeFunction<
-          ffi.Pointer<ffi.Void> Function(
-              ffi.Pointer<ffi.Void>)>>('playback_device_reset_buffer');
+  late final _playback_device_reset_bufferPtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Void>)>>(
+          'playback_device_reset_buffer');
   late final _playback_device_reset_buffer = _playback_device_reset_bufferPtr
-      .asFunction<ffi.Pointer<ffi.Void> Function(ffi.Pointer<ffi.Void>)>();
+      .asFunction<void Function(ffi.Pointer<ffi.Void>)>();
 
   /// Starts audio playback on the specified device.
   void playback_device_start(
@@ -354,15 +353,15 @@ class ProMiniaudioBindings {
 
   /// Creates a waveform generator with the specified parameters.
   ffi.Pointer<ffi.Void> waveform_create(
-    sample_format_t format,
-    Dartu_int32_t channels,
+    pcm_format_t pcmFormat,
+    int channels,
     int sampleRate,
     waveform_type_t waveformType,
     double amplitude,
     double frequency,
   ) {
     return _waveform_create(
-      format.value,
+      pcmFormat.value,
       channels,
       sampleRate,
       waveformType.value,
@@ -373,8 +372,13 @@ class ProMiniaudioBindings {
 
   late final _waveform_createPtr = _lookup<
       ffi.NativeFunction<
-          ffi.Pointer<ffi.Void> Function(ffi.UnsignedInt, u_int32_t, ffi.Uint32,
-              ffi.UnsignedInt, ffi.Double, ffi.Double)>>('waveform_create');
+          ffi.Pointer<ffi.Void> Function(
+              ffi.UnsignedInt,
+              ffi.Uint32,
+              ffi.Uint32,
+              ffi.UnsignedInt,
+              ffi.Double,
+              ffi.Double)>>('waveform_create');
   late final _waveform_create = _waveform_createPtr.asFunction<
       ffi.Pointer<ffi.Void> Function(int, int, int, int, double, double)>();
 
@@ -432,67 +436,95 @@ class _SymbolAddresses {
       get waveform_destroy => _library._waveform_destroyPtr;
 }
 
-/// Enumeration to represent supported audio sample formats.
-enum sample_format_t {
-  sample_format_unknown(0),
-  sample_format_u8(1),
-  sample_format_s16(2),
-  sample_format_s24(3),
-  sample_format_s32(4),
-  sample_format_f32(5),
-  sample_format_count(6);
+/// Enumeration to represent common audio sample formats.
+enum pcm_format_t {
+  /// Unknown or unsupported PCM format.
+  pcm_format_unknown(0),
+
+  /// Unsigned 8-bit integer.
+  pcm_format_u8(1),
+
+  /// Signed 16-bit integer.
+  pcm_format_s16(2),
+
+  /// Signed 24-bit integer.
+  pcm_format_s24(3),
+
+  /// Signed 32-bit integer.
+  pcm_format_s32(4),
+
+  /// 32-bit floating point.
+  pcm_format_f32(5),
+
+  /// Total number of supported PCM formats.
+  pcm_format_count(6);
 
   final int value;
-  const sample_format_t(this.value);
+  const pcm_format_t(this.value);
 
-  static sample_format_t fromValue(int value) => switch (value) {
-        0 => sample_format_unknown,
-        1 => sample_format_u8,
-        2 => sample_format_s16,
-        3 => sample_format_s24,
-        4 => sample_format_s32,
-        5 => sample_format_f32,
-        6 => sample_format_count,
-        _ => throw ArgumentError("Unknown value for sample_format_t: $value"),
+  static pcm_format_t fromValue(int value) => switch (value) {
+        0 => pcm_format_unknown,
+        1 => pcm_format_u8,
+        2 => pcm_format_s16,
+        3 => pcm_format_s24,
+        4 => pcm_format_s32,
+        5 => pcm_format_f32,
+        6 => pcm_format_count,
+        _ => throw ArgumentError("Unknown value for pcm_format_t: $value"),
       };
 }
 
-/// Structure to describe a audio data format.
+/// Describes an audio data format.
 final class audio_format_t extends ffi.Struct {
+  /// The PCM sample format (e.g., 16-bit integer).
   @ffi.UnsignedInt()
-  external int sampleFormatAsInt;
+  external int pcmFormatAsInt;
 
-  sample_format_t get sampleFormat =>
-      sample_format_t.fromValue(sampleFormatAsInt);
+  pcm_format_t get pcmFormat => pcm_format_t.fromValue(pcmFormatAsInt);
 
+  /// The number of audio channels (e.g., 1 for mono, 2 for stereo).
   @ffi.Uint32()
   external int channels;
 
+  /// The sample rate in Hertz (e.g., 44100 Hz).
   @ffi.Uint32()
   external int sampleRate;
 }
 
-/// Structure to describe an audio device.
+/// Provides detailed information about an audio device.
 final class device_info_t extends ffi.Struct {
+  /// Unique identifier for the device.
   external ffi.Pointer<ffi.Void> id;
 
+  /// Null-terminated string representing the device name.
   @ffi.Array.multi([256])
   external ffi.Array<ffi.Char> name;
 
+  /// Indicates whether this is the default device.
   @ffi.Bool()
   external bool isDefault;
 
+  /// Number of supported audio formats.
   @ffi.Uint32()
   external int formatCount;
 
+  /// Array of supported audio formats.
   @ffi.Array.multi([64])
   external ffi.Array<audio_format_t> audioFormats;
 }
 
+/// Defines the severity levels for log messages.
 enum LogLevel {
+  /// Debug level: Detailed information for debugging purposes.
   LOG_LEVEL_DEBUG(0),
+
+  /// Info level: General informational messages.
   LOG_LEVEL_INFO(1),
+
+  /// Warning level: Potential issues that are non-critical.
   LOG_LEVEL_WARNING(2),
+
+  /// Error level: Critical issues requiring immediate attention.
   LOG_LEVEL_ERROR(3);
 
   final int value;
@@ -507,43 +539,60 @@ enum LogLevel {
       };
 }
 
+/// Configuration structure for a playback device.
 final class playback_config_t extends ffi.Struct {
+  /// Number of audio channels (e.g., 2 for stereo).
   @ffi.Uint32()
   external int channels;
 
+  /// Sample rate in Hertz (e.g., 44100 Hz).
   @ffi.Uint32()
   external int sampleRate;
 
+  /// PCM format of the audio data (e.g., `pcm_format_s16`).
   @ffi.UnsignedInt()
-  external int sampleFormatAsInt;
+  external int pcmFormatAsInt;
 
-  sample_format_t get sampleFormat =>
-      sample_format_t.fromValue(sampleFormatAsInt);
+  pcm_format_t get pcmFormat => pcm_format_t.fromValue(pcmFormatAsInt);
 
+  /// Maximum threshold for the ring buffer.
   @ffi.Size()
   external int rbMaxThreshold;
 
+  /// Minimum threshold for the ring buffer.
   @ffi.Size()
   external int rbMinThreshold;
 
+  /// Total size of the ring buffer in bytes.
   @ffi.Size()
   external int rbSizeInBytes;
 }
 
 /// Represents audio data to be pushed to a playback device.
 final class playback_data_t extends ffi.Struct {
+  /// Pointer to the audio data to be played.
   external ffi.Pointer<ffi.Void> pUserData;
 
+  /// Size of the audio data in bytes.
   @ffi.Uint32()
   external int sizeInBytes;
 }
 
-/// Enumeration of possible states for a playback device.
+/// Represents the states of an audio device.
 enum device_state_t {
+  /// The device is not initialized.
   device_state_uninitialized(0),
+
+  /// The device is initialized but not started.
   device_state_stopped(1),
+
+  /// The device is active and processing audio data.
   device_state_started(2),
+
+  /// The device is transitioning from stopped to started.
   device_state_starting(3),
+
+  /// The device is transitioning from started to stopped.
   device_state_stopping(4);
 
   final int value;
@@ -559,11 +608,18 @@ enum device_state_t {
       };
 }
 
-/// Enum representing different types of waveforms.
+/// Represents the types of waveforms that can be generated.
 enum waveform_type_t {
+  /// Sine waveform.
   waveform_type_sine(0),
+
+  /// Square waveform.
   waveform_type_square(1),
+
+  /// Triangle waveform.
   waveform_type_triangle(2),
+
+  /// Sawtooth waveform.
   waveform_type_sawtooth(3);
 
   final int value;
@@ -577,6 +633,3 @@ enum waveform_type_t {
         _ => throw ArgumentError("Unknown value for waveform_type_t: $value"),
       };
 }
-
-typedef u_int32_t = ffi.UnsignedInt;
-typedef Dartu_int32_t = int;

@@ -5,7 +5,7 @@
 #include <stdlib.h>
 
 #include "../include/context.h"
-#include "../include/context_internal.h"
+#include "../include/internal.h"
 #include "../include/logger.h"
 #include "../include/miniaudio.h"
 #include "../include/playback_device.h"
@@ -27,7 +27,7 @@ int main(int argc, char const* argv[]) {
     set_log_to_console_enabled(true);
     set_log_level(LOG_LEVEL_DEBUG);
 
-    context_t* pContext = (context_t*)context_create();
+    void* pContext = context_create();
 
     if (!pContext) {
         return 1;
@@ -49,9 +49,9 @@ int main(int argc, char const* argv[]) {
     playback_config_t config;
     config.channels = 1;
     config.sampleRate = 32000;
-    config.sampleFormat = sample_format_s16;
+    config.pcmFormat = pcm_format_s16;
 
-    uint32_t bpf = ma_get_bytes_per_frame((ma_format)config.sampleFormat, config.channels);
+    uint32_t bpf = ma_get_bytes_per_frame((ma_format)config.pcmFormat, config.channels);
     uint32_t framesCount = calculateFrameCount(config.sampleRate, 100);
     uint32_t dataSizeInBytes = framesCount * bpf;
     size_t bufferSizeInBytes = dataSizeInBytes * 10;
@@ -69,7 +69,7 @@ int main(int argc, char const* argv[]) {
     }
 
     void* pWaveform =
-        waveform_create(config.sampleFormat,
+        waveform_create(config.pcmFormat,
                         config.channels,
                         config.sampleRate,
                         waveform_type_sine,

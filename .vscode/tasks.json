@@ -10,9 +10,12 @@
                 "-g",
                 "${workspaceFolder}/native/src/miniaudio.c",
                 "${workspaceFolder}/native/src/context.c",
+                "${workspaceFolder}/native/src/audio_device.c",
                 "${workspaceFolder}/native/src/playback_device.c",
-                "${workspaceFolder}/native/src/logger.c",
                 "${workspaceFolder}/native/src/waveform.c",
+                "${workspaceFolder}/native/src/logger.c",
+                "${workspaceFolder}/native/src/context_private.c",
+                "${workspaceFolder}/native/src/internal.c",
                 "${workspaceFolder}/native/bin/main.c",
 
                 "-o",
