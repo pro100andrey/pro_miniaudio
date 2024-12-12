@@ -73,8 +73,8 @@ final class DeviceInfo extends Equatable {
 
   /// Equatable implementation for comparing [DeviceInfo] instances.
   ///
-  /// Devices are compared based on their [id], [name], [isDefault] status,
-  /// and the list of supported [audioFormats].
+  /// Devices are compared based on their [name] and the list of
+  /// supported [audioFormats].
   @override
-  List<Object?> get props => [id, name, isDefault, audioFormats];
+  List<Object?> get props => [name, audioFormats];
 }
