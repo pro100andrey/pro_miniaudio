@@ -9,17 +9,18 @@ import 'package:meta/meta.dart';
 import 'generated/bindings.dart';
 
 part 'context.dart';
+part 'file_logger.dart';
 part 'internal.dart';
 part 'models/device_info.dart';
+part 'models/device_state.dart';
+part 'models/log_level.dart';
 part 'models/sample_format.dart';
 part 'models/waveform_config.dart';
 part 'models/waveform_type.dart';
-part 'models/log_level.dart';
-part 'models/device_state.dart';
+part 'models/playback_config.dart';
 part 'native_resource.dart';
 part 'playback_device.dart';
 part 'waveform.dart';
-part 'file_logger.dart';
 
 ProMiniaudioBindings get _bindings => Library.instance.bindings;
 
@@ -30,6 +31,25 @@ final class Library {
   final ProMiniaudioBindings bindings;
 
   static Library instance = Library._(_loadBindings());
+
+  /// The finalizer for the `Waveform` class.
+  static final waveformFinalizer = NativeFinalizer(
+    _bindings.addresses.waveform_destroy.cast(),
+  );
+
+  /// The finalizer for the playback device.
+  static final playbackDeviceFinalizer = NativeFinalizer(
+    _bindings.addresses.playback_device_destroy.cast(),
+  );
+
+  /// The finalizer for the `Context` class.
+  static final contextFinalizer = NativeFinalizer(
+    _bindings.addresses.context_destroy.cast(),
+  );
+
+  static final defaultFinalizer = NativeFinalizer(
+    malloc.nativeFree,
+  );
 
   /// Loads the native `pro_miniaudio` bindings from the platform-specific
   /// dynamic library.

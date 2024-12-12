@@ -1,7 +1,9 @@
 #ifndef INTERNAL_H
 #define INTERNAL_H
 
+#include "context.h"
 #include "miniaudio.h"
+#include "stdint.h"
 
 static const char *describe_ma_format(ma_format format) {
     switch (format) {
@@ -22,4 +24,4 @@ static const char *describe_ma_format(ma_format format) {
     }
 }
 
-#endif // !INTERNAL_H
+#endif  // !INTERNAL_H

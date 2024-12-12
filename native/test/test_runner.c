@@ -1,7 +1,7 @@
 #include "../include/context.h"
+#include "../include/logger.h"
 #include "../include/playback_device.h"
 #include "../include/waveform.h"
-#include "../include/logger.h"
 #include "unity/unity.h"
 
 void setUp(void) {}

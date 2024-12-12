@@ -5,81 +5,68 @@ part of 'library.dart';
 /// The `PlaybackDevice` class provides methods to control audio playback,
 /// such as starting playback, pushing audio buffers, stopping playback,
 /// and releasing resources.
-final class PlaybackDevice extends NativeResource<Void> with EquatableMixin {
+final class PlaybackDevice extends NativeResource<Void> {
   /// Creates a new playback device instance.
   ///
-  /// - [deviceInfo]: The device information for the playback device.
-  /// - [audioFormat]: The audio format that this device will use for
-  /// - [bufferSizeInBytes]: The size of the audio buffer in bytes.
-  /// playback.
+  /// - [context]: The audio context that will manage this device.
+  /// - [deviceInfo]: Information about the device to create.
+  /// - [config]: The audio format configuration for the device's audio stream.
   ///
   /// Throws an exception if the [Context] is not initialized or
   /// if the device creation fails.
   factory PlaybackDevice({
+    required Context context,
     required DeviceInfo deviceInfo,
-    required AudioFormat audioFormat,
-    required int bufferSizeInBytes,
+    required PlaybackConfig config,
   }) {
+    final nativeConfig = config.toNative();
 
-    final nativeAudioFormat = audioFormat.toNative();
+    final pContext = context.ensureIsNotFinalized();
 
     final device = _bindings.playback_device_create(
-      deviceInfo.id as device_id_t,
-      nativeAudioFormat.ref,
-      bufferSizeInBytes,
+      pContext,
+      deviceInfo.id as Pointer<Void>,
+      nativeConfig.ensureIsNotFinalized().ref,
     );
 
-    malloc.free(nativeAudioFormat);
+    if (device == nullptr) {
+      throw Exception('Failed to create playback device');
+    }
 
     return PlaybackDevice._(
       device,
+      context: context,
+      config: config,
       deviceInfo: deviceInfo,
-      audioFormat: audioFormat,
-      bufferSizeInBytes: bufferSizeInBytes,
     );
   }
 
   /// Internal constructor.
   PlaybackDevice._(
     super.ptr, {
+    required this.context,
+    required this.config,
     required this.deviceInfo,
-    required this.audioFormat,
-    required this.bufferSizeInBytes,
   }) : super._();
 
-  /// The audio format supported by this playback device.
-  ///
-  /// This format defines the sample rate, channels, and data representation.
-  final AudioFormat audioFormat;
-
-  /// The size of the audio buffer in bytes.
-  final int bufferSizeInBytes;
+  /// The audio format that this device will use for playback.
+  final PlaybackConfig config;
 
   /// Device information.
   final DeviceInfo deviceInfo;
 
-  /// The finalizer for the playback device.
-  ///
-  /// Releases the native resource when the Dart object is garbage collected.
-  static final _finalizer = NativeFinalizer(
-    _bindings.addresses.playback_device_destroy.cast(),
-  );
+  /// The audio context that manages this device.
+  final Context context;
 
+  @protected
   @override
-  List<Object?> get props => [
-        audioFormat,
-        bufferSizeInBytes,
-        deviceInfo,
-      ];
+  NativeFinalizer get finalizer => Library.playbackDeviceFinalizer;
 
+  @protected
   @override
-  NativeFinalizer get finalizer => _finalizer;
-
-  @override
-  void releaseResource() => _bindings.playback_device_destroy(
-        ensureResourceIsNotFinalized(),
-      );
-
+  void releaseResource() =>_bindings.playback_device_destroy(
+      ensureIsNotFinalized(),
+    );
   /// Resets the playback device's internal buffer.
   ///
   /// Clears any audio data currently in the buffer and ensures that the buffer
@@ -87,14 +74,14 @@ final class PlaybackDevice extends NativeResource<Void> with EquatableMixin {
   ///
   /// Throws an exception if resource is not initialized.
   void resetBuffer() => _bindings.playback_device_reset_buffer(
-        ensureResourceIsNotFinalized(),
+        ensureIsNotFinalized(),
       );
 
   /// Starts audio playback on the device.
   ///
   /// Throws an exception if resource is not initialized.
   void start() => _bindings.playback_device_start(
-        ensureResourceIsNotFinalized(),
+        ensureIsNotFinalized(),
       );
 
   /// Gets the current state of the playback device.
@@ -102,7 +89,7 @@ final class PlaybackDevice extends NativeResource<Void> with EquatableMixin {
   /// Throws an exception if resource is not initialized.
   DeviceState get state {
     final state = _bindings.playback_device_get_state(
-      ensureResourceIsNotFinalized(),
+      ensureIsNotFinalized(),
     );
 
     return DeviceState.values[state.index];
@@ -110,24 +97,46 @@ final class PlaybackDevice extends NativeResource<Void> with EquatableMixin {
 
   /// Pushes an audio buffer to the playback device for playback.
   ///
-  /// - [buffer]: A [Float32List] containing the audio samples.
+  /// - [buffer]: A [Float32List] or [Int16List] containing the audio samples.
   /// - [framesCount]: The number of frames in the buffer.
   ///
   /// Each frame contains samples for all channels. For example, in a stereo
   /// configuration (2 channels), one frame includes 2 samples.
   ///
   /// Throws an exception if resource is not initialized.
-  void pushBuffer({required Float32List buffer, required int framesCount}) {
-    final resource = ensureResourceIsNotFinalized();
-    final data = malloc.allocate<playback_data_t>(sizeOf<playback_data_t>());
-    
-    final sizeInBytes = framesCount * audioFormat.bytesPerFrame;
+  void pushBuffer<T extends TypedData>({
+    required TypedData buffer,
+    required int framesCount,
+  }) {
+    assert(framesCount > 0, 'Frames count must be greater than 0');
+    assert(
+      buffer is Float32List ||
+          buffer is Int32List ||
+          buffer is Int16List ||
+          buffer is Uint8List,
+      'Unsupported buffer type',
+    );
 
-    final pUserData = malloc<Float>(sizeInBytes);
+    final resource = ensureIsNotFinalized();
+    final data = malloc.allocate<playback_data_t>(sizeOf<playback_data_t>());
+
+    final sizeInBytes = framesCount * config.bpf;
+    final pUserData = malloc.allocate(sizeInBytes);
+    final length = framesCount * config.channels;
+
     // Fill the allocated memory with audio buffer data.
-    pUserData
-        .asTypedList(framesCount * audioFormat.channels)
-        .setAll(0, buffer);
+    switch (buffer) {
+      case Uint8List():
+        pUserData.cast<Uint8>().asTypedList(length).setAll(0, buffer);
+      case Int16List():
+        pUserData.cast<Int16>().asTypedList(length).setAll(0, buffer);
+      case Float32List():
+        pUserData.cast<Float>().asTypedList(length).setAll(0, buffer);
+      case Int32List():
+        pUserData.cast<Int32>().asTypedList(length).setAll(0, buffer);
+      case _:
+        throw UnsupportedError('Unsupported buffer type');
+    }
 
     // Set data properties for the native structure.
     data.ref.pUserData = pUserData.cast();
@@ -137,8 +146,8 @@ final class PlaybackDevice extends NativeResource<Void> with EquatableMixin {
 
     // Free allocated memory to avoid leaks.
     malloc
-      ..free(pUserData)
-      ..free(data);
+      ..free(data)
+      ..free(pUserData);
   }
 
   /// Stops audio playback on the device.
@@ -148,6 +157,6 @@ final class PlaybackDevice extends NativeResource<Void> with EquatableMixin {
   ///
   /// Throws an exception if resource is not initialized.
   void stop() => _bindings.playback_device_stop(
-        ensureResourceIsNotFinalized(),
+        ensureIsNotFinalized(),
       );
 }

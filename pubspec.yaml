@@ -9,11 +9,11 @@ documentation: https://github.com/pro100andrey/pro_miniaudio/blob/main/README.md
 
 
 environment:
-  sdk: ^3.5.4
+  sdk: ^3.6.0
   flutter: '>=3.3.0'
 
 dependencies:
-  equatable: ^2.0.5
+  equatable: ^2.0.7
   ffi: ^2.1.3
   flutter:
     sdk: flutter
@@ -21,10 +21,10 @@ dependencies:
   plugin_platform_interface: ^2.1.8
 
 dev_dependencies:
-  ffigen: ^15.0.0
+  ffigen: ^16.0.0
   flutter_test:
     sdk: flutter
-  pro_lints: ^2.0.4
+  pro_lints: ^3.0.0
 
 platforms:
   android:

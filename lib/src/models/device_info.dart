@@ -57,12 +57,10 @@ final class AudioFormat extends Equatable {
   /// - [channels]: The number of audio channels (e.g., 1 for mono, 2 for
   /// stereo).
   /// - [sampleRate]: The sample rate in Hertz.
-  /// /// - [flags]: Format flags (reserved for future use).
   const AudioFormat({
     required this.sampleFormat,
     required this.channels,
     required this.sampleRate,
-    this.flags = 0,
   });
 
   /// The audio sample format.
@@ -85,20 +83,13 @@ final class AudioFormat extends Equatable {
   /// - `48000`: Professional audio.
   final int sampleRate;
 
-  /// Format flags (reserved for future use).
-  ///
-  /// This field is currently not used but is included for potential future
-  /// extensions.
-  final int flags;
-
   /// The number of bytes pef frame.
-  int get bytesPerFrame => sampleFormat.bytesPerSample * channels;
+  int get bytesPerFrame => sampleFormat.bps * channels;
 
   @override
   List<Object?> get props => [
         sampleFormat,
         channels,
         sampleRate,
-        flags,
       ];
 }

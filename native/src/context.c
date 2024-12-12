@@ -3,27 +3,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "../include/context_internal.h"
 #include "../include/logger.h"
 #include "../include/miniaudio.h"
-
-/**
- * @struct devices_cache_t
- * @brief Structure to store device information.
- */
-typedef struct {
-    uint32_t count;
-    device_info_t *deviceInfo;
-} devices_cache_t;
-
-/**
- * @struct context_t
- * @brief Structure to manage the audio system context.
- */
-typedef struct {
-    ma_context maContext;           // Miniaudio context for audio system initialization
-    devices_cache_t playbackCache;  // Playback device cache
-    devices_cache_t captureCache;   // Capture device cache
-} context_t;
 
 void _onLog(void *pUserData, ma_uint32 level, const char *pMessage) {
     (void)pUserData;
@@ -48,7 +30,7 @@ void _onLog(void *pUserData, ma_uint32 level, const char *pMessage) {
 
 FFI_PLUGIN_EXPORT
 void *context_create(void) {
-    context_t *context = (context_t *)malloc(sizeof(context_t));
+    context_t *context = malloc(sizeof(context_t));
 
     if (!context) {
         LOG_ERROR("failed to allocate memory for context.\n", "");
@@ -64,14 +46,14 @@ void *context_create(void) {
         ma_ios_session_category_option_allow_air_play |
         ma_ios_session_category_option_mix_with_others;
 
-    ma_log log;
+    ma_log *log = malloc(sizeof(ma_log));
     if (ma_log_init(
             &context->maContext.allocationCallbacks,
-            &log) == MA_SUCCESS) {
+            log) == MA_SUCCESS) {
         ma_log_callback log_callback;
         log_callback.onLog = _onLog;
-        ma_log_register_callback(&log, log_callback);
-        config.pLog = &log;
+        ma_log_register_callback(log, log_callback);
+        config.pLog = log;
     }
 
     ma_result contextInitResult =
@@ -122,52 +104,37 @@ void context_destroy(void *pContext) {
         free(context->captureCache.deviceInfo);
     }
 
+    free(context->maContext.pLog);
+
     free(context);
 
     LOG_INFO("<%p>(context_t *) destroyed.\n", context);
-}
-
-static void process_device_info(const ma_device_info *maDeviceInfo,
-                                device_info_t *deviceInfo) {
-    strncpy(deviceInfo->name,
-            maDeviceInfo->name,
-            MA_MAX_DEVICE_NAME_LENGTH + 1);
-
-    memcpy(&deviceInfo->id, &maDeviceInfo->id, sizeof(device_id_t));
-
-    deviceInfo->isDefault = maDeviceInfo->isDefault;
-    deviceInfo->formatCount = maDeviceInfo->nativeDataFormatCount;
-
-    for (uint32_t j = 0; j < maDeviceInfo->nativeDataFormatCount; j++) {
-        deviceInfo->audioFormats[j].sampleFormat =
-            (sample_format_t)maDeviceInfo->nativeDataFormats[j].format;
-        deviceInfo->audioFormats[j].channels =
-            maDeviceInfo->nativeDataFormats[j].channels;
-        deviceInfo->audioFormats[j].sampleRate =
-            maDeviceInfo->nativeDataFormats[j].sampleRate;
-        deviceInfo->audioFormats[j].flags =
-            maDeviceInfo->nativeDataFormats[j].flags;
-    }
 }
 
 static void process_device_list(context_t *pContext,
                                 ma_device_type deviceType,
                                 ma_device_info *pMaDeviceInfos,
                                 uint32_t deviceCount,
-                                devices_cache_t *pDevicesCache) {
-    //
+                                device_info_cache_t *pDevicesCache) {
+    // Free previous devices
+    if (pDevicesCache->deviceInfo) {
+        for (uint32_t i = 0; i < pDevicesCache->count; i++) {
+            free(pDevicesCache->deviceInfo[i].id);
+        }
+
+        free(pDevicesCache->deviceInfo);
+    }
+
     pDevicesCache->count = deviceCount;
     pDevicesCache->deviceInfo =
         (device_info_t *)malloc(deviceCount * sizeof(device_info_t));
 
     for (uint32_t i = 0; i < deviceCount; i++) {
-        ma_device_info deviceInfo = {0};
-        ma_device_id *deviceId = &pMaDeviceInfos[i].id;
         ma_result getDeviceInfoResult =
             ma_context_get_device_info(&pContext->maContext,
                                        deviceType,
-                                       deviceId,
-                                       &deviceInfo);
+                                       &pMaDeviceInfos[i].id,
+                                       &pMaDeviceInfos[i]);
 
         if (getDeviceInfoResult != MA_SUCCESS) {
             LOG_ERROR("failed to get device info for %s device - %s.\n",
@@ -177,8 +144,29 @@ static void process_device_list(context_t *pContext,
             continue;
         }
 
-        process_device_info(&deviceInfo,
-                            &pDevicesCache->deviceInfo[i]);
+        size_t nameLength = MA_MAX_DEVICE_NAME_LENGTH + 1;
+        strncpy(pDevicesCache->deviceInfo[i].name, pMaDeviceInfos[i].name, nameLength);
+
+        pDevicesCache->deviceInfo[i].id = (ma_device_id *)malloc(sizeof(ma_device_id));
+
+        if (!pDevicesCache->deviceInfo[i].id) {
+            LOG_ERROR("failed to allocate memory for device id.\n", "");
+            continue;
+        }
+
+        memcpy(pDevicesCache->deviceInfo[i].id, &pMaDeviceInfos[i].id, sizeof(ma_device_id));
+
+        pDevicesCache->deviceInfo[i].isDefault = pMaDeviceInfos[i].isDefault;
+        pDevicesCache->deviceInfo[i].formatCount = pMaDeviceInfos[i].nativeDataFormatCount;
+
+        for (uint32_t j = 0; j < pMaDeviceInfos[i].nativeDataFormatCount; j++) {
+            pDevicesCache->deviceInfo[i].audioFormats[j].sampleFormat =
+                (sample_format_t)pMaDeviceInfos[i].nativeDataFormats[j].format;
+            pDevicesCache->deviceInfo[i].audioFormats[j].channels =
+                pMaDeviceInfos[i].nativeDataFormats[j].channels;
+            pDevicesCache->deviceInfo[i].audioFormats[j].sampleRate =
+                pMaDeviceInfos[i].nativeDataFormats[j].sampleRate;
+        }
     }
 }
 
@@ -197,6 +185,8 @@ void context_refresh_devices(const void *pContext) {
 
     context_t *context = (context_t *)pContext;
 
+    LOG_INFO("Using context: <%p>.\n", context);
+
     // Get playback and capture devices
     ma_result getDevicesResult =
         ma_context_get_devices(&context->maContext,
@@ -210,17 +200,6 @@ void context_refresh_devices(const void *pContext) {
                   ma_result_description(getDevicesResult));
 
         return;
-    }
-
-    // Free previous devices
-    if (context->playbackCache.deviceInfo) {
-        context->playbackCache.count = 0;
-        free(context->playbackCache.deviceInfo);
-    }
-    // Free previous devices
-    if (context->captureCache.deviceInfo) {
-        context->captureCache.count = 0;
-        free(context->captureCache.deviceInfo);
     }
 
     // Process playback devices

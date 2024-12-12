@@ -236,23 +236,26 @@ class ProMiniaudioBindings {
 
   /// Creates a playback device with the specified parameters.
   ffi.Pointer<ffi.Void> playback_device_create(
-    device_id_t deviceId,
-    audio_format_t audioFormat,
-    int bufferSizeInBytes,
+    ffi.Pointer<ffi.Void> pContext,
+    ffi.Pointer<ffi.Void> pDeviceId,
+    playback_config_t config,
   ) {
     return _playback_device_create(
-      deviceId,
-      audioFormat,
-      bufferSizeInBytes,
+      pContext,
+      pDeviceId,
+      config,
     );
   }
 
   late final _playback_device_createPtr = _lookup<
       ffi.NativeFunction<
-          ffi.Pointer<ffi.Void> Function(device_id_t, audio_format_t,
-              ffi.Size)>>('playback_device_create');
+          ffi.Pointer<ffi.Void> Function(
+              ffi.Pointer<ffi.Void>,
+              ffi.Pointer<ffi.Void>,
+              playback_config_t)>>('playback_device_create');
   late final _playback_device_create = _playback_device_createPtr.asFunction<
-      ffi.Pointer<ffi.Void> Function(device_id_t, audio_format_t, int)>();
+      ffi.Pointer<ffi.Void> Function(
+          ffi.Pointer<ffi.Void>, ffi.Pointer<ffi.Void>, playback_config_t)>();
 
   /// Destroys a playback device and releases its resources.
   void playback_device_destroy(
@@ -429,63 +432,6 @@ class _SymbolAddresses {
       get waveform_destroy => _library._waveform_destroyPtr;
 }
 
-/// Union for storing device identifiers for different audio backends.
-final class device_id_t extends ffi.Union {
-  @ffi.Array.multi([64])
-  external ffi.Array<ffi.UnsignedShort> wasapi;
-
-  @ffi.Array.multi([16])
-  external ffi.Array<ffi.UnsignedChar> dsound;
-
-  @ffi.UnsignedInt()
-  external int winmm;
-
-  @ffi.Array.multi([256])
-  external ffi.Array<ffi.Char> alsa;
-
-  @ffi.Array.multi([256])
-  external ffi.Array<ffi.Char> pulse;
-
-  @ffi.Int()
-  external int jack;
-
-  @ffi.Array.multi([256])
-  external ffi.Array<ffi.Char> coreaudio;
-
-  @ffi.Array.multi([256])
-  external ffi.Array<ffi.Char> sndio;
-
-  @ffi.Array.multi([256])
-  external ffi.Array<ffi.Char> audio4;
-
-  @ffi.Array.multi([64])
-  external ffi.Array<ffi.Char> oss;
-
-  @ffi.Int()
-  external int aaudio;
-
-  @ffi.UnsignedInt()
-  external int opensl;
-
-  @ffi.Array.multi([32])
-  external ffi.Array<ffi.Char> webaudio;
-
-  external UnnamedUnion1 custom;
-
-  @ffi.Int()
-  external int nullbackend;
-}
-
-final class UnnamedUnion1 extends ffi.Union {
-  @ffi.Int()
-  external int i;
-
-  @ffi.Array.multi([256])
-  external ffi.Array<ffi.Char> s;
-
-  external ffi.Pointer<ffi.Void> p;
-}
-
 /// Enumeration to represent supported audio sample formats.
 enum sample_format_t {
   sample_format_unknown(0),
@@ -524,14 +470,11 @@ final class audio_format_t extends ffi.Struct {
 
   @ffi.Uint32()
   external int sampleRate;
-
-  @ffi.Uint32()
-  external int flags;
 }
 
 /// Structure to describe an audio device.
 final class device_info_t extends ffi.Struct {
-  external device_id_t id;
+  external ffi.Pointer<ffi.Void> id;
 
   @ffi.Array.multi([256])
   external ffi.Array<ffi.Char> name;
@@ -562,6 +505,29 @@ enum LogLevel {
         3 => LOG_LEVEL_ERROR,
         _ => throw ArgumentError("Unknown value for LogLevel: $value"),
       };
+}
+
+final class playback_config_t extends ffi.Struct {
+  @ffi.Uint32()
+  external int channels;
+
+  @ffi.Uint32()
+  external int sampleRate;
+
+  @ffi.UnsignedInt()
+  external int sampleFormatAsInt;
+
+  sample_format_t get sampleFormat =>
+      sample_format_t.fromValue(sampleFormatAsInt);
+
+  @ffi.Size()
+  external int rbMaxThreshold;
+
+  @ffi.Size()
+  external int rbMinThreshold;
+
+  @ffi.Size()
+  external int rbSizeInBytes;
 }
 
 /// Represents audio data to be pushed to a playback device.

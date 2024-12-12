@@ -3,19 +3,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "../include/context_internal.h"
 #include "../include/internal.h"
 #include "../include/logger.h"
 #include "../include/miniaudio.h"
-
-typedef struct {
-    ma_device device;
-    ma_rb rb;
-
-    bool isReadingEnabled;
-    size_t bufferSize;
-    size_t midThreshold;
-    size_t minThreshold;
-} playback_device_t;
 
 void data_callback(ma_device *pDevice,
                    void *pOutput,
@@ -36,12 +27,9 @@ void data_callback(ma_device *pDevice,
         return;
     }
 
-    ma_uint32 bpf = ma_get_bytes_per_frame(pDevice->playback.format,
-                                           pDevice->playback.channels);
-    ma_uint32 availableRead =
-        ma_rb_available_read(&playback->rb);
+    ma_uint32 availableRead = ma_rb_available_read(&playback->rb);
 
-    if (availableRead < playback->minThreshold) {
+    if (availableRead < playback->config.rbMinThreshold) {
         LOG_DEBUG("Reading is disabled. Buffer not sufficiently filled.\n", "");
         playback->isReadingEnabled = false;
         return;
@@ -52,7 +40,9 @@ void data_callback(ma_device *pDevice,
 
         return;
     }
-
+    ma_uint32 bpf =
+        ma_get_bytes_per_frame((ma_format)playback->config.sampleFormat,
+                               playback->config.channels);
     ma_uint32 bytesPerFrames = frameCount * bpf;
     size_t bytesToRead = (availableRead < bytesPerFrames) ? availableRead : bytesPerFrames;
 
@@ -79,6 +69,7 @@ void data_callback(ma_device *pDevice,
         memcpy(pOutput, bufferOut, chunkSize);
         // Move the output pointer
         pOutput = (char *)pOutput + chunkSize;
+        // Move the input pointer
         bytesToRead -= chunkSize;
 
         ma_result commitResult = ma_rb_commit_read(
@@ -124,13 +115,33 @@ void notification_callback(const ma_device_notification *pNotification) {
     }
 }
 
-FFI_PLUGIN_EXPORT
-void *playback_device_create(device_id_t deviceId,
-                             audio_format_t audioFormat,
-                             size_t bufferSizeInBytes) {
-    if (bufferSizeInBytes == 0) {
-        LOG_ERROR("`bufferSizeInBytes` must be greater than 0.\n", "");
+bool validate_playback_config(playback_config_t config) {
+    LOG_INFO("config: \n", "");
+    LOG_INFO("  sampleFormat: %s\n", describe_ma_format((ma_format)config.sampleFormat));
+    LOG_INFO("  channels: %d\n", config.channels);
+    LOG_INFO("  sampleRate: %d\n", config.sampleRate);
+    LOG_INFO("  rbMinThreshold: %d\n", config.rbMinThreshold);
+    LOG_INFO("  rbMaxThreshold: %d\n", config.rbMaxThreshold);
+    LOG_INFO("  rbSizeInBytes: %d\n", config.rbSizeInBytes);
 
+    return true;
+}
+
+FFI_PLUGIN_EXPORT
+void *playback_device_create(void *pContext,
+                             void *pDeviceId,
+                             playback_config_t config) {
+    if (!validate_playback_config(config)) {
+        return NULL;
+    }
+
+    if (!pContext) {
+        LOG_ERROR("invalid parameter: `pContext` is NULL.\n", "");
+        return NULL;
+    }
+
+    if (!pDeviceId) {
+        LOG_ERROR("invalid parameter: `pDeviceId` is NULL.\n", "");
         return NULL;
     }
 
@@ -142,28 +153,29 @@ void *playback_device_create(device_id_t deviceId,
         return NULL;
     }
 
-    ma_device_id pDeviceId;
-    memcpy(&pDeviceId, &deviceId, sizeof(deviceId));
-
-    uint32_t channels = audioFormat.channels;
-    uint32_t sampleRate = audioFormat.sampleRate;
-    ma_format format = (ma_format)audioFormat.sampleFormat;
+    memcpy(&playback->config, &config, sizeof(config));
 
     // Initialize the playback playbackDevice
-    ma_device_config config =
+    ma_device_config deviceConfig =
         ma_device_config_init(ma_device_type_playback);
 
-    config.playback.format = format;
-    config.playback.channels = channels;
-    config.playback.pDeviceID = &pDeviceId;
-    config.sampleRate = sampleRate;
-    config.dataCallback = data_callback;
-    config.notificationCallback = notification_callback;
-    config.pUserData = playback;
+    deviceConfig.playback.pDeviceID = (ma_device_id *)pDeviceId;
+    deviceConfig.playback.format = (ma_format)config.sampleFormat;
+    deviceConfig.playback.channels = config.channels;
+    deviceConfig.sampleRate = config.sampleRate;
+
+    deviceConfig.dataCallback = data_callback;
+    deviceConfig.notificationCallback = notification_callback;
+    deviceConfig.pUserData = playback;
+
+    context_t *context = (context_t *)pContext;
+
+    LOG_INFO("Creating playback device for device id: <%p>.\n", deviceConfig.playback.pDeviceID);
+    LOG_INFO("Using context: <%p>.\n", context);
 
     ma_result maDeviceInitResult =
-        ma_device_init(NULL,
-                       &config,
+        ma_device_init(&context->maContext,
+                       &deviceConfig,
                        &playback->device);
 
     if (maDeviceInitResult != MA_SUCCESS) {
@@ -177,7 +189,7 @@ void *playback_device_create(device_id_t deviceId,
 
     // Initialize the ring buffer
     ma_result maRbInitResult =
-        ma_rb_init(bufferSizeInBytes,
+        ma_rb_init(config.rbSizeInBytes,
                    NULL,
                    NULL,
                    &playback->rb);
@@ -192,32 +204,33 @@ void *playback_device_create(device_id_t deviceId,
         return NULL;
     }
 
-    playback->bufferSize = bufferSizeInBytes;
-    playback->midThreshold = bufferSizeInBytes / 2;
-    playback->minThreshold = bufferSizeInBytes / 10;
     playback->isReadingEnabled = false;
 
     LOG_INFO(
         "<%p>(ma_device *) created - format: %s, channels: %d, sample_rate: %d.\n",
         &playback->device,
-        describe_ma_format(format),
-        channels,
-        sampleRate);
+        describe_ma_format((ma_format)config.sampleFormat),
+        config.channels,
+        config.sampleRate);
 
-    ma_uint32 bpf = ma_get_bytes_per_frame(format, channels);
-    float fullBufferInSec = (float)bufferSizeInBytes / (sampleRate * bpf);
+    ma_uint32 bpf = ma_get_bytes_per_frame(
+        (ma_format)config.sampleFormat,
+        config.channels);
 
-    LOG_INFO("<%p>(ma_rb *) created - buffer size: %zu (bytes) %f (sec). mid: %zu (bytes), min: %zu (bytes).\n",
+    float fullBufferInSec =
+        (float)config.rbSizeInBytes / (config.sampleRate * bpf);
+
+    LOG_INFO("<%p>(ma_rb *) created - rb size: %zu (bytes) %f (sec). mid: %zu (bytes), min: %zu (bytes).\n",
              &playback->rb,
-             bufferSizeInBytes,
+             config.rbSizeInBytes,
              fullBufferInSec,
-             playback->midThreshold,
-             playback->minThreshold);
+             config.rbMaxThreshold,
+             config.rbMinThreshold);
 
     LOG_INFO("<%p>(playback_device_t *) created.\n",
              "buffer size: %zu (bytes) <%p>.\n",
              playback,
-             bufferSizeInBytes,
+             config.rbSizeInBytes,
              &playback);
 
     return playback;
@@ -349,9 +362,9 @@ void playback_device_push_buffer(void *pDevice, playback_data_t *pData) {
     size_t bufferSize = ma_rb_get_subbuffer_size(&playback->rb);
     size_t sizeInBytes = pData->sizeInBytes;
 
-    ma_format format = playback->device.playback.format;
-    ma_uint32 channels = playback->device.playback.channels;
-    ma_uint32 sampleRate = playback->device.sampleRate;
+    ma_format format = (ma_format)playback->config.sampleFormat;
+    ma_uint32 channels = playback->config.channels;
+    ma_uint32 sampleRate = playback->config.sampleRate;
     size_t bpf = ma_get_bytes_per_frame(format, channels);
 
     float bufferAvailableInPercent = (float)availableWrite / bufferSize * 100;
@@ -360,7 +373,7 @@ void playback_device_push_buffer(void *pDevice, playback_data_t *pData) {
     float bufferFillInPercent = 100.0f - bufferAvailableInPercent;
     float pushBufferInSec = (float)sizeInBytes / (sampleRate * bpf);
 
-    LOG_DEBUG("Buffer: %.3fs, %.1f%%, %.3fs. Push: %.3fs \n",
+    LOG_DEBUG("rb: %.2fs, fill: %.2f%%, available: %.2fs. Push: %.3fs \n",
               fullBufferInSec,
               bufferFillInPercent,
               bufferAvailableInSec,
@@ -414,9 +427,9 @@ void playback_device_push_buffer(void *pDevice, playback_data_t *pData) {
                   ma_result_description(maRbCommitResult));
     }
 
-    if (!playback->isReadingEnabled && availableRead >= playback->midThreshold) {
+    if (!playback->isReadingEnabled && availableRead >= playback->config.rbMaxThreshold) {
         playback->isReadingEnabled = true;
-        LOG_INFO("Buffer filled to %zu bytes. Reading enabled.\n", availableRead);
+        LOG_INFO("rb filled to %zu bytes. Reading enabled.\n", availableRead);
     }
 }
 

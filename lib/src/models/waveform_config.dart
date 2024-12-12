@@ -33,6 +33,9 @@ sealed class BaseWaveformConfig extends Equatable {
   /// The type of waveform.
   WaveformType get type;
 
+  /// The number of bytes per frame.
+  int get bpf => sampleFormat.bps * channels;
+
   @override
   List<Object?> get props => [
         sampleFormat,

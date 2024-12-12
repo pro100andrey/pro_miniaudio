@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../dropdowns/device_formats_dropdown.dart';
 import '../inputs/frequency_input.dart';
 import '../selectors/waveform_selector.dart';
 import 'playback_item.dart';
@@ -9,7 +8,6 @@ class PlaybackDeviceItem extends StatelessWidget {
   const PlaybackDeviceItem({
     required this.name,
     required this.onClosePressed,
-    required this.deviceFormatDropdown,
     required this.waveformSelector,
     required this.frequencyInput,
     required this.playback,
@@ -18,7 +16,6 @@ class PlaybackDeviceItem extends StatelessWidget {
 
   final String name;
   final VoidCallback onClosePressed;
-  final DeviceFormatDropdownVm deviceFormatDropdown;
   final WaveformSelectorVm waveformSelector;
   final FrequencyInputVm frequencyInput;
   final PlaybackItemVm playback;
@@ -47,10 +44,6 @@ class PlaybackDeviceItem extends StatelessWidget {
                     onPressed: onClosePressed,
                   ),
                 ],
-              ),
-              DeviceFormatDropdown(
-                label: 'Formats',
-                vm: deviceFormatDropdown,
               ),
               const SizedBox(height: 16),
               Wrap(

@@ -4,44 +4,27 @@ import 'package:pro_miniaudio/pro_miniaudio.dart';
 
 const _durationInMs = 100;
 
-int _calculateFamesCount({
-  required int sampleRate,
-  required int durationInMs,
-}) =>
-    sampleRate * durationInMs ~/ 1000;
-
 class PlaybackWaveformDevice {
   PlaybackWaveformDevice({
-    required this.deviceInfo,
-    required AudioFormat audioFormat,
-  }) : _audioFormat = audioFormat {
-    final bpf = audioFormat.bytesPerFrame;
-
-    final frameCount = _calculateFamesCount(
-      sampleRate: audioFormat.sampleRate,
-      durationInMs: _durationInMs,
-    );
-
-    final dataSizeInBytes = frameCount * bpf;
-    final bufferSizeInBytes = dataSizeInBytes * 5;
-
+    required Context context,
+    required DeviceInfo deviceInfo,
+    required PlaybackConfig config,
+  }) {
     _playbackDevice = PlaybackDevice(
+      context: context,
       deviceInfo: deviceInfo,
-      bufferSizeInBytes: bufferSizeInBytes,
-      audioFormat: audioFormat,
+      config: config,
     );
 
     _applyConfig();
   }
 
-  final DeviceInfo deviceInfo;
   late final PlaybackDevice _playbackDevice;
 
   WaveformType get waveformType => _waveformType;
   WaveformType _waveformType = WaveformType.sine;
 
-  AudioFormat get audioFormat => _audioFormat;
-  AudioFormat _audioFormat;
+  String get name => _playbackDevice.deviceInfo.name;
 
   double get frequency => _frequency;
   double _frequency = 500;
@@ -53,12 +36,10 @@ class PlaybackWaveformDevice {
 
   bool get isPlaying => _timer != null;
 
-  void setAudioFormat(AudioFormat format) {
-    if (format == _audioFormat) {
+  void setConfig(PlaybackConfig config) {
+    if (config == _playbackDevice.config) {
       return;
     }
-
-    _audioFormat = format;
 
     _applyConfig();
   }
@@ -98,9 +79,9 @@ class PlaybackWaveformDevice {
     _waveform?.dispose();
     _waveform = null;
 
-    final sampleFormat = _audioFormat.sampleFormat;
-    final sampleRate = _audioFormat.sampleRate;
-    final channels = _audioFormat.channels;
+    final sampleFormat = _playbackDevice.config.sampleFormat;
+    final sampleRate = _playbackDevice.config.sampleRate;
+    final channels = _playbackDevice.config.channels;
 
     final config = switch (_waveformType) {
       WaveformType.sine => WaveformSineConfig(
@@ -159,10 +140,8 @@ class PlaybackWaveformDevice {
       const Duration(milliseconds: 100),
       (timer) {
         assert(_waveform != null, 'Waveform is null');
-        final frameCount = _calculateFamesCount(
-          sampleRate: _audioFormat.sampleRate,
-          durationInMs: _durationInMs,
-        );
+        final frameCount =
+            _playbackDevice.config.sampleRate * _durationInMs ~/ 1000;
 
         final result = _waveform!.readWaveformPcmFrames(
           frameCount: frameCount,

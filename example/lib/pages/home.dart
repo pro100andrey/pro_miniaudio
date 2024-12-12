@@ -6,7 +6,6 @@ import '../controllers/audio_controller.dart';
 import '../dialogs/formats_info_dialog.dart';
 import '../widgets/actions/device_actions.dart';
 import '../widgets/builders/change_notifier_builder.dart';
-import '../widgets/dropdowns/device_formats_dropdown.dart';
 import '../widgets/dropdowns/devices_dropdown.dart';
 import '../widgets/inputs/frequency_input.dart';
 import '../widgets/items/playback_device_item.dart';
@@ -127,19 +126,9 @@ class _HomePageState extends State<HomePage> {
                     [
                       ...notifier.playbackDevices.mapIndexed(
                         (index, device) => PlaybackDeviceItem(
-                          name: 'Playback ${index + 1} '
-                              '- ${device.deviceInfo.name}',
+                          name: 'Playback ${index + 1} - ${device.name}',
                           onClosePressed: () =>
                               notifier.removePlaybackDevice(index),
-                          deviceFormatDropdown: DeviceFormatDropdownVm(
-                            selectedFormat: device.audioFormat,
-                            onChanged: (format) =>
-                                notifier.setPlaybackDeviceAudioFormat(
-                              index,
-                              format,
-                            ),
-                            formats: device.deviceInfo.audioFormats,
-                          ),
                           waveformSelector: WaveformSelectorVm(
                             type: device.waveformType,
                             onChanged: (type) => notifier

@@ -45,18 +45,22 @@ Pointer<Char> stringToCharPointer(String string) {
   return pointer;
 }
 
-extension AudioFormatExt on AudioFormat {
-  Pointer<audio_format_t> toNative() {
-    final nativeAudioFormat = malloc.allocate<audio_format_t>(
-      sizeOf<audio_format_t>(),
+extension PlaybackConfigExt on PlaybackConfig {
+  WrappedResource<playback_config_t> toNative() {
+    final nativePlaybackConfig = malloc.allocate<playback_config_t>(
+      sizeOf<playback_config_t>(),
     );
 
-    nativeAudioFormat.ref.sampleFormatAsInt = sampleFormat.index;
-    nativeAudioFormat.ref.channels = channels;
-    nativeAudioFormat.ref.sampleRate = sampleRate;
-    nativeAudioFormat.ref.flags = flags;
+    nativePlaybackConfig.ref.channels = channels;
+    nativePlaybackConfig.ref.sampleRate = sampleRate;
+    nativePlaybackConfig.ref.sampleFormatAsInt = sampleFormat.index;
+    nativePlaybackConfig.ref.rbMinThreshold = ringBufferMinThreshold;
+    nativePlaybackConfig.ref.rbMaxThreshold = ringBufferMaxThreshold;
+    nativePlaybackConfig.ref.rbSizeInBytes = ringBufferSizeInBytes;
 
-    return nativeAudioFormat;
+    return WrappedResource._(
+      nativePlaybackConfig,
+    );
   }
 }
 

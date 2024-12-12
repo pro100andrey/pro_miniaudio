@@ -23,7 +23,7 @@ part of 'library.dart';
 ///
 /// waveform.dispose();
 /// ```
-final class Waveform extends NativeResource<Void> with EquatableMixin {
+final class Waveform extends NativeResource<Void> {
   /// Creates a new waveform instance based on the provided configuration.
   ///
   /// - [config]: A configuration object that defines the waveform type,
@@ -92,20 +92,14 @@ final class Waveform extends NativeResource<Void> with EquatableMixin {
   /// The waveform configuration used for generating PCM frames.
   final BaseWaveformConfig config;
 
-  /// The finalizer for the `Waveform` class.
-  static final _finalizer = NativeFinalizer(
-    _bindings.addresses.waveform_destroy.cast(),
-  );
-
+  @protected
   @override
-  List<Object?> get props => [config];
+  NativeFinalizer get finalizer => Library.waveformFinalizer;
 
-  @override
-  NativeFinalizer get finalizer => _finalizer;
-
+  @protected
   @override
   void releaseResource() => _bindings.waveform_destroy(
-        ensureResourceIsNotFinalized(),
+        ensureIsNotFinalized(),
       );
 
   /// Reads PCM frames from the waveform generator.
@@ -124,34 +118,45 @@ final class Waveform extends NativeResource<Void> with EquatableMixin {
   /// final pcmFrames = waveform.readWaveformPcmFrames(frameCount: 1024);
   /// print('Read ${pcmFrames.framesRead} frames');
   /// ```
-  ({Float32List frames, int framesRead}) readWaveformPcmFrames({
+  ({TypedData frames, int framesRead}) readWaveformPcmFrames({
     required int frameCount,
   }) {
-    final resource = ensureResourceIsNotFinalized();
-    final bytesPerFrame = config.sampleFormat.bytesPerSample * config.channels;
+    final resource = ensureIsNotFinalized();
 
-    final pFramesOut = malloc.allocate<Void>(frameCount * bytesPerFrame);
-    final pFramesRead = malloc.allocate<Uint64>(1);
+    final pFramesOut = malloc.allocate(frameCount * config.bpf);
+    final pFramesRead = malloc<Uint64>();
 
     try {
       _bindings.waveform_read_pcm_frames_with_buffer(
         resource,
-        pFramesOut,
+        pFramesOut.cast(),
         frameCount,
         pFramesRead,
       );
 
       final framesRead = pFramesRead.value;
-      final frames = pFramesOut.cast<Float>().asTypedList(
-            framesRead * config.channels,
-          );
-      final result = Float32List.fromList(frames);
+      final size = framesRead * config.channels;
 
-      return (frames: result, framesRead: framesRead);
+      final frames = switch (config.sampleFormat) {
+        SampleFormat.f32 => pFramesOut
+            .cast<Float>()
+            .asTypedList(size, finalizer: malloc.nativeFree),
+        SampleFormat.s16 => pFramesOut
+            .cast<Int16>()
+            .asTypedList(size, finalizer: malloc.nativeFree),
+        SampleFormat.s32 || SampleFormat.s24 => pFramesOut
+            .cast<Int32>()
+            .asTypedList(size, finalizer: malloc.nativeFree),
+        SampleFormat.u8 => pFramesOut
+            .cast<Uint8>()
+            .asTypedList(size, finalizer: malloc.nativeFree),
+        _ =>
+          throw Exception('Unsupported sample format: ${config.sampleFormat}'),
+      };
+
+      return (frames: frames, framesRead: framesRead);
     } finally {
-      malloc
-        ..free(pFramesRead)
-        ..free(pFramesOut);
+      malloc.free(pFramesRead);
     }
   }
 }

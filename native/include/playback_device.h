@@ -4,17 +4,15 @@
 #include "context.h"
 #include "platform.h"
 
-/**
- * @struct playback_data_t
- * @brief Represents audio data to be pushed to a playback device.
- *
- * This structure contains information about the audio data format,
- * a pointer to the data itself, and its size in bytes.
- */
 typedef struct {
-    void *pUserData;      /* Pointer to the audio data to be played. */
-    uint32_t sizeInBytes; /* Size of the audio data in bytes. */
-} playback_data_t;
+    uint32_t channels;
+    uint32_t sampleRate;
+    sample_format_t sampleFormat;
+
+    size_t rbMaxThreshold;
+    size_t rbMinThreshold;
+    size_t rbSizeInBytes;
+} playback_config_t;
 
 /**
  * @brief Creates a playback device with the specified parameters.
@@ -22,15 +20,15 @@ typedef struct {
  * Initializes a playback device for audio output with the given configuration.
  * Allocates internal buffers for audio processing.
  *
- * @param deviceId Identifier of the playback device to use.
- * @param audioFormat Configuration of the device audio format (sample rate, channels, etc.).
- * @param bufferSizeInBytes Size of the internal audio buffer in bytes.
+ * @param pContext Pointer to the context_t.
+ * @param pDeviceId Pointer to the device ID.
+ * @param config Configuration for the playback device.
  * @return A pointer to the created playback device, or NULL if creation fails.
  */
 FFI_PLUGIN_EXPORT
-void *playback_device_create(device_id_t deviceId,
-                             audio_format_t audioFormat,
-                             size_t bufferSizeInBytes);
+void *playback_device_create(void *pContext,
+                             void *pDeviceId,
+                             playback_config_t config);
 
 /**
  * @brief Destroys a playback device and releases its resources.
@@ -72,6 +70,18 @@ void playback_device_start(void *pDevice);
  */
 FFI_PLUGIN_EXPORT
 void playback_device_stop(void *pDevice);
+
+/**
+ * @struct playback_data_t
+ * @brief Represents audio data to be pushed to a playback device.
+ *
+ * This structure contains information about the audio data format,
+ * a pointer to the data itself, and its size in bytes.
+ */
+typedef struct {
+    void *pUserData;      /* Pointer to the audio data to be played. */
+    uint32_t sizeInBytes; /* Size of the audio data in bytes. */
+} playback_data_t;
 
 /**
  * @brief Pushes audio data into the playback device's buffer.

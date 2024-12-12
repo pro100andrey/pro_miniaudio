@@ -5,36 +5,6 @@
 
 #include "common.h"
 #include "platform.h"
-
-/**
- * union device_id_t
- * @brief Union for storing device identifiers for different audio backends.
- *
- * Each audio backend uses a specific type of identifier, tailored to its API requirements.
- * For example, WASAPI uses a wchar_t string, while DirectSound uses a GUID.
- */
-typedef union {
-    unsigned short wasapi[64]; /* WASAPI uses a wchar_t string for identification. */
-    unsigned char dsound[16];  /* DirectSound uses a GUID for identification. */
-    unsigned int winmm;        /* WinMM expects a UINT_PTR for device identification. */
-    char alsa[256];            /* ALSA uses a name string for identification. */
-    char pulse[256];           /* PulseAudio uses a name string for identification. */
-    int jack;                  /* JACK always uses default devices. */
-    char coreaudio[256];       /* Core Audio uses a string for identification. */
-    char sndio[256];           /* Sndio uses "snd/0", etc. */
-    char audio4[256];          /* Audio4 uses "/dev/audio", etc. */
-    char oss[64];              /* OSS uses "dev/dsp0", etc. */
-    signed int aaudio;         /* AAudio uses a 32-bit integer for identification. */
-    unsigned int opensl;       /* OpenSL|ES uses a 32-bit unsigned integer. */
-    char webaudio[32];         /* WebAudio uses default devices. */
-    union {
-        int i;       /* Custom backend integer identifier. */
-        char s[256]; /* Custom backend string identifier. */
-        void *p;     /* Custom backend pointer identifier. */
-    } custom;        /* Identifier for custom backends. */
-    int nullbackend; /* Null backend uses an integer identifier. */
-} device_id_t;
-
 /**
  * @enum sample_format_t
  * @brief Enumeration to represent supported audio sample formats.
@@ -61,7 +31,6 @@ typedef struct {
     sample_format_t sampleFormat; /* Audio sample format. */
     uint32_t channels;            /* Number of audio channels. */
     uint32_t sampleRate;          /* Sample rate in Hertz. */
-    uint32_t flags;               /* Format flags (reserved for future use). */
 } audio_format_t;
 
 /**
@@ -72,7 +41,7 @@ typedef struct {
  * and the supported audio formats.
  */
 typedef struct {
-    device_id_t id;                        /* Unique identifier for the device. */
+    void *id;                              /* Unique identifier for the device. */
     char name[MAX_DEVICE_NAME_LENGTH + 1]; /* Null-terminated string representing the device name. */
     bool isDefault;                        /* Indicates if this is the default device. */
     uint32_t formatCount;                  /* Number of audio formats. */

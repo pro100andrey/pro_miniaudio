@@ -20,17 +20,14 @@ final class Context extends NativeResource<Void> {
   /// Internal constructor.
   Context._(super.ptr) : super._();
 
-  /// The finalizer for the `Context` class.
-  static final _finalizer = NativeFinalizer(
-    _bindings.addresses.context_destroy.cast(),
-  );
-
+  @protected
   @override
-  NativeFinalizer get finalizer => _finalizer;
+  NativeFinalizer get finalizer => Library.contextFinalizer;
 
+  @protected
   @override
   void releaseResource() => _bindings.context_destroy(
-        ensureResourceIsNotFinalized(),
+        ensureIsNotFinalized(),
       );
 
   /// Refreshes the list of available audio devices.
@@ -46,7 +43,7 @@ final class Context extends NativeResource<Void> {
   /// context.refreshDevices();
   /// ```
   void refreshDevices() => _bindings.context_refresh_devices(
-        ensureResourceIsNotFinalized(),
+        ensureIsNotFinalized(),
       );
 
   /// Gets the number of available playback devices.
@@ -56,7 +53,7 @@ final class Context extends NativeResource<Void> {
   /// Returns:
   /// The count of playback devices available on the system.
   int get playbackDeviceCount => _bindings.context_get_playback_device_count(
-        ensureResourceIsNotFinalized(),
+        ensureIsNotFinalized(),
       );
 
   /// Gets the number of available capture devices.
@@ -66,7 +63,7 @@ final class Context extends NativeResource<Void> {
   /// Returns:
   /// The count of capture devices available on the system.
   int get captureDeviceCount => _bindings.context_get_capture_device_count(
-        ensureResourceIsNotFinalized(),
+        ensureIsNotFinalized(),
       );
 
   /// Retrieves information about all available playback devices.
@@ -77,7 +74,7 @@ final class Context extends NativeResource<Void> {
   /// A list of [DeviceInfo] objects representing playback devices.
   List<DeviceInfo> get playbackDeviceInfos => _extractDeviceInfoList(
         _bindings.context_get_playback_device_infos(
-          ensureResourceIsNotFinalized(),
+          ensureIsNotFinalized(),
         ),
         playbackDeviceCount,
       );
@@ -90,7 +87,7 @@ final class Context extends NativeResource<Void> {
   /// A list of [DeviceInfo] objects representing capture devices.
   List<DeviceInfo> get captureDeviceInfos => _extractDeviceInfoList(
         _bindings.context_get_capture_device_infos(
-          ensureResourceIsNotFinalized(),
+          ensureIsNotFinalized(),
         ),
         captureDeviceCount,
       );
@@ -105,12 +102,7 @@ final class Context extends NativeResource<Void> {
   /// array.
   /// - [count]: The number of devices in the array.
   ///
-  /// Returns:
-  /// A list of [DeviceInfo] objects, each containing:
-  /// - [id]: The device's unique identifier.
-  /// - [name]: The device's name as a string.
-  /// - [isDefault]: Whether the device is the default device.
-  /// - [supportedFormats]: A list of formats supported by the device.
+  /// Returns: A list of [DeviceInfo] objects.
   List<DeviceInfo> _extractDeviceInfoList(
     Pointer<device_info_t> devicesPointer,
     int count,
@@ -134,16 +126,7 @@ final class Context extends NativeResource<Void> {
   /// - [nativeDeviceInfo]: A native structure containing device information,
   ///   including supported formats.
   ///
-  /// Returns:
-  /// A list of [AudioFormat] objects, each containing:
-  /// - [format]: The sample format.
-  /// - [channels]: The number of audio channels.
-  /// - [sampleRate]: The sampling rate in Hz.
-  /// - [flags]: Reserved for additional flags.
-  /// - [nativeFormat]: The original native format.
-  /// - [bytesPerSample]: The size of one sample in bytes.
-  /// - [bytesPerFrame]: The size of one audio frame in bytes
-  /// (sample size * channels).
+  /// Returns: A list of [AudioFormat] objects.
   List<AudioFormat> _extractSupportedFormats(
     device_info_t nativeDeviceInfo,
   ) =>
@@ -158,7 +141,6 @@ final class Context extends NativeResource<Void> {
             ),
             channels: nativeAudioFormat.channels,
             sampleRate: nativeAudioFormat.sampleRate,
-            flags: nativeAudioFormat.flags,
           );
         },
       );

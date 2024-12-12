@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 
 /// A widget that rebuilds when a [ChangeNotifier] notifies its listeners.
 ///
@@ -16,10 +17,6 @@ class ChangeNotifierBuilder<T extends ChangeNotifier> extends StatelessWidget {
   final T notifier;
 
   /// The builder function to construct the widget tree.
-  ///
-  /// - [context]: The build context.
-  /// - [notifier]: The current [ChangeNotifier] instance.
-  /// - [child]: An optional static child widget.
   final Widget Function(BuildContext context, T notifier, Widget? child)
       builder;
 

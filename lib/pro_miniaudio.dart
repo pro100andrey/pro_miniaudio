@@ -9,6 +9,7 @@ export 'src/library.dart'
         DeviceState,
         FileLogLevel,
         FileLogger,
+        PlaybackConfig,
         PlaybackDevice,
         SampleFormat,
         Waveform,

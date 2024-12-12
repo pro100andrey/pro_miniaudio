@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:pro_miniaudio/pro_miniaudio.dart';
 
-import 'playback_device.dart';
+import 'playback_waveform_device.dart';
 
 class AudioController extends ChangeNotifier {
   final _context = Context();
@@ -71,9 +71,12 @@ class AudioController extends ChangeNotifier {
 
       current.dispose();
 
+      final audioFormat = device.audioFormats.first;
+
       final newDevice = PlaybackWaveformDevice(
+        context: _context,
         deviceInfo: _selectedPlaybackDevice!,
-        audioFormat: device.audioFormats.first,
+        config: PlaybackConfig.withAudioFormat(audioFormat),
       );
 
       playbackDevices.insert(i, newDevice);
@@ -108,8 +111,9 @@ class AudioController extends ChangeNotifier {
 
     playbackDevices.add(
       PlaybackWaveformDevice(
+        context: _context,
+        config: PlaybackConfig.withAudioFormat(audioFormat),
         deviceInfo: _selectedPlaybackDevice!,
-        audioFormat: audioFormat,
       ),
     );
 
@@ -137,25 +141,6 @@ class AudioController extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setPlaybackDeviceAudioFormat(int index, AudioFormat audioFormat) {
-    final previousDevice = playbackDevices.removeAt(index);
-    final isPlaying = previousDevice.isPlaying;
-    previousDevice.dispose();
-
-    final device = PlaybackWaveformDevice(
-      deviceInfo: _selectedPlaybackDevice!,
-      audioFormat: audioFormat,
-    );
-
-    playbackDevices.insert(index, device);
-    playbackDevices[index].setAudioFormat(audioFormat);
-
-    if (isPlaying) {
-      device.play();
-    }
-
-    notifyListeners();
-  }
 
   void setPlaybackDeviceFrequency(int index, double value) {
     playbackDevices[index].setFrequency(value);

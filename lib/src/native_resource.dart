@@ -15,9 +15,7 @@ part of 'library.dart';
 ///   MyResource._(Pointer<MyResource> ptr) : super._(ptr);
 ///
 ///   @override
-///   finalizer = NativeFinalizer(
-///     _bindings.addresses.my_resource_destroy.cast(),
-///   );
+///   NativeFinalizer get finalizer => Library.resourceFinalizer;
 ///
 ///   @override
 ///   void releaseResource() {
@@ -31,12 +29,17 @@ abstract class NativeResource<T extends NativeType> implements Finalizable {
   /// Dart object is garbage collected (GC), unless [dispose] is called
   /// explicitly to release the resource beforehand.
   /// Throws an [ArgumentError] if [ptr] is `null`.
-  NativeResource._(Pointer<T> ptr) : _resource = ptr {
+  NativeResource._(Pointer<T> ptr, {int? externalSize}) : _resource = ptr {
     if (ptr == nullptr) {
       throw ArgumentError.notNull('ptr');
     }
 
-    finalizer.attach(this, ptr.cast(), detach: this);
+    finalizer.attach(
+      this,
+      ptr.cast(),
+      detach: this,
+      externalSize: externalSize,
+    );
   }
 
   /// The finalizer for this resource.
@@ -56,6 +59,7 @@ abstract class NativeResource<T extends NativeType> implements Finalizable {
   /// NativeFinalizer get finalizer => _finalizer;
   /// ```
   NativeFinalizer get finalizer;
+
 
   /// Pointer to the native resource.
   final Pointer<T> _resource;
@@ -102,12 +106,45 @@ abstract class NativeResource<T extends NativeType> implements Finalizable {
   ///   _bindings.function_destroy(_resource);
   /// }
   /// ```
-  @protected
   void releaseResource();
 
-  @pragma('vm:prefer-inline')
-  Pointer<T> ensureResourceIsNotFinalized() {
-    if (_isFinalized) {
+  /// Ensures that the resource is not finalized.
+  /// Throws a [StateError] if the resource is finalized.
+  ///
+  /// This method is used internally to ensure that the resource is not
+  /// finalized before accessing it.
+  Pointer<T> ensureIsNotFinalized() {
+    if (_isFinalized || _resource == nullptr) {
+      throw StateError('Resource is finalized');
+    }
+
+    return _resource;
+  }
+}
+
+class WrappedResource<T extends NativeType> {
+  WrappedResource._(Pointer<T> ptr) : _resource = ptr {
+    if (ptr == nullptr) {
+      throw ArgumentError.notNull('ptr');
+    }
+
+    _finalizer.attach(this, ptr, detach: this);
+  }
+
+  static final Finalizer<Pointer> _finalizer = Finalizer((r) {
+    malloc.free(r);
+  });
+
+  /// Pointer to the native resource.
+  final Pointer<T> _resource;
+
+  /// Ensures that the resource is not finalized.
+  /// Throws a [StateError] if the resource is finalized.
+  ///
+  /// This method is used internally to ensure that the resource is not
+  /// finalized before accessing it.
+  Pointer<T> ensureIsNotFinalized() {
+    if (_resource == nullptr) {
       throw StateError('Resource is finalized');
     }
 

@@ -13,6 +13,7 @@
         "Miniaudio",
         "nullptr",
         "opensl",
+        "resampler",
         "rifx",
         "smpl",
         "structs",
@@ -25,6 +26,11 @@
     ],
     "files.associations": {
         "*.arb": "json",
-        "vector": "c"
+        "vector": "c",
+        "miniaudio.h": "c",
+        "context_internal.h": "c",
+        "__locale": "c",
+        "locale": "c",
+        "typeinfo": "c"
     }
 }

@@ -77,7 +77,7 @@ enum SampleFormat {
     }
   }
 
-  int get bytesPerSample {
+  int get bps {
     switch (this) {
       case SampleFormat.u8:
         return 1;
