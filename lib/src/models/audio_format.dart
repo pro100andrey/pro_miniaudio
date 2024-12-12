@@ -11,12 +11,12 @@ part of '../library.dart';
 final class AudioFormat extends Equatable {
   /// Creates a new [AudioFormat] instance with the given properties.
   ///
-  /// - [sampleFormat]: The audio sample format (e.g., 16-bit signed integer).
+  /// - [pcmFormat]: The audio sample format (e.g., 16-bit signed integer).
   /// - [channels]: The number of audio channels (e.g., 1 for mono, 2 for
   /// stereo).
   /// - [sampleRate]: The sample rate in Hertz (e.g., 44100 for CD-quality).
   const AudioFormat({
-    required this.sampleFormat,
+    required this.pcmFormat,
     required this.channels,
     required this.sampleRate,
   });
@@ -27,7 +27,7 @@ final class AudioFormat extends Equatable {
   /// Examples include:
   /// - `PcmFormat.s16`: 16-bit signed integer.
   /// - `PcmFormat.f32`: 32-bit floating-point.
-  final PcmFormat sampleFormat;
+  final PcmFormat pcmFormat;
 
   /// The number of audio channels.
   ///
@@ -52,11 +52,11 @@ final class AudioFormat extends Equatable {
   /// An audio frame is a single sample across all channels. This property
   /// calculates the size of one frame based on the sample format and the
   /// number of channels.
-  int get bytesPerFrame => sampleFormat.bps * channels;
+  int get bytesPerFrame => pcmFormat.bps * channels;
 
   @override
   List<Object?> get props => [
-        sampleFormat,
+        pcmFormat,
         channels,
         sampleRate,
       ];

@@ -34,7 +34,7 @@ class FormatsInfoDialog extends StatelessWidget {
                     (index, format) => DataRow(
                       cells: [
                         DataCell(Text('$index')),
-                        DataCell(Text(format.sampleFormat.name)),
+                        DataCell(Text(format.pcmFormat.name)),
                         DataCell(Text('${format.channels}')),
                         DataCell(Text('${format.sampleRate}')),
                       ],

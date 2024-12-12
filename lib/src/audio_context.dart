@@ -191,7 +191,7 @@ final class AudioContext extends NativeResource<Void> {
           final nativeAudioFormat = nativeDeviceInfo.audioFormats[i];
 
           return AudioFormat(
-            sampleFormat: PcmFormat.fromValue(
+            pcmFormat: PcmFormat.fromValue(
               nativeAudioFormat.pcmFormatAsInt,
             ),
             channels: nativeAudioFormat.channels,

@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:pro_miniaudio/pro_miniaudio.dart';
 
-const _durationInMs = 100;
+const _durationInMs = 32;
 
 class PlaybackWaveformDevice {
   PlaybackWaveformDevice({
@@ -79,7 +79,7 @@ class PlaybackWaveformDevice {
     _waveform?.dispose();
     _waveform = null;
 
-    final sampleFormat = _playbackDevice.config.sampleFormat;
+    final sampleFormat = _playbackDevice.config.pcmFormat;
     final sampleRate = _playbackDevice.config.sampleRate;
     final channels = _playbackDevice.config.channels;
 
@@ -137,7 +137,7 @@ class PlaybackWaveformDevice {
     _playbackDevice.start();
 
     _timer = Timer.periodic(
-      const Duration(milliseconds: 100),
+      const Duration(milliseconds: _durationInMs),
       (timer) {
         assert(_waveform != null, 'Waveform is null');
         final frameCount =

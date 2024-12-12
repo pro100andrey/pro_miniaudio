@@ -1,13 +1,15 @@
 # pro_miniaudio
 
-A Flutter plugin for managing contexts, playback devices, and waveform generation via Dart FFI.
+A Flutter plugin for advanced audio management using Dart FFI.
+
+This plugin provides a comprehensive API for managing audio contexts, querying devices, generating waveforms, and controlling playback. Built on Dart’s Foreign Function Interface (FFI), it bridges the gap between Flutter and native audio libraries.
 
 ## Features
 
-- Manage audio contexts for device initialization and control.
-- Query playback and capture devices.
-- Generate and play waveforms (sine, square, sawtooth, triangle).
-- Push audio buffers to playback devices for custom playback.
+- Audio Context Management: Initialize, query, and manage audio devices.
+- Playback Control: Start, stop, and push audio buffers to playback devices.
+- Waveform Generation: Create and play procedural waveforms (sine, square, triangle, sawtooth).
+- Dart FFI Integration: High-performance bindings to native audio libraries.
 
 ## Getting Started
 
@@ -15,18 +17,26 @@ This plugin uses Dart's Foreign Function Interface (FFI) to communicate with nat
 
 ### Installation
 
-Add the following to your `pubspec.yaml`:
+Add `pro_miniaudio` to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  pro_miniaudio: 0.1.0
+  pro_miniaudio: 0.0.8
 ```
 
-## Audio Context
+Then, run:
 
-The `AudioContext` class manages the initialization and querying of audio devices.
+```bash
+flutter pub get
+```
 
-### Example: Initialize and Query Devices
+## Usage
+
+### Audio Context
+
+The `AudioContext` class is the entry point for managing audio devices. Use it to query available playback and capture devices.
+
+#### Example: Initialize and Query Devices
 
 ```dart
 import 'package:pro_miniaudio/pro_miniaudio.dart';
@@ -37,22 +47,22 @@ void main() {
   // Refresh devices
   context.refreshDevices();
 
-  final playback = context.playbackDeviceInfos;
-  final capture = context.captureDeviceInfos;
+  final playbackDevices = context.playbackDeviceInfos;
+  final captureDevices = context.captureDeviceInfos;
 
-  print('Playback devices: $playbackDevices');
-  print('Capture devices: $captureDevices');
+  print('Playback Devices: $playbackDevices');
+  print('Capture Devices: $captureDevices');
 
-  // Clean up
+  // Dispose of the context when done
   context.dispose();
 }
 ```
 
 ### PlaybackDevice
 
-The `PlaybackDevice` class manages audio playback, including starting, stopping, and pushing audio buffers.
+The `PlaybackDevice` class enables audio playback with precise control over buffers and playback state.
 
-#### Example: Create and Play Audio
+#### Example: Play Custom Audio
 
 ```dart
 import 'dart:typed_data';
@@ -60,23 +70,40 @@ import 'package:pro_miniaudio/pro_miniaudio.dart';
 
 void main() {
 
-  final deviceInfo = ...;
+  final context = AudioContext()..refreshDevices();
+
+  final deviceInfo = context.playbackDeviceInfos.first;
+  final audioFormat = deviceInfo.audioFormats.first;
+
+  final chunkDuration = 100; // ms
 
   final device = PlaybackDevice(
+    context: context,
     deviceInfo: deviceInfo,
-    audioFormat: AudioFormat(
-        sampleFormat: SampleFormat.f32,
-        sampleRate: 8000,
-        channels: 2,
-      ),
-      bufferSizeInBytes: 4096,
+    config: PlaybackConfig.basedChunkDuration(
+      audioFormat: audioFormat,
+      chunkMs: chunkDuration,
+    ),
   );
 
+  // Generate a waveform (sine wave)
+  final waveform = Waveform(
+    config: WaveformSineConfig(
+      sampleFormat: PcmFormat.f32,
+      sampleRate: audioFormat.sampleRate,
+      channels: audioFormat.channels,
+      amplitude: 0.5,
+      frequency: 440.0,
+    ),
+  );
+
+  final framesCount = (audioFormat.sampleRate * chunkDuration / 1000).toInt();
+
   // Generate a sample audio buffer (stereo sine wave)
-  final result = waveform.readWaveformPcmFrames(frameCount: 1024)
+  final result = waveform.readWaveformPcmFrames(frameCount: framesCount)
 
   // Push the buffer to the device
-  device.pushBuffer(buffer: result.frames, framesCount: 44100);
+  device.pushBuffer(buffer: result.frames, framesCount: result.framesRead);
 
   // Start playback
   device.start();
@@ -89,20 +116,19 @@ void main() {
 }
 ```
 
-### Waveform
+### Waveform Generation
 
 The `Waveform` class provides an easy way to generate audio waveforms like sine, square, sawtooth, and triangle.
 
-#### Example: Generate a Sine Wave
+#### Example: Generate and Use a Sine Wave
 
 ```dart
-import 'dart:typed_data';
 import 'package:pro_miniaudio/pro_miniaudio.dart';
 
 void main() {
   final waveform = Waveform(
     config: WaveformSineConfig(
-      format: SampleFormat.f32,
+      sampleFormat: PcmFormat.f32,
       sampleRate: 44100,
       channels: 2,
       amplitude: 0.5,
@@ -110,12 +136,16 @@ void main() {
     ),
   );
 
-  // Read PCM frames
   final result = waveform.readWaveformPcmFrames(frameCount: 1024);
+
   print('Read ${result.framesRead} frames');
   print('Buffer length: ${result.frames.length}');
 
-  // Clean up
+  // Dispose of the waveform when done
   waveform.dispose();
 }
 ```
+
+## Contributing
+
+Contributions are welcome! If you encounter any issues or have feature requests, feel free to open an issue or submit a pull request.

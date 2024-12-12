@@ -1,5 +1,13 @@
 part of '../library.dart';
 
+/// Calculates the buffer size in bytes for a given duration and audio format.
+int bufferSizeWith(int ms, AudioFormat format) {
+  final frameCount = format.sampleRate * ms ~/ 1000;
+  final dataSizeInBytes = frameCount * format.pcmFormat.bps * format.channels;
+
+  return dataSizeInBytes;
+}
+
 /// Configuration class for playback device settings.
 ///
 /// The `PlaybackConfig` class encapsulates configuration details for
@@ -12,7 +20,7 @@ class PlaybackConfig extends Equatable {
   /// - [channels]: The number of audio channels (e.g., 1 for mono, 2 for
   /// stereo).
   /// - [sampleRate]: The sample rate in Hertz (e.g., 44100 for CD-quality).
-  /// - [sampleFormat]: The format of audio samples (e.g., 16-bit signed
+  /// - [pcmFormat]: The format of audio samples (e.g., 16-bit signed
   /// integer).
   /// - [ringBufferMaxThreshold]: The maximum threshold for the ring buffer
   ///   before the playback device starts consuming data.
@@ -22,31 +30,36 @@ class PlaybackConfig extends Equatable {
   const PlaybackConfig({
     required this.channels,
     required this.sampleRate,
-    required this.sampleFormat,
-    this.ringBufferMaxThreshold = 0,
-    this.ringBufferMinThreshold = 0,
-    this.ringBufferSizeInBytes = 0,
+    required this.pcmFormat,
+    required this.ringBufferMaxThreshold,
+    required this.ringBufferMinThreshold,
+    required this.ringBufferSizeInBytes,
   });
 
-  /// Creates a [PlaybackConfig] instance from an [AudioFormat].
+  /// Creates a [PlaybackConfig] instance from an [AudioFormat] based data
+  /// estimated chunk duration.
   ///
   /// This factory method generates a playback configuration based on the
-  /// provided [AudioFormat]. It calculates the appropriate buffer sizes
-  /// and thresholds using standard values.
+  /// provided [AudioFormat] and estimated chunk duration. It calculates the
+  /// buffer size based on the format and chunk duration.
   ///
   /// - [format]: The audio format to base the configuration on.
-  factory PlaybackConfig.withAudioFormat(AudioFormat format) {
-    const sampleFormat = PcmFormat.s16; // Default sample format.
-    final frameCount = format.sampleRate * 100 ~/ 1000; // Frames for 100 ms.
-    final dataSizeInBytes = frameCount * sampleFormat.bps * format.channels;
-    final bufferSizeInBytes = dataSizeInBytes * 5; // Total buffer size.
+  /// - [chunkMs]: The estimated duration of each chunk in milliseconds.
+  factory PlaybackConfig.basedChunkDuration({
+    required AudioFormat format,
+    required int chunkMs,
+  }) {
+    final bufferSizeInBytes = bufferSizeWith(chunkMs, format) * 5;
+    final chunkInFrames = format.sampleRate * chunkMs ~/ 1000;
+    final framesInBytes =
+        chunkInFrames * format.pcmFormat.bps * format.channels;
 
     return PlaybackConfig(
       channels: format.channels,
       sampleRate: format.sampleRate,
-      sampleFormat: sampleFormat,
-      ringBufferMaxThreshold: bufferSizeInBytes - (frameCount * 2),
-      ringBufferMinThreshold: frameCount * 2,
+      pcmFormat: format.pcmFormat,
+      ringBufferMaxThreshold: bufferSizeInBytes ~/ 2,
+      ringBufferMinThreshold: framesInBytes,
       ringBufferSizeInBytes: bufferSizeInBytes,
     );
   }
@@ -70,7 +83,7 @@ class PlaybackConfig extends Equatable {
   /// Examples:
   /// - `PcmFormat.s16`: 16-bit signed integer.
   /// - `PcmFormat.f32`: 32-bit floating point.
-  final PcmFormat sampleFormat;
+  final PcmFormat pcmFormat;
 
   /// The maximum threshold for the ring buffer.
   ///
@@ -105,13 +118,13 @@ class PlaybackConfig extends Equatable {
   /// );
   /// print('Bytes Per Frame: ${config.bpf}');
   /// ```
-  int get bpf => sampleFormat.bps * channels;
+  int get bpf => pcmFormat.bps * channels;
 
   @override
   List<Object?> get props => [
         channels,
         sampleRate,
-        sampleFormat,
+        pcmFormat,
         ringBufferMaxThreshold,
         ringBufferMinThreshold,
         ringBufferSizeInBytes,

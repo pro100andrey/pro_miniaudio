@@ -76,7 +76,10 @@ class AudioController extends ChangeNotifier {
       final newDevice = PlaybackWaveformDevice(
         context: _context,
         deviceInfo: _selectedPlaybackDevice!,
-        config: PlaybackConfig.withAudioFormat(audioFormat),
+        config: PlaybackConfig.basedChunkDuration(
+          format: audioFormat,
+          chunkMs: 100,
+        ),
       );
 
       playbackDevices.insert(i, newDevice);
@@ -112,7 +115,10 @@ class AudioController extends ChangeNotifier {
     playbackDevices.add(
       PlaybackWaveformDevice(
         context: _context,
-        config: PlaybackConfig.withAudioFormat(audioFormat),
+        config: PlaybackConfig.basedChunkDuration(
+          format: audioFormat,
+          chunkMs: 32,
+        ), //PlaybackConfig.withAudioFormat(audioFormat),
         deviceInfo: _selectedPlaybackDevice!,
       ),
     );

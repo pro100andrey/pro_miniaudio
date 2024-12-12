@@ -53,7 +53,7 @@ extension PlaybackConfigExt on PlaybackConfig {
 
     nativePlaybackConfig.ref.channels = channels;
     nativePlaybackConfig.ref.sampleRate = sampleRate;
-    nativePlaybackConfig.ref.pcmFormatAsInt = sampleFormat.index;
+    nativePlaybackConfig.ref.pcmFormatAsInt = pcmFormat.index;
     nativePlaybackConfig.ref.rbMinThreshold = ringBufferMinThreshold;
     nativePlaybackConfig.ref.rbMaxThreshold = ringBufferMaxThreshold;
     nativePlaybackConfig.ref.rbSizeInBytes = ringBufferSizeInBytes;

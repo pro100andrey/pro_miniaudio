@@ -61,7 +61,7 @@ class DeviceFormatDropdown extends StatelessWidget {
       );
 
   String _supportedFormatLabel(AudioFormat device) =>
-      '${device.sampleFormat.name}, '
+      '${device.pcmFormat.name}, '
       '${device.channels} ch${device.channels > 1 ? "'s" : ''}, '
       '${device.sampleRate} Hz';
 }
