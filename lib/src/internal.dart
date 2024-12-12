@@ -64,7 +64,7 @@ extension PlaybackConfigExt on PlaybackConfig {
   }
 }
 
-extension SampleFormatExt on SampleFormat {
+extension PcmFormatExt on PcmFormat {
   pcm_format_t toNative() => pcm_format_t.values[index];
 }
 

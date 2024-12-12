@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../include/context_private.h"
+#include "../include/audio_context_private.h"
 #include "../include/internal.h"
 #include "../include/logger.h"
 #include "../include/miniaudio.h"
@@ -190,7 +190,7 @@ void *playback_device_create(void *pContext,
     deviceConfig.notificationCallback = notification_callback;
     deviceConfig.pUserData = playback;
 
-    context_t *context = (context_t *)pContext;
+    audio_context_t *context = (audio_context_t *)pContext;
 
     ma_result maDeviceInitResult =
         ma_device_init(&context->maContext,
@@ -263,22 +263,24 @@ void *playback_device_create(void *pContext,
 }
 
 FFI_PLUGIN_EXPORT
-void playback_device_destroy(void *pDevice) {
-    if (!pDevice) {
-        LOG_ERROR("invalid parameter: `pDevice` is NULL.\n", "");
+void playback_device_destroy(void *self) {
+    if (!self) {
+        LOG_ERROR("invalid parameter: `self` is NULL.\n", "");
         return;
     }
 
-    playback_device_t *playback = (playback_device_t *)pDevice;
-
-    context_t *pContext = (context_t *)playback->base.owner;
+    playback_device_t *playback = (playback_device_t *)self;
+    audio_context_t *pContext = (audio_context_t *)playback->base.owner;
 
     if (!pContext) {
         LOG_WARN("`pContext` is NULL. Skipping device unregistration and destroy.\n", "");
         return;
     }
 
-    context_unregister_device(pContext, (audio_device_t *)playback);
+    if (playback->base.vtable) {
+        context_unregister_device(pContext, (audio_device_t *)playback);
+    }
+
     playback->base.vtable = NULL;
     playback->base.owner = NULL;
 
@@ -301,13 +303,13 @@ void playback_device_destroy(void *pDevice) {
 }
 
 FFI_PLUGIN_EXPORT
-void playback_device_reset_buffer(void *pDevice) {
-    if (!pDevice) {
-        LOG_ERROR("invalid parameter: `pDevice` is NULL.\n", "");
+void playback_device_reset_buffer(void *self) {
+    if (!self) {
+        LOG_ERROR("invalid parameter: `self` is NULL.\n", "");
         return;
     }
 
-    playback_device_t *playback = (playback_device_t *)pDevice;
+    playback_device_t *playback = (playback_device_t *)self;
 
     ma_rb_reset(&playback->rb);
     playback->isReadingEnabled = false;
@@ -318,14 +320,14 @@ void playback_device_reset_buffer(void *pDevice) {
 }
 
 FFI_PLUGIN_EXPORT
-void playback_device_start(void *pDevice) {
-    if (!pDevice) {
-        LOG_ERROR("invalid parameter: `pDevice` is NULL.\n", "");
+void playback_device_start(void *self) {
+    if (!self) {
+        LOG_ERROR("invalid parameter: `self` is NULL.\n", "");
 
         return;
     }
 
-    playback_device_t *playback = (playback_device_t *)pDevice;
+    playback_device_t *playback = (playback_device_t *)self;
 
     if (playback->device.type != ma_device_type_playback) {
         LOG_ERROR("invalid playback type %d != %d.\n",
@@ -353,14 +355,14 @@ void playback_device_start(void *pDevice) {
 }
 
 FFI_PLUGIN_EXPORT
-void playback_device_stop(void *pDevice) {
-    if (!pDevice) {
-        LOG_ERROR("invalid parameter: `pDevice` is NULL.\n", "");
+void playback_device_stop(void *self) {
+    if (!self) {
+        LOG_ERROR("invalid parameter: `self` is NULL.\n", "");
 
         return;
     }
 
-    playback_device_t *playback = (playback_device_t *)pDevice;
+    playback_device_t *playback = (playback_device_t *)self;
 
     ma_result stopResult =
         ma_device_stop(&playback->device);
@@ -376,9 +378,9 @@ void playback_device_stop(void *pDevice) {
 }
 
 FFI_PLUGIN_EXPORT
-void playback_device_push_buffer(void *pDevice, playback_data_t *pData) {
-    if (!pDevice) {
-        LOG_ERROR("invalid parameter: `pDevice` is NULL.\n", "");
+void playback_device_push_buffer(void *self, playback_data_t *pData) {
+    if (!self) {
+        LOG_ERROR("invalid parameter: `self` is NULL.\n", "");
         return;
     }
 
@@ -392,7 +394,7 @@ void playback_device_push_buffer(void *pDevice, playback_data_t *pData) {
         return;
     }
 
-    playback_device_t *playback = (playback_device_t *)pDevice;
+    playback_device_t *playback = (playback_device_t *)self;
 
     ma_uint32 availableWrite = ma_rb_available_write(&playback->rb);
     ma_uint32 availableRead = ma_rb_available_read(&playback->rb);
@@ -471,13 +473,13 @@ void playback_device_push_buffer(void *pDevice, playback_data_t *pData) {
 }
 
 FFI_PLUGIN_EXPORT
-device_state_t playback_device_get_state(void *pDevice) {
-    if (!pDevice) {
-        LOG_ERROR("invalid parameter: `pDevice` is NULL.\n", "");
+device_state_t playback_device_get_state(void *self) {
+    if (!self) {
+        LOG_ERROR("invalid parameter: `self` is NULL.\n", "");
         return false;
     }
 
-    playback_device_t *playback = (playback_device_t *)pDevice;
+    playback_device_t *playback = (playback_device_t *)self;
 
     ma_device_state state = ma_device_get_state(&playback->device);
 

@@ -7,12 +7,12 @@ description: |
 output: 'lib/src/generated/bindings.dart'
 headers:
   entry-points:
-    - 'native/include/context.h'
+    - 'native/include/audio_context.h'
     - 'native/include/logger.h'
     - 'native/include/playback_device.h'
     - 'native/include/waveform.h'
   include-directives:
-    - 'native/include/context.h'
+    - 'native/include/audio_context.h'
     - 'native/include/logger.h'
     - 'native/include/playback_device.h'
     - 'native/include/waveform.h'
@@ -28,8 +28,7 @@ comments:
 functions:
   symbol-address:
     include:
-      - 'context_destroy'
-      - 'playback_device_destroy'
+      - 'audio_context_destroy'
       - 'waveform_destroy'
       - 'close_log'
 

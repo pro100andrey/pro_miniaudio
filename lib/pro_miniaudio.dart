@@ -3,15 +3,15 @@ library;
 
 export 'src/library.dart'
     show
+        AudioContext,
         AudioFormat,
-        Context,
         DeviceInfo,
         DeviceState,
         FileLogLevel,
         FileLogger,
+        PcmFormat,
         PlaybackConfig,
         PlaybackDevice,
-        SampleFormat,
         Waveform,
         WaveformSawtoothConfig,
         WaveformSineConfig,

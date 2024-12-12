@@ -4,7 +4,7 @@ import 'package:pro_miniaudio/pro_miniaudio.dart';
 import 'playback_waveform_device.dart';
 
 class AudioController extends ChangeNotifier {
-  final _context = Context();
+  final _context = AudioContext();
 
   bool get dataIsRefreshed => _deviceInfos != null;
 
@@ -140,7 +140,6 @@ class AudioController extends ChangeNotifier {
     playbackDevices[index].stop();
     notifyListeners();
   }
-
 
   void setPlaybackDeviceFrequency(int index, double value) {
     playbackDevices[index].setFrequency(value);

@@ -19,12 +19,12 @@ Add the following to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  pro_miniaudio: 0.0.7
+  pro_miniaudio: 0.1.0
 ```
 
-## Context
+## Audio Context
 
-The `Context` class manages the initialization and querying of audio devices.
+The `AudioContext` class manages the initialization and querying of audio devices.
 
 ### Example: Initialize and Query Devices
 
@@ -32,7 +32,7 @@ The `Context` class manages the initialization and querying of audio devices.
 import 'package:pro_miniaudio/pro_miniaudio.dart';
 
 void main() {
-  final context = Context();
+  final context = AudioContext();
 
   // Refresh devices
   context.refreshDevices();

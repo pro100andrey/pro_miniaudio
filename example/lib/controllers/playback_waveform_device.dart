@@ -6,7 +6,7 @@ const _durationInMs = 100;
 
 class PlaybackWaveformDevice {
   PlaybackWaveformDevice({
-    required Context context,
+    required AudioContext context,
     required DeviceInfo deviceInfo,
     required PlaybackConfig config,
   }) {

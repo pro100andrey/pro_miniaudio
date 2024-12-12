@@ -2,16 +2,17 @@ part of '../library.dart';
 
 /// Represents information about an audio device.
 ///
-/// This class provides metadata about an audio device, such as its unique
-/// identifier, name, whether it is the default device, and the list of
-/// supported audio data formats.
+/// The `DeviceInfo` class provides metadata about an audio device,
+/// including its unique identifier, name, default status, and supported
+/// audio formats. This class is typically used to enumerate available
+/// audio devices or configure audio pipelines.
 final class DeviceInfo extends Equatable {
   /// Creates a new [DeviceInfo] instance with the given properties.
   ///
   /// - [id]: The unique identifier of the device.
-  /// - [name]: The name of the device.
-  /// - [isDefault]: Whether this device is the default audio device.
-  /// - [audioFormats]: A list of supported audio data formats.
+  /// - [name]: The user-friendly name of the device.
+  /// - [isDefault]: Indicates whether this device is the default audio device.
+  /// - [audioFormats]: A list of supported audio data formats for the device.
   const DeviceInfo({
     required this.id,
     required this.name,
@@ -21,75 +22,59 @@ final class DeviceInfo extends Equatable {
 
   /// The unique identifier of the device.
   ///
-  /// This could be a platform-specific identifier, such as a string or
-  /// integer, depending on the implementation.
+  /// This identifier is platform-specific and could be a string, integer,
+  /// or other type depending on the implementation. It is used to select
+  /// or reference a specific device programmatically.
+  ///
+  /// Example:
+  /// ```dart
+  /// print('Device ID: ${device.id}');
+  /// ```
   final Object id;
 
   /// The user-friendly name of the device.
+  ///
+  /// This is a human-readable name that can be displayed in a UI, such as
+  /// "Built-in Audio" or "USB Audio Device".
+  ///
+  /// Example:
+  /// ```dart
+  /// print('Device Name: ${device.name}');
+  /// ```
   final String name;
 
   /// Indicates whether this device is the default audio device.
   ///
-  /// A default device is typically the one automatically selected for audio
-  /// playback or recording.
+  /// The default device is automatically selected for audio playback or
+  /// recording unless explicitly overridden.
+  ///
+  /// Example:
+  /// ```dart
+  /// if (device.isDefault) {
+  ///   print('This is the default audio device.');
+  /// }
+  /// ```
   final bool isDefault;
 
-  /// The list of supported audio data formats for this device.
+  /// A list of supported audio data formats for this device.
   ///
   /// Each entry in the list describes a specific format that the device can
-  /// handle, including its sample rate, channel configuration, and sample
-  /// format.
+  /// handle, including details like sample rate, number of channels, and
+  /// sample format.
+  ///
+  /// Example:
+  /// ```dart
+  /// for (var format in device.audioFormats) {
+  ///   print('Supported Format: ${format.sampleFormat.name}, '
+  ///         '${format.channels} channels, ${format.sampleRate} Hz');
+  /// }
+  /// ```
   final List<AudioFormat> audioFormats;
 
+  /// Equatable implementation for comparing [DeviceInfo] instances.
+  ///
+  /// Devices are compared based on their [id], [name], [isDefault] status,
+  /// and the list of supported [audioFormats].
   @override
-  List<Object?> get props => [name, isDefault, audioFormats];
-}
-
-/// Represents a supported audio data format.
-///
-/// This class provides detailed information about a specific audio data format
-/// that a device supports, including sample format, channel count, sample rate,
-/// and more.
-final class AudioFormat extends Equatable {
-  /// Creates a new [AudioFormat] instance with the given properties.
-  ///
-  /// - [sampleFormat]: The audio sample format (e.g., 16-bit signed integer).
-  /// - [channels]: The number of audio channels (e.g., 1 for mono, 2 for
-  /// stereo).
-  /// - [sampleRate]: The sample rate in Hertz.
-  const AudioFormat({
-    required this.sampleFormat,
-    required this.channels,
-    required this.sampleRate,
-  });
-
-  /// The audio sample format.
-  ///
-  /// Examples include 16-bit signed integer (`s16`) or 32-bit float (`f32`).
-  final SampleFormat sampleFormat;
-
-  /// The number of audio channels.
-  ///
-  /// Examples:
-  /// - `1`: Mono
-  /// - `2`: Stereo
-  /// - `6`: 5.1 Surround
-  final int channels;
-
-  /// The sample rate in Hertz.
-  ///
-  /// Examples:
-  /// - `44100`: Standard CD-quality audio.
-  /// - `48000`: Professional audio.
-  final int sampleRate;
-
-  /// The number of bytes pef frame.
-  int get bytesPerFrame => sampleFormat.bps * channels;
-
-  @override
-  List<Object?> get props => [
-        sampleFormat,
-        channels,
-        sampleRate,
-      ];
+  List<Object?> get props => [id, name, isDefault, audioFormats];
 }

@@ -1,15 +1,16 @@
 part of 'library.dart';
 
-/// Base class for native resources.
-/// Provides a finalizer for releasing native resources.
-/// Must be implemented by subclasses.
+/// Abstract base class for managing native resources.
 ///
-/// A `NativeFinalizer` is attached to the resource during its initialization.
-/// The finalizer ensures that the native resource is released when the Dart
-/// object is garbage collected (GC), if the `dispose` method is not called
-/// explicitly.
+/// This class provides an interface for working with native resources that
+/// require explicit or automatic finalization. It uses a `NativeFinalizer` to
+/// ensure that resources are released when they are no longer referenced,
+/// preventing memory leaks.
 ///
-/// Example:
+/// Subclasses must implement the [releaseResource] method to define how the
+/// resource should be released and specify the [finalizer] for cleanup.
+///
+/// Example usage:
 /// ```dart
 /// class MyResource extends NativeResource<MyResource> {
 ///   MyResource._(Pointer<MyResource> ptr) : super._(ptr);
@@ -24,11 +25,13 @@ part of 'library.dart';
 /// }
 /// ```
 abstract class NativeResource<T extends NativeType> implements Finalizable {
-  /// Initializes a native resource and attaches a finalizer.
-  /// The finalizer will automatically release the resource if the
-  /// Dart object is garbage collected (GC), unless [dispose] is called
-  /// explicitly to release the resource beforehand.
-  /// Throws an [ArgumentError] if [ptr] is `null`.
+  /// Constructs a native resource and attaches a finalizer.
+  ///
+  /// The finalizer ensures that the resource is released if [dispose] is not
+  /// called explicitly. If [ptr] is `nullptr`, throws an [ArgumentError].
+  ///
+  /// - [ptr]: Pointer to the native resource.
+  /// - [externalSize]: Optional size of the external resource for GC tracking.
   NativeResource._(Pointer<T> ptr, {int? externalSize}) : _resource = ptr {
     if (ptr == nullptr) {
       throw ArgumentError.notNull('ptr');
@@ -42,40 +45,24 @@ abstract class NativeResource<T extends NativeType> implements Finalizable {
     );
   }
 
-  /// The finalizer for this resource.
-  /// Must be implemented by subclasses.
+  /// Finalizer used to release the native resource.
   ///
-  /// The finalizer ensures that the resource is properly released when
-  /// the object becomes unreachable (GC). This behavior complements the
-  /// explicit [dispose] method.
-  ///
-  /// Example:
-  /// ```dart
-  /// static final _finalizer = NativeFinalizer(
-  ///   _bindings.addresses.function_destroy.cast(),
-  /// );
-  ///
-  /// @override
-  /// NativeFinalizer get finalizer => _finalizer;
-  /// ```
+  /// Subclasses must override this property to provide a finalizer
+  /// appropriate for their specific resource type.
   NativeFinalizer get finalizer;
-
 
   /// Pointer to the native resource.
   final Pointer<T> _resource;
 
-  /// Tracks whether the resource has been finalized or explicitly disposed.
+  /// Indicates whether the resource has been disposed or finalized.
   bool get isFinalized => _isFinalized;
   bool _isFinalized = false;
 
-  /// Disposes the resource and releases associated resources.
-  /// Throws a [StateError] if the resource is already disposed.
+  /// Releases the resource manually.
   ///
-  /// This method should be called explicitly when the resource is no longer
-  /// needed to ensure timely release of native resources.
-  ///
-  /// If [dispose] is not called, the finalizer will release the resource
-  /// automatically when the object is garbage collected.
+  /// Throws a [StateError] if the resource is already finalized.
+  /// If this method is not called, the finalizer will release the resource
+  /// when the object is garbage collected.
   @mustCallSuper
   void dispose() {
     if (_isFinalized) {
@@ -92,62 +79,107 @@ abstract class NativeResource<T extends NativeType> implements Finalizable {
     _isFinalized = true;
   }
 
-  /// Releases the native resource.
-  /// Must be implemented by subclasses to specify how the resource should be
-  /// released.
+  /// Defines how the native resource should be released.
   ///
-  /// This method is called explicitly by [dispose], or implicitly by the
-  /// finalizer if the object is garbage collected.
-  ///
-  /// Example:
-  /// ```dart
-  /// @override
-  /// void releaseResource() {
-  ///   _bindings.function_destroy(_resource);
-  /// }
-  /// ```
+  /// Subclasses must implement this method to specify how to release the
+  /// resource. It is called explicitly by [dispose] or implicitly by the
+  /// finalizer.
   void releaseResource();
 
-  /// Ensures that the resource is not finalized.
-  /// Throws a [StateError] if the resource is finalized.
+  /// Ensures that the resource is not finalized before accessing it.
   ///
-  /// This method is used internally to ensure that the resource is not
-  /// finalized before accessing it.
+  /// Throws a [StateError] if the resource has been finalized or is invalid.
   Pointer<T> ensureIsNotFinalized() {
     if (_isFinalized || _resource == nullptr) {
       throw StateError('Resource is finalized');
     }
-
     return _resource;
   }
 }
 
+/// Simplified resource manager for native resources.
+///
+/// This class is a lightweight alternative to [NativeResource] that does not
+/// use a finalizer. Resources must be manually released by calling [dispose].
+abstract class ManagedResource<T extends NativeType> {
+  /// Constructs a managed resource.
+  ///
+  /// Throws an [ArgumentError] if [ptr] is `nullptr`.
+  ManagedResource._(Pointer<T> ptr) : _resource = ptr {
+    if (ptr == nullptr) {
+      throw ArgumentError.notNull('ptr');
+    }
+  }
+
+  /// Pointer to the native resource.
+  final Pointer<T> _resource;
+
+  /// Indicates whether the resource has been disposed.
+  bool get isFinalized => _isFinalized;
+  bool _isFinalized = false;
+
+  /// Releases the resource manually.
+  ///
+  /// Throws a [StateError] if the resource is already finalized.
+  @mustCallSuper
+  void dispose() {
+    if (_isFinalized) {
+      throw StateError('Resource already disposed');
+    }
+
+    // Explicitly release the resource.
+    releaseResource();
+
+    // Mark the resource as finalized.
+    _isFinalized = true;
+  }
+
+  /// Defines how the native resource should be released.
+  ///
+  /// Subclasses must implement this method to specify resource cleanup logic.
+  void releaseResource();
+
+  /// Ensures that the resource is valid and not finalized.
+  ///
+  /// Throws a [StateError] if the resource has been finalized or is invalid.
+  Pointer<T> ensureIsNotFinalized() {
+    if (_isFinalized || _resource == nullptr) {
+      throw StateError('Resource is finalized');
+    }
+    return _resource;
+  }
+}
+
+/// Lightweight wrapper for native resources.
+///
+/// Automatically frees memory allocated via `malloc` when the Dart object
+/// is garbage collected.
 class WrappedResource<T extends NativeType> {
+  /// Constructs a wrapped resource.
+  ///
+  /// Throws an [ArgumentError] if [ptr] is `nullptr`.
   WrappedResource._(Pointer<T> ptr) : _resource = ptr {
     if (ptr == nullptr) {
       throw ArgumentError.notNull('ptr');
     }
-
     _finalizer.attach(this, ptr, detach: this);
   }
 
-  static final Finalizer<Pointer> _finalizer = Finalizer((r) {
-    malloc.free(r);
+  /// Finalizer for freeing memory.
+  static final Finalizer<Pointer> _finalizer = Finalizer((ptr) {
+    malloc.free(ptr);
   });
 
   /// Pointer to the native resource.
   final Pointer<T> _resource;
 
-  /// Ensures that the resource is not finalized.
-  /// Throws a [StateError] if the resource is finalized.
+  /// Ensures that the resource is valid and not finalized.
   ///
-  /// This method is used internally to ensure that the resource is not
-  /// finalized before accessing it.
+  /// Throws a [StateError] if the resource is invalid.
   Pointer<T> ensureIsNotFinalized() {
     if (_resource == nullptr) {
       throw StateError('Resource is finalized');
     }
-
     return _resource;
   }
 }

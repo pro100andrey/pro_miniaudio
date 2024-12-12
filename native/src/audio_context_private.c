@@ -1,13 +1,13 @@
-#include "../include/context_private.h"
+#include "../include/audio_context_private.h"
 
 #include <stdlib.h>
 
 #include "../include/logger.h"
 #include "../include/miniaudio.h"
 
-bool context_register_device(context_t *pContext, audio_device_t *pDevice) {
-    if (!pContext) {
-        LOG_ERROR("invalid parameter: `pContext` is NULL.\n", "");
+bool context_register_device(audio_context_t *self, audio_device_t *pDevice) {
+    if (!self) {
+        LOG_ERROR("invalid parameter: `self` is NULL.\n", "");
         return false;
     }
 
@@ -17,22 +17,22 @@ bool context_register_device(context_t *pContext, audio_device_t *pDevice) {
     }
 
     // Expand the pDevice list
-    pContext->audioDevices = realloc(pContext->audioDevices,
-                                     (pContext->deviceCount + 1) * sizeof(audio_device_t *));
-    if (!pContext->audioDevices) {
+    self->audioDevices = realloc(self->audioDevices,
+                                 (self->deviceCount + 1) * sizeof(audio_device_t *));
+    if (!self->audioDevices) {
         LOG_ERROR("Failed to allocate memory for audioDevices.\n", "");
         return false;
     }
 
-    pContext->audioDevices[pContext->deviceCount++] = pDevice;
+    self->audioDevices[self->deviceCount++] = pDevice;
 
     LOG_INFO("<%p>(audio_device_t *) registered.\n", pDevice);
 
     return true;
 }
 
-bool context_unregister_device(context_t *pContext, audio_device_t *pDevice) {
-    if (!pContext) {
+bool context_unregister_device(audio_context_t *self, audio_device_t *pDevice) {
+    if (!self) {
         LOG_ERROR("invalid parameter: `pContext` is NULL.\n", "");
         return false;
     }
@@ -45,16 +45,16 @@ bool context_unregister_device(context_t *pContext, audio_device_t *pDevice) {
     bool found = false;
 
     // Find the pDevice in the list
-    for (size_t i = 0; i < pContext->deviceCount; i++) {
-        if (pContext->audioDevices[i] == pDevice) {
+    for (size_t i = 0; i < self->deviceCount; i++) {
+        if (self->audioDevices[i] == pDevice) {
             found = true;
 
             // Shift remaining devices down
-            for (size_t j = i; j < pContext->deviceCount - 1; j++) {
-                pContext->audioDevices[j] = pContext->audioDevices[j + 1];
+            for (size_t j = i; j < self->deviceCount - 1; j++) {
+                self->audioDevices[j] = self->audioDevices[j + 1];
             }
 
-            pContext->deviceCount--;
+            self->deviceCount--;
             break;
         }
     }
@@ -65,8 +65,8 @@ bool context_unregister_device(context_t *pContext, audio_device_t *pDevice) {
     }
 
     // Shrink the pDevice list
-    pContext->audioDevices = realloc(pContext->audioDevices,
-                                     pContext->deviceCount * sizeof(audio_device_t *));
+    self->audioDevices = realloc(self->audioDevices,
+                                 self->deviceCount * sizeof(audio_device_t *));
 
     LOG_INFO("<%p>(audio_device_t *) unregistered.\n", pDevice);
     return true;

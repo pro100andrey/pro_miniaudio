@@ -1,5 +1,5 @@
-#ifndef CONTEXT_H
-#define CONTEXT_H
+#ifndef AUDIO_CONTEXT_H
+#define AUDIO_CONTEXT_H
 
 #include <stdbool.h>
 
@@ -57,10 +57,10 @@ typedef struct {
  *
  * Initializes the audio system and prepares it for managing audio devices.
  *
- * @return A pointer to the newly created context, or NULL if the creation failed.
+ * @return A pointer to the newly created audio context structure `audio_context_t` , or NULL if the creation failed.
  */
 FFI_PLUGIN_EXPORT
-void *context_create(void);
+void *audio_context_create(void);
 
 /**
  * @brief Destroys an audio context.
@@ -68,10 +68,10 @@ void *context_create(void);
  * Frees all resources associated with the audio context, including
  * registered devices and cached device information.
  *
- * @param pContext Pointer to the context to destroy.
+ * @param self Pointer to the `audio_context_t` structure.
  */
 FFI_PLUGIN_EXPORT
-void context_destroy(void *pContext);
+void audio_context_destroy(void *self);
 
 /**
  * @brief Refreshes the list of available audio devices.
@@ -79,28 +79,28 @@ void context_destroy(void *pContext);
  * Scans the system for playback and capture devices, updating the context's
  * cached list of devices.
  *
- * @param pContext Pointer to the context.
+ * @param self Pointer to the `audio_context_t` structure.
  */
 FFI_PLUGIN_EXPORT
-void context_refresh_devices(const void *pContext);
+void audio_context_refresh_devices(const void *self);
 
 /**
  * @brief Retrieves the number of playback devices.
  *
- * @param pContext Pointer to the context.
+ * @param self Pointer to the `audio_context_t` structure.
  * @return The total number of playback devices currently detected.
  */
 FFI_PLUGIN_EXPORT
-uint32_t context_get_playback_device_count(const void *pContext);
+uint32_t audio_context_get_playback_device_count(const void *self);
 
 /**
  * @brief Retrieves the number of capture devices.
  *
- * @param pContext Pointer to the context.
+ * @param self Pointer to the `audio_context_t` structure.
  * @return The total number of capture devices currently detected.
  */
 FFI_PLUGIN_EXPORT
-uint32_t context_get_capture_device_count(const void *pContext);
+uint32_t audio_context_get_capture_device_count(const void *self);
 
 /**
  * @brief Gets detailed information about playback devices.
@@ -108,11 +108,11 @@ uint32_t context_get_capture_device_count(const void *pContext);
  * This function provides a pointer to an array of `device_info_t` structures,
  * each describing a detected playback device.
  *
- * @param pContext Pointer to the context.
+ * @param self Pointer to the `audio_context_t` structure.
  * @return A pointer to an array of `device_info_t` structures for playback devices.
  */
 FFI_PLUGIN_EXPORT
-device_info_t *context_get_playback_device_infos(const void *pContext);
+device_info_t *audio_context_get_playback_device_infos(const void *self);
 
 /**
  * @brief Gets detailed information about capture devices.
@@ -120,10 +120,10 @@ device_info_t *context_get_playback_device_infos(const void *pContext);
  * This function provides a pointer to an array of `device_info_t` structures,
  * each describing a detected capture device.
  *
- * @param pContext Pointer to the context.
+ * @param self Pointer to the `audio_context_t` structure.
  * @return A pointer to an array of `device_info_t` structures for capture devices.
  */
 FFI_PLUGIN_EXPORT
-device_info_t *context_get_capture_device_infos(const void *pContext);
+device_info_t *audio_context_get_capture_device_infos(const void *self);
 
-#endif  // CONTEXT_H
+#endif  // AUDIO_CONTEXT_H

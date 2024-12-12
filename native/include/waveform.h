@@ -1,7 +1,7 @@
 #ifndef WAVEFORM_H
 #define WAVEFORM_H
 
-#include "context.h"
+#include "audio_context.h"
 #include "platform.h"
 
 /**
@@ -29,12 +29,13 @@ typedef enum {
  * @param frequency The frequency of the waveform in Hertz.
  * @return A pointer to the waveform generator, or NULL if initialization fails.
  */
-FFI_PLUGIN_EXPORT void *waveform_create(pcm_format_t pcmFormat,
-                                        uint32_t channels,
-                                        uint32_t sampleRate,
-                                        waveform_type_t waveformType,
-                                        double amplitude,
-                                        double frequency);
+FFI_PLUGIN_EXPORT
+void *waveform_create(pcm_format_t pcmFormat,
+                      u_int32_t channels,
+                      uint32_t sampleRate,
+                      waveform_type_t waveformType,
+                      double amplitude,
+                      double frequency);
 
 /**
  * @brief Destroys a waveform generator and releases its resources.
@@ -42,9 +43,10 @@ FFI_PLUGIN_EXPORT void *waveform_create(pcm_format_t pcmFormat,
  * This function cleans up any memory or resources associated with the
  * waveform generator.
  *
- * @param waveform Pointer to the waveform generator to destroy.
+ * @param self Pointer to the waveform generator to destroy.
  */
-FFI_PLUGIN_EXPORT void waveform_destroy(void *waveform);
+FFI_PLUGIN_EXPORT
+void waveform_destroy(void *self);
 
 /**
  * @brief Reads PCM frames from the waveform generator.
@@ -52,14 +54,15 @@ FFI_PLUGIN_EXPORT void waveform_destroy(void *waveform);
  * Generates the specified number of PCM audio frames and writes them
  * to the provided output buffer.
  *
- * @param waveform Pointer to the waveform generator.
+ * @param self Pointer to the waveform generator.
  * @param pFramesOut Pointer to the output buffer where PCM frames will be written.
  * @param framesCount The number of frames to generate.
  * @param pFramesRead Pointer to a variable that will store the actual number of frames read.
  */
-FFI_PLUGIN_EXPORT void waveform_read_pcm_frames_with_buffer(void *waveform,
-                                                            void *pFramesOut,
-                                                            uint64_t framesCount,
-                                                            uint64_t *pFramesRead);
+FFI_PLUGIN_EXPORT
+void waveform_read_pcm_frames_with_buffer(void *self,
+                                          void *pFramesOut,
+                                          uint64_t framesCount,
+                                          uint64_t *pFramesRead);
 
 #endif  // WAVEFORM_H

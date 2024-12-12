@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "../include/context.h"
+#include "../include/audio_context.h"
 #include "../include/internal.h"
 #include "../include/logger.h"
 #include "../include/miniaudio.h"
@@ -27,19 +27,19 @@ int main(int argc, char const* argv[]) {
     set_log_to_console_enabled(true);
     set_log_level(LOG_LEVEL_DEBUG);
 
-    void* pContext = context_create();
+    void* pContext = audio_context_create();
 
     if (!pContext) {
         return 1;
     }
 
-    context_refresh_devices(pContext);
+    audio_context_refresh_devices(pContext);
 
-    uint32_t rPlaybackCount = context_get_playback_device_count(pContext);
-    device_info_t* pPlaybackDevices = context_get_playback_device_infos(pContext);
+    uint32_t rPlaybackCount = audio_context_get_playback_device_count(pContext);
+    device_info_t* pPlaybackDevices = audio_context_get_playback_device_infos(pContext);
 
     if (!pPlaybackDevices) {
-        context_destroy(pContext);
+        audio_context_destroy(pContext);
         return 1;
     }
 
@@ -61,9 +61,10 @@ int main(int argc, char const* argv[]) {
     config.rbMinThreshold = framesCount * 2;
 
     void* pPlaybackDevice = playback_device_create(pContext, playback.id, config);
+    void* pPlaybackDevice2 = playback_device_create(pContext, playback.id, config);
 
     if (!pPlaybackDevice) {
-        context_destroy(pContext);
+        audio_context_destroy(pContext);
 
         return 1;
     }
@@ -76,7 +77,7 @@ int main(int argc, char const* argv[]) {
                         1.0,
                         300);
     if (!pWaveform) {
-        context_destroy(pContext);
+        audio_context_destroy(pContext);
 
         return 1;
     }
@@ -128,7 +129,7 @@ int main(int argc, char const* argv[]) {
         usleep(100000);
     }
 
-    context_destroy(pContext);
+    audio_context_destroy(pContext);
     playback_device_destroy(pPlaybackDevice);
     waveform_destroy(pWaveform);
 

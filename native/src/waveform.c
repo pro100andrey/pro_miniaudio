@@ -53,13 +53,13 @@ void *waveform_create(pcm_format_t pcmFormat,
 }
 
 FFI_PLUGIN_EXPORT
-void waveform_destroy(void *pWaveform) {
-    if (!pWaveform) {
+void waveform_destroy(void *self) {
+    if (!self) {
         LOG_ERROR("invalid parameter: `pWaveform` is NULL.\n", "");
         return;
     }
 
-    ma_waveform *waveform = (ma_waveform *)pWaveform;
+    ma_waveform *waveform = (ma_waveform *)self;
 
     ma_waveform_uninit(waveform);
 
@@ -69,11 +69,11 @@ void waveform_destroy(void *pWaveform) {
 }
 
 FFI_PLUGIN_EXPORT
-void waveform_read_pcm_frames_with_buffer(void *pWaveform,
+void waveform_read_pcm_frames_with_buffer(void *self,
                                           void *pFramesOut,
                                           uint64_t framesCount,
                                           uint64_t *pFramesRead) {
-    if (!pWaveform) {
+    if (!self) {
         LOG_ERROR("invalid parameter: `pWaveform` is NULL.\n", "");
 
         return;
@@ -89,7 +89,7 @@ void waveform_read_pcm_frames_with_buffer(void *pWaveform,
         return;
     }
 
-    ma_waveform *waveform = (ma_waveform *)pWaveform;
+    ma_waveform *waveform = (ma_waveform *)self;
 
     ma_result maWaveformReadResult =
         ma_waveform_read_pcm_frames(waveform,

@@ -1,9 +1,9 @@
-#include "../include/context.h"
+#include "../include/audio_context.h"
 
 #include <stdlib.h>
 #include <string.h>
 
-#include "../include/context_private.h"
+#include "../include/audio_context_private.h"
 #include "../include/internal.h"
 #include "../include/logger.h"
 #include "../include/miniaudio.h"
@@ -30,16 +30,18 @@ void _onLog(void *pUserData, ma_uint32 level, const char *pMessage) {
 }
 
 FFI_PLUGIN_EXPORT
-void *context_create(void) {
-    context_t *context = malloc(sizeof(context_t));
+void *audio_context_create(void) {
+    audio_context_t *context = malloc(sizeof(audio_context_t));
 
     if (!context) {
-        LOG_ERROR("failed to allocate memory for context.\n", "");
+        LOG_ERROR("failed to allocate memory for audio context.\n", "");
         return NULL;
     }
 
     context->audioDevices = NULL;
     context->deviceCount = 0;
+    context->playbackCache.count = 0;
+    context->captureCache.count = 0;
 
     ma_context_config config = ma_context_config_init();
     config.coreaudio.sessionCategory =
@@ -75,55 +77,60 @@ void *context_create(void) {
         return NULL;
     }
 
-    context->playbackCache.count = 0;
-    context->captureCache.count = 0;
-
-    LOG_INFO("<%p>(context_t *) created.\n", context);
+    LOG_INFO("<%p>(audio_context_t *) created.\n", context);
 
     return context;
 }
 
 FFI_PLUGIN_EXPORT
-void context_destroy(void *pContext) {
-    if (!pContext) {
-        LOG_ERROR("invalid parameter: `pContext` is NULL.\n", "");
+void audio_context_destroy(void *self) {
+    if (!self) {
+        LOG_ERROR("invalid parameter: `self` is NULL.\n", "");
         return;
     }
 
-    context_t *context = (context_t *)pContext;
+    audio_context_t *ctx = (audio_context_t *)self;
     // Stop and free each device
-    for (size_t i = 0; i < context->deviceCount; i++) {
-        audio_device_t *device = context->audioDevices[i];
-        if (device->vtable && device->vtable->destroy) {
+    LOG_INFO("Destroying %d devices.\n", ctx->deviceCount);
+
+    size_t count = ctx->deviceCount;
+
+    for (size_t i = 0; i < count; i++) {
+        audio_device_t *device = ctx->audioDevices[i];
+        audio_device_vtable_t *vtable = device->vtable;
+
+        device->vtable = NULL;
+
+        if (vtable && vtable->destroy) {
             LOG_INFO("Destroying device <%p>(audio_device_t *)\n", device);
-            device->vtable->destroy(device);
+            vtable->destroy(device);
         }
     }
 
     ma_result contextUninitResult =
-        ma_context_uninit(&context->maContext);
+        ma_context_uninit(&ctx->maContext);
 
     if (contextUninitResult != MA_SUCCESS) {
         LOG_ERROR("ma_context_uninit failed - %s.\n",
                   ma_result_description(contextUninitResult));
     }
 
-    if (context->playbackCache.deviceInfo) {
-        free(context->playbackCache.deviceInfo);
+    if (ctx->playbackCache.deviceInfo) {
+        free(ctx->playbackCache.deviceInfo);
     }
 
-    if (context->captureCache.deviceInfo) {
-        free(context->captureCache.deviceInfo);
+    if (ctx->captureCache.deviceInfo) {
+        free(ctx->captureCache.deviceInfo);
     }
 
-    free(context->audioDevices);
-    free(context->maContext.pLog);
-    free(context);
+    free(ctx->audioDevices);
+    free(ctx->maContext.pLog);
+    free(ctx);
 
-    LOG_INFO("<%p>(context_t *) destroyed.\n", context);
+    LOG_INFO("<%p>(audio_context_t *) destroyed.\n", ctx);
 }
 
-static void process_device_list(context_t *pContext,
+static void process_device_list(audio_context_t *self,
                                 ma_device_type deviceType,
                                 ma_device_info *pMaDeviceInfos,
                                 uint32_t deviceCount,
@@ -143,7 +150,7 @@ static void process_device_list(context_t *pContext,
 
     for (uint32_t i = 0; i < deviceCount; i++) {
         ma_result getDeviceInfoResult =
-            ma_context_get_device_info(&pContext->maContext,
+            ma_context_get_device_info(&self->maContext,
                                        deviceType,
                                        &pMaDeviceInfos[i].id,
                                        &pMaDeviceInfos[i]);
@@ -183,9 +190,9 @@ static void process_device_list(context_t *pContext,
 }
 
 FFI_PLUGIN_EXPORT
-void context_refresh_devices(const void *pContext) {
-    if (!pContext) {
-        LOG_ERROR("invalid parameter: `pContext` is NULL.\n", "");
+void audio_context_refresh_devices(const void *self) {
+    if (!self) {
+        LOG_ERROR("invalid parameter: `self` is NULL.\n", "");
         return;
     }
 
@@ -195,13 +202,13 @@ void context_refresh_devices(const void *pContext) {
     ma_device_info *captureDeviceInfos;
     ma_uint32 captureDeviceCount;
 
-    context_t *context = (context_t *)pContext;
+    audio_context_t *ctx = (audio_context_t *)self;
 
-    LOG_INFO("Using context: <%p>.\n", context);
+    LOG_INFO("Using context: <%p>.\n", ctx);
 
     // Get playback and capture devices
     ma_result getDevicesResult =
-        ma_context_get_devices(&context->maContext,
+        ma_context_get_devices(&ctx->maContext,
                                &playbackDeviceInfos,
                                &playbackDeviceCount,
                                &captureDeviceInfos,
@@ -215,68 +222,68 @@ void context_refresh_devices(const void *pContext) {
     }
 
     // Process playback devices
-    process_device_list(context,
+    process_device_list(ctx,
                         ma_device_type_playback,
                         playbackDeviceInfos,
                         playbackDeviceCount,
-                        &context->playbackCache);
+                        &ctx->playbackCache);
 
     // Process capture devices
-    process_device_list(context,
+    process_device_list(ctx,
                         ma_device_type_capture,
                         captureDeviceInfos,
                         captureDeviceCount,
-                        &context->captureCache);
+                        &ctx->captureCache);
 }
 
 FFI_PLUGIN_EXPORT
-uint32_t context_get_playback_device_count(const void *pContext) {
-    if (!pContext) {
+uint32_t audio_context_get_playback_device_count(const void *self) {
+    if (!self) {
+        LOG_ERROR("invalid parameter: `self` is NULL.\n", "");
+        return -1;
+    }
+
+    audio_context_t *ctx = (audio_context_t *)self;
+
+    LOG_DEBUG("playback device count: %d\n", ctx->playbackCache.count);
+
+    return ctx->playbackCache.count;
+}
+
+FFI_PLUGIN_EXPORT
+uint32_t audio_context_get_capture_device_count(const void *self) {
+    if (!self) {
         LOG_ERROR("invalid parameter: `pContext` is NULL.\n", "");
         return -1;
     }
 
-    context_t *context = (context_t *)pContext;
+    audio_context_t *ctx = (audio_context_t *)self;
 
-    LOG_DEBUG("playback device count: %d\n", context->playbackCache.count);
+    LOG_DEBUG("capture device count: %d\n", ctx->captureCache.count);
 
-    return context->playbackCache.count;
+    return ctx->captureCache.count;
 }
 
 FFI_PLUGIN_EXPORT
-uint32_t context_get_capture_device_count(const void *pContext) {
-    if (!pContext) {
-        LOG_ERROR("invalid parameter: `pContext` is NULL.\n", "");
-        return -1;
-    }
-
-    context_t *context = (context_t *)pContext;
-
-    LOG_DEBUG("capture device count: %d\n", context->captureCache.count);
-
-    return context->captureCache.count;
-}
-
-FFI_PLUGIN_EXPORT
-device_info_t *context_get_playback_device_infos(const void *pContext) {
-    if (!pContext) {
+device_info_t *audio_context_get_playback_device_infos(const void *self) {
+    if (!self) {
         LOG_ERROR("invalid parameter: `pContext` is NULL.\n", "");
         return NULL;
     }
 
-    context_t *context = (context_t *)pContext;
+    audio_context_t *ctx = (audio_context_t *)self;
 
-    return context->playbackCache.deviceInfo;
+    return ctx->playbackCache.deviceInfo;
 }
 
 FFI_PLUGIN_EXPORT
-device_info_t *context_get_capture_device_infos(const void *pContext) {
-    if (!pContext) {
+device_info_t *audio_context_get_capture_device_infos(const void *self) {
+    if (!self) {
         LOG_ERROR("invalid parameter: `pContext` is NULL.\n", "");
         return NULL;
     }
 
-    context_t *context = (context_t *)pContext;
+    audio_context_t *ctx = (audio_context_t *)self;
 
-    return context->captureCache.deviceInfo;
+    return ctx->captureCache.deviceInfo;
 }

@@ -1,5 +1,5 @@
-#ifndef CONTEXT_PRIVATE_H
-#define CONTEXT_PRIVATE_H
+#ifndef AUDIO_CONTEXT_PRIVATE_H
+#define AUDIO_CONTEXT_PRIVATE_H
 
 #include "miniaudio.h"
 #include "playback_device_private.h"
@@ -18,10 +18,10 @@ typedef struct {
 } device_info_cache_t;
 
 /**
- * @struct context_t
+ * @struct audio_context_t
  * @brief Structure to manage the audio system context.
  *
- * The `context_t` structure is the central manager for audio devices and
+ * The `audio_context_t` structure is the central manager for audio devices and
  * the Miniaudio context. It provides functionality to register, unregister,
  * and manage audio devices within the system.
  */
@@ -31,18 +31,18 @@ typedef struct {
     device_info_cache_t captureCache;  /**< Cache of capture devices. */
     audio_device_t **audioDevices;     /**< Dynamic array of pointers to all audio devices. */
     size_t deviceCount;                /**< Number of devices currently managed by the context. */
-} context_t;
+} audio_context_t;
 
 /**
  * @brief Registers a new audio device in the context.
  *
  * Adds a new audio device to the list of managed devices within the context.
  *
- * @param pContext Pointer to the `context_t` structure.
+ * @param self Pointer to the `audio_context_t` structure.
  * @param pDevice Pointer to the `audio_device_t` structure to register.
  * @return `true` if the device was successfully registered, `false` otherwise.
  */
-bool context_register_device(context_t *pContext, audio_device_t *pDevice);
+bool context_register_device(audio_context_t *self, audio_device_t *pDevice);
 
 /**
  * @brief Unregisters an audio device from the context.
@@ -50,10 +50,10 @@ bool context_register_device(context_t *pContext, audio_device_t *pDevice);
  * Removes an audio device from the list of managed devices within the context.
  * If the device is found, it will be removed and the array will be updated.
  *
- * @param pContext Pointer to the `context_t` structure.
+ * @param self Pointer to the `audio_context_t` structure.
  * @param pDevice Pointer to the `audio_device_t` structure to unregister.
  * @return `true` if the device was successfully unregistered, `false` otherwise.
  */
-bool context_unregister_device(context_t *pContext, audio_device_t *pDevice);
+bool context_unregister_device(audio_context_t *self, audio_device_t *pDevice);
 
-#endif  // CONTEXT_PRIVATE_H
+#endif  // AUDIO_CONTEXT_PRIVATE_H

@@ -8,18 +8,20 @@ import 'package:meta/meta.dart';
 
 import 'generated/bindings.dart';
 
-part 'context.dart';
+part 'audio_context.dart';
 part 'file_logger.dart';
 part 'internal.dart';
 part 'models/device_info.dart';
 part 'models/device_state.dart';
 part 'models/log_level.dart';
-part 'models/sample_format.dart';
+part 'models/pcm_format.dart';
+part 'models/audio_format.dart';
 part 'models/waveform_config.dart';
 part 'models/waveform_type.dart';
 part 'models/playback_config.dart';
 part 'native_resource.dart';
 part 'playback_device.dart';
+
 part 'waveform.dart';
 
 ProMiniaudioBindings get _bindings => Library.instance.bindings;
@@ -37,14 +39,9 @@ final class Library {
     _bindings.addresses.waveform_destroy.cast(),
   );
 
-  /// The finalizer for the playback device.
-  static final playbackDeviceFinalizer = NativeFinalizer(
-    _bindings.addresses.playback_device_destroy.cast(),
-  );
-
   /// The finalizer for the `Context` class.
   static final contextFinalizer = NativeFinalizer(
-    _bindings.addresses.context_destroy.cast(),
+    _bindings.addresses.audio_context_destroy.cast(),
   );
 
   static final defaultFinalizer = NativeFinalizer(
