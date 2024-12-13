@@ -162,8 +162,7 @@ void *playback_device_create(void *pContext,
     }
 
     if (!pDeviceId) {
-        LOG_ERROR("invalid parameter: `pDeviceId` is NULL.\n", "");
-        return NULL;
+        LOG_WARN("`pDeviceId` is NULL. Using default device.\n", "");
     }
 
     playback_device_t *playback = malloc(sizeof(playback_device_t));

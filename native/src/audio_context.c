@@ -49,7 +49,7 @@ void *audio_context_create(void) {
     config.coreaudio.sessionCategoryOptions =
         ma_ios_session_category_option_allow_bluetooth |
         ma_ios_session_category_option_allow_bluetooth_a2dp |
-        ma_ios_session_category_option_allow_air_play |
+        ma_ios_session_category_option_default_to_speaker |
         ma_ios_session_category_option_mix_with_others;
 
     ma_log *log = malloc(sizeof(ma_log));
@@ -136,13 +136,13 @@ static void process_device_list(audio_context_t *self,
                                 uint32_t deviceCount,
                                 device_info_cache_t *pDevicesCache) {
     // Free previous devices
-    if (pDevicesCache->deviceInfo) {
-        for (uint32_t i = 0; i < pDevicesCache->count; i++) {
-            free(pDevicesCache->deviceInfo[i].id);
-        }
+    // if (pDevicesCache->deviceInfo) {
+    //     for (uint32_t i = 0; i < pDevicesCache->count; i++) {
+    //         free(pDevicesCache->deviceInfo[i].id);
+    //     }
 
-        free(pDevicesCache->deviceInfo);
-    }
+    //     free(pDevicesCache->deviceInfo);
+    // }
 
     pDevicesCache->count = deviceCount;
     pDevicesCache->deviceInfo =

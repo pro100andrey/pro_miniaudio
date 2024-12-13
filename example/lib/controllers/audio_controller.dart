@@ -1,17 +1,27 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:pro_miniaudio/pro_miniaudio.dart';
 
 import 'playback_waveform_device.dart';
 
 class AudioController extends ChangeNotifier {
+  AudioController() {
+    refreshDevices();
+
+    refreshTimer = Timer.periodic(const Duration(seconds: 2), (timer) {
+      refreshDevices();
+    });
+  }
+
   final _context = AudioContext();
 
   bool get dataIsRefreshed => _deviceInfos != null;
 
-  ({List<DeviceInfo> capture, List<DeviceInfo> playback}) get devicesInfos =>
-      _deviceInfos ?? (capture: [], playback: []);
+  ({Set<DeviceInfo> capture, Set<DeviceInfo> playback}) get devicesInfos =>
+      _deviceInfos ?? (capture: {}, playback: {});
 
-  ({List<DeviceInfo> capture, List<DeviceInfo> playback})? _deviceInfos;
+  ({Set<DeviceInfo> capture, Set<DeviceInfo> playback})? _deviceInfos;
 
   DeviceInfo? _selectedPlaybackDevice;
   DeviceInfo? get selectedPlaybackDevice => _selectedPlaybackDevice;
@@ -19,40 +29,61 @@ class AudioController extends ChangeNotifier {
   DeviceInfo? _selectedCaptureDevice;
   DeviceInfo? get selectedCaptureDevice => _selectedCaptureDevice;
 
+  bool get useDefaultPlaybackDevice => _useDefaultPlaybackDevice;
+  bool _useDefaultPlaybackDevice = false;
+
+  Timer? refreshTimer;
+
   void refreshDevices() {
     _context.refreshDevices();
 
-    final playback = _context.playbackDeviceInfos;
-    final capture = _context.captureDeviceInfos;
+    final playback = _context.playbackDeviceInfos.toSet();
+    final capture = _context.captureDeviceInfos.toSet();
 
-    if (listEquals(playback, _deviceInfos?.playback) &&
-        listEquals(capture, _deviceInfos?.capture)) {
+    final newPlaybackDevices = playback.difference(devicesInfos.playback);
+    final removedPlaybackDevices = devicesInfos.playback.difference(playback);
+
+    final newCaptureDevices = capture.difference(devicesInfos.capture);
+    final removedCaptureDevices = devicesInfos.capture.difference(capture);
+
+    final hasChanges = newPlaybackDevices.isNotEmpty ||
+        removedPlaybackDevices.isNotEmpty ||
+        newCaptureDevices.isNotEmpty ||
+        removedCaptureDevices.isNotEmpty;
+
+    if (!hasChanges) {
       return;
     }
 
-    if (!playback.contains(_selectedPlaybackDevice)) {
+    if (!removedPlaybackDevices.contains(_selectedPlaybackDevice)) {
       _selectedPlaybackDevice = null;
     }
 
-    if (!capture.contains(_selectedCaptureDevice)) {
+    if (!removedCaptureDevices.contains(_selectedCaptureDevice)) {
       _selectedCaptureDevice = null;
     }
 
-    _deviceInfos = (capture: capture, playback: playback);
+    _deviceInfos = (capture: newCaptureDevices, playback: newPlaybackDevices);
 
-    _selectedPlaybackDevice ??= playback.isNotEmpty
+    _selectedPlaybackDevice ??= newPlaybackDevices.isNotEmpty
         ? playback.firstWhere(
             (device) => device.isDefault,
-            orElse: () => playback.first,
+            orElse: () => newPlaybackDevices.first,
           )
         : null;
 
-    _selectedCaptureDevice ??= capture.isNotEmpty
+    _selectedCaptureDevice ??= newCaptureDevices.isNotEmpty
         ? capture.firstWhere(
             (device) => device.isDefault,
-            orElse: () => capture.first,
+            orElse: () => newCaptureDevices.first,
           )
         : null;
+
+    notifyListeners();
+  }
+
+  void setUseDefaultPlaybackDevice({required bool value}) {
+    _useDefaultPlaybackDevice = value;
 
     notifyListeners();
   }
@@ -75,7 +106,7 @@ class AudioController extends ChangeNotifier {
 
       final newDevice = PlaybackWaveformDevice(
         context: _context,
-        deviceInfo: _selectedPlaybackDevice!,
+        deviceInfo:_useDefaultPlaybackDevice ? null : _selectedPlaybackDevice!,
         config: PlaybackConfig.basedChunkDuration(
           format: audioFormat,
           chunkMs: 100,
@@ -119,7 +150,7 @@ class AudioController extends ChangeNotifier {
           format: audioFormat,
           chunkMs: 32,
         ), //PlaybackConfig.withAudioFormat(audioFormat),
-        deviceInfo: _selectedPlaybackDevice!,
+        deviceInfo:  _useDefaultPlaybackDevice ? null : _selectedPlaybackDevice,
       ),
     );
 

@@ -24,7 +24,6 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void initState() {
-    _audioController.refreshDevices();
     super.initState();
   }
 
@@ -40,77 +39,38 @@ class _HomePageState extends State<HomePage> {
         builder: (context, notifier, child) => Scaffold(
           body: CustomScrollView(
             slivers: [
-              SliverAppBar(
-                floating: true,
-                actions: [
-                  IconButton(
-                    icon: const Icon(Icons.refresh),
-                    onPressed: _audioController.refreshDevices,
-                  ),
-                ],
-              ),
+              const SliverAppBar(floating: true),
               SliverPadding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 sliver: SliverToBoxAdapter(
                   child: Card(
                     child: Padding(
                       padding: const EdgeInsets.all(16),
-                      child: LayoutBuilder(
-                        builder: (context, constraints) {
-                          const spacing = 16.0;
-                          final maxWidth = (constraints.maxWidth - spacing) / 2;
-
-                          return Wrap(
-                            spacing: spacing,
-                            runSpacing: 16,
-                            children: [
-                              ConstrainedBox(
-                                constraints: BoxConstraints(
-                                  minWidth: 200,
-                                  maxWidth: maxWidth > 200
-                                      ? maxWidth
-                                      : double.infinity,
-                                ),
-                                child: DevicesDropdown(
-                                  label: 'Playback',
-                                  selectedDevice:
-                                      notifier.selectedPlaybackDevice,
-                                  onChanged: notifier.selectPlaybackDevice,
-                                  devices: notifier.devicesInfos.playback,
-                                  onInfoPressed: () async =>
-                                      _onPlaybackInfoPressed(
-                                    context,
-                                    notifier.selectedPlaybackDevice!,
-                                  ),
-                                ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          DevicesDropdown(
+                            label: 'Playback',
+                            selectedDevice: notifier.selectedPlaybackDevice,
+                            onChanged: notifier.selectPlaybackDevice,
+                            devices: notifier.devicesInfos.playback.toList(),
+                            onInfoPressed: () async => _onPlaybackInfoPressed(
+                              context,
+                              notifier.selectedPlaybackDevice!,
+                            ),
+                          ),
+                          SizedBox(
+                            width: 200,
+                            child: CheckboxListTile(
+                              title: const Text('Use default'),
+                              value: notifier.useDefaultPlaybackDevice,
+                              onChanged: (value) =>
+                                  notifier.setUseDefaultPlaybackDevice(
+                                value: value ?? false,
                               ),
-                              if (notifier.devicesInfos.capture.isNotEmpty)
-                                ConstrainedBox(
-                                  constraints: BoxConstraints(
-                                    minWidth: 200,
-                                    maxWidth: maxWidth > 200
-                                        ? maxWidth
-                                        : double.infinity,
-                                  ),
-                                  child: DevicesDropdown(
-                                    label: 'Capture',
-                                    selectedDevice:
-                                        notifier.selectedCaptureDevice,
-                                    onChanged: notifier.selectCaptureDevice,
-                                    devices: notifier.devicesInfos.capture,
-                                    onInfoPressed: notifier
-                                                .selectedCaptureDevice !=
-                                            null
-                                        ? () async => _onPlaybackInfoPressed(
-                                              context,
-                                              notifier.selectedCaptureDevice!,
-                                            )
-                                        : null,
-                                  ),
-                                ),
-                            ],
-                          );
-                        },
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -126,7 +86,8 @@ class _HomePageState extends State<HomePage> {
                     [
                       ...notifier.playbackDevices.mapIndexed(
                         (index, device) => PlaybackDeviceItem(
-                          name: 'Playback ${index + 1} - ${device.name}',
+                          name: 'Playback ${index + 1}  '
+                              '- ${device.name ?? 'Default'}',
                           onClosePressed: () =>
                               notifier.removePlaybackDevice(index),
                           waveformSelector: WaveformSelectorVm(

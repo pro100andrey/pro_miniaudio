@@ -25,7 +25,7 @@ int main(int argc, char const* argv[]) {
     signal(SIGINT, handle_signal);
 
     set_log_to_console_enabled(true);
-    set_log_level(LOG_LEVEL_DEBUG);
+    set_log_level(LOG_LEVEL_INFO);
 
     void* pContext = audio_context_create();
 
@@ -61,7 +61,6 @@ int main(int argc, char const* argv[]) {
     config.rbMinThreshold = framesCount * 2;
 
     void* pPlaybackDevice = playback_device_create(pContext, playback.id, config);
-    void* pPlaybackDevice2 = playback_device_create(pContext, playback.id, config);
 
     if (!pPlaybackDevice) {
         audio_context_destroy(pContext);
@@ -108,7 +107,7 @@ int main(int argc, char const* argv[]) {
     while (running) {
         tik++;
 
-        if (tik == 2) {
+        if (tik == 400) {
             break;
         }
 

@@ -39,7 +39,8 @@ final class PlaybackDevice extends ManagedResource<Void> {
   /// Creates a new playback device instance.
   ///
   /// - [context]: The [AudioContext] that manages this device.
-  /// - [deviceInfo]: Information about the playback device.
+  /// - [deviceInfo]: Information about the playback device. If not provided,
+  ///   the default playback device will be used.
   /// - [config]: The playback configuration specifying sample format,
   ///   channels, sample rate, and buffer properties.
   ///
@@ -48,7 +49,7 @@ final class PlaybackDevice extends ManagedResource<Void> {
   /// - [Exception] if the device creation fails.
   factory PlaybackDevice({
     required AudioContext context,
-    required DeviceInfo deviceInfo,
+    required DeviceInfo? deviceInfo,
     required PlaybackConfig config,
   }) {
     final nativeConfig = config.toNative();
@@ -56,7 +57,7 @@ final class PlaybackDevice extends ManagedResource<Void> {
 
     final device = _bindings.playback_device_create(
       pContext,
-      deviceInfo.id as Pointer<Void>,
+      deviceInfo?.id == null ? nullptr : deviceInfo!.id as Pointer<Void>,
       nativeConfig.ensureIsNotFinalized().ref,
     );
 
@@ -84,7 +85,7 @@ final class PlaybackDevice extends ManagedResource<Void> {
   final PlaybackConfig config;
 
   /// Information about the playback device.
-  final DeviceInfo deviceInfo;
+  final DeviceInfo? deviceInfo;
 
   /// The [AudioContext] that manages this device.
   final AudioContext context;

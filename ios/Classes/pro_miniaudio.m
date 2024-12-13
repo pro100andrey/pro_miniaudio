@@ -3,6 +3,6 @@
 #include "../../native/src/audio_device.c"
 #include "../../native/src/internal.c"
 #include "../../native/src/logger.c"
-#include "../../native/src/miniaudio.c"
+#include "../../native/include/miniaudio.h"
 #include "../../native/src/playback_device.c"
 #include "../../native/src/waveform.c"

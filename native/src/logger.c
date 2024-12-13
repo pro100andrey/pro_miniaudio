@@ -13,7 +13,7 @@ static pthread_mutex_t g_logMutex = PTHREAD_MUTEX_INITIALIZER;
 static bool g_logToFileEnabled = false;
 static bool g_logToConsoleEnabled = false;
 static FILE *g_logFile = NULL;
-static LogLevel g_logLevel = LOG_LEVEL_ERROR;
+static LogLevel g_logLevel = LOG_LEVEL_INFO;
 
 FFI_PLUGIN_EXPORT
 void set_log_level(LogLevel level) {
