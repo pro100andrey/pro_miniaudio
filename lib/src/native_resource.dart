@@ -12,8 +12,10 @@ part of 'library.dart';
 ///
 /// Example usage:
 /// ```dart
+/// part of 'library.dart';
+/// 
 /// class MyResource extends NativeResource<MyResource> {
-///   MyResource._(Pointer<MyResource> ptr) : super._(ptr);
+///   MyResource._(super.ptr) : super._();
 ///
 ///   @override
 ///   NativeFinalizer get finalizer => Library.resourceFinalizer;
@@ -23,7 +25,9 @@ part of 'library.dart';
 ///     _bindings.my_resource_destroy(_resource);
 ///   }
 /// }
-/// ```
+/// `
+///
+/// ``
 abstract class NativeResource<T extends NativeType> implements Finalizable {
   /// Constructs a native resource and attaches a finalizer.
   ///

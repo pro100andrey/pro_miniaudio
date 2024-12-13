@@ -29,9 +29,33 @@ typedef struct {
  * @brief Defines the type of the audio device.
  */
 typedef enum {
-    audio_device_type_capture = 0, /**< A device for audio capture (input). */
-    audio_device_type_playback     /**< A device for audio playback (output). */
+    device_type_playback = 1,                                        /**< Playback device. */
+    device_type_capture = 2,                                         /**< Capture device. */
+    device_type_duplex = device_type_playback | device_type_capture, /**< Duplex device. */
+    device_type_loopback = 4                                         /**< Loopback device. */
 } audio_device_type_t;
+
+typedef union {
+    unsigned short wasapi[64];    /* WASAPI uses a wchar_t string for identification. */
+    unsigned char dsound[16];     /* DirectSound uses a GUID for identification. */
+    /*UINT_PTR*/ unsigned int winmm; /* When creating a device, WinMM expects a Win32 UINT_PTR for device identification. In practice it's actually just a UINT. */
+    char alsa[256];               /* ALSA uses a name string for identification. */
+    char pulse[256];              /* PulseAudio uses a name string for identification. */
+    int jack;                     /* JACK always uses default devices. */
+    char coreaudio[256];          /* Core Audio uses a string for identification. */
+    char sndio[256];              /* "snd/0", etc. */
+    char audio4[256];             /* "/dev/audio", etc. */
+    char oss[64];                 /* "dev/dsp0", etc. "dev/dsp" for the default device. */
+    signed int aaudio;            /* AAudio uses a 32-bit integer for identification. */
+    unsigned int opensl;          /* OpenSL|ES uses a 32-bit unsigned integer for identification. */
+    char webaudio[32];            /* Web Audio always uses default devices for now, but if this changes it'll be a GUID. */
+    union {
+        int i;
+        char s[256];
+        void *p;
+    } custom;        /* The custom backend could be anything. Give them a few options. */
+    int nullbackend; /* The null backend uses an integer for device IDs. */
+} device_id;
 
 /**
  * @struct audio_device_t
@@ -39,8 +63,9 @@ typedef enum {
  */
 typedef struct {
     audio_device_vtable_t *vtable; /**< Pointer to the virtual table for this device. */
-    void *id;                      /**< Unique identifier for the device. */
+    device_id id;                  /**< Unique identifier for the device. */
     void *owner;                   /**< Pointer to the owner context or object. */
+    audio_device_type_t type;      /**< Type of the audio device. */
 } audio_device_t;
 
 /**
@@ -49,8 +74,9 @@ typedef struct {
  * @param dev Pointer to the audio device structure.
  * @param id Pointer to the unique identifier for the device.
  * @param owner Pointer to the owning context or object.
+ * @param type Type of the audio device.
  */
-void audio_device_create(audio_device_t *dev, void *id, void *owner);
+void audio_device_create(audio_device_t *dev, device_id *id, void *owner, audio_device_type_t type);
 
 /**
  * @brief Starts the audio device.

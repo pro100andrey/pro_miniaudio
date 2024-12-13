@@ -4,6 +4,7 @@ import 'dart:typed_data';
 
 import 'package:equatable/equatable.dart';
 import 'package:ffi/ffi.dart';
+import 'package:flutter/material.dart';
 import 'package:meta/meta.dart';
 
 import 'generated/bindings.dart';
@@ -15,12 +16,15 @@ part 'models/device_info.dart';
 part 'models/device_state.dart';
 part 'models/log_level.dart';
 part 'models/pcm_format.dart';
+part 'models/device_id.dart';
 part 'models/audio_format.dart';
 part 'models/waveform_config.dart';
 part 'models/waveform_type.dart';
 part 'models/playback_config.dart';
+part 'models/audio_device_type.dart';
 part 'native_resource.dart';
 part 'playback_device.dart';
+part 'device_infos.dart';
 
 part 'waveform.dart';
 
@@ -35,19 +39,18 @@ final class Library {
   static Library instance = Library._(_loadBindings());
 
   /// The finalizer for the `Waveform` class.
-  static final waveformFinalizer = NativeFinalizer(
+  static final _waveformFinalizer = NativeFinalizer(
     _bindings.addresses.waveform_destroy.cast(),
   );
 
   /// The finalizer for the `Context` class.
-  static final contextFinalizer = NativeFinalizer(
+  static final _contextFinalizer = NativeFinalizer(
     _bindings.addresses.audio_context_destroy.cast(),
   );
 
-  static final defaultFinalizer = NativeFinalizer(
-    malloc.nativeFree,
+  static final _deviceInfosFinalizer = NativeFinalizer(
+    _bindings.addresses.audio_context_device_infos_destroy.cast(),
   );
-
   /// Loads the native `pro_miniaudio` bindings from the platform-specific
   /// dynamic library.
   ///

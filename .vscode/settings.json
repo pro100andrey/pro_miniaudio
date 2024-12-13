@@ -28,6 +28,7 @@
         "*.arb": "json",
         "audio_context_private.h": "c",
         "waveform.h": "c",
-        "platform.h": "c"
+        "platform.h": "c",
+        "unordered_map": "c"
     }
 }

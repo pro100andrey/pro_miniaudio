@@ -3,16 +3,20 @@
 #include "../include/logger.h"
 #include "../include/miniaudio.h"
 
+#include <string.h>
+
 static audio_device_vtable_t g_audio_device_vtable = {
     .start = audio_device_start,
     .stop = audio_device_stop,
     .destroy = audio_device_destroy,
     .get_state = audio_device_get_state};
 
-void audio_device_create(audio_device_t *dev, void *id, void *owner) {
+void audio_device_create(audio_device_t *dev, device_id *id, void *owner, audio_device_type_t type) {
     dev->vtable = &g_audio_device_vtable;
-    dev->id = id;
+
+    memcpy(&dev->id, id, sizeof(device_id));
     dev->owner = owner;
+    dev->type = type;
 }
 
 void audio_device_start(void *self) {

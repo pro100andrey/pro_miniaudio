@@ -75,3 +75,7 @@ extension WaveformTypeExt on WaveformType {
 extension LogLevelExt on FileLogLevel {
   LogLevel toNative() => LogLevel.values[index];
 }
+
+extension AudioDeviceTypeExt on AudioDeviceType {
+  audio_device_type_t toNative() => audio_device_type_t.values[index];
+}

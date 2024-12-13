@@ -53,7 +53,7 @@ class _HomePageState extends State<HomePage> {
                             label: 'Playback',
                             selectedDevice: notifier.selectedPlaybackDevice,
                             onChanged: notifier.selectPlaybackDevice,
-                            devices: notifier.devicesInfos.playback.toList(),
+                            devices: notifier.playbackInfos.toList(),
                             onInfoPressed: () async => _onPlaybackInfoPressed(
                               context,
                               notifier.selectedPlaybackDevice!,
@@ -118,9 +118,7 @@ class _HomePageState extends State<HomePage> {
                   alignment: Alignment.centerRight,
                   child: DeviceActions(
                     vm: DeviceActionsVm(
-                      createCapture: notifier.selectedCaptureDevice != null
-                          ? notifier.createCaptureDevice
-                          : null,
+                      createCapture: null,
                       createPlayback: notifier.selectedPlaybackDevice != null
                           ? notifier.createPlaybackDevice
                           : null,
@@ -146,7 +144,7 @@ class _HomePageState extends State<HomePage> {
 
         return FormatsInfoDialog(
           title: title,
-          audioFormats: device.audioFormats,
+          audioFormats: const [],
         );
       },
     );

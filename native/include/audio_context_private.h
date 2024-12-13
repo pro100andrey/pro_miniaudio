@@ -5,19 +5,6 @@
 #include "playback_device_private.h"
 
 /**
- * @struct device_info_cache_t
- * @brief Structure to store cached device information.
- *
- * This structure is used to cache information about available audio devices.
- * It includes a count of devices and a pointer to an array of `device_info_t` structures
- * that describe each device.
- */
-typedef struct {
-    uint32_t count;            /**< Number of devices in the cache. */
-    device_info_t *deviceInfo; /**< Pointer to an array of device information structures. */
-} device_info_cache_t;
-
-/**
  * @struct audio_context_t
  * @brief Structure to manage the audio system context.
  *
@@ -26,11 +13,9 @@ typedef struct {
  * and manage audio devices within the system.
  */
 typedef struct {
-    ma_context maContext;              /**< Miniaudio context for initializing the audio system. */
-    device_info_cache_t playbackCache; /**< Cache of playback devices. */
-    device_info_cache_t captureCache;  /**< Cache of capture devices. */
-    audio_device_t **audioDevices;     /**< Dynamic array of pointers to all audio devices. */
-    size_t deviceCount;                /**< Number of devices currently managed by the context. */
+    ma_context maContext;          /**< Miniaudio context for initializing the audio system. */
+    audio_device_t **audioDevices; /**< Dynamic array of pointers to all audio devices. */
+    size_t deviceCount;            /**< Number of devices currently managed by the context. */
 } audio_context_t;
 
 /**

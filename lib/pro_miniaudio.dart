@@ -4,7 +4,9 @@ library;
 export 'src/library.dart'
     show
         AudioContext,
+        AudioDeviceType,
         AudioFormat,
+        DeviceId,
         DeviceInfo,
         DeviceState,
         FileLogLevel,

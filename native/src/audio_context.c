@@ -40,8 +40,8 @@ void *audio_context_create(void) {
 
     context->audioDevices = NULL;
     context->deviceCount = 0;
-    context->playbackCache.count = 0;
-    context->captureCache.count = 0;
+    // context->playbackCache.count = 0;
+    // context->captureCache.count = 0;
 
     ma_context_config config = ma_context_config_init();
     config.coreaudio.sessionCategory =
@@ -86,6 +86,7 @@ FFI_PLUGIN_EXPORT
 void audio_context_destroy(void *self) {
     if (!self) {
         LOG_ERROR("invalid parameter: `self` is NULL.\n", "");
+
         return;
     }
 
@@ -115,14 +116,6 @@ void audio_context_destroy(void *self) {
                   ma_result_description(contextUninitResult));
     }
 
-    if (ctx->playbackCache.deviceInfo) {
-        free(ctx->playbackCache.deviceInfo);
-    }
-
-    if (ctx->captureCache.deviceInfo) {
-        free(ctx->captureCache.deviceInfo);
-    }
-
     free(ctx->audioDevices);
     free(ctx->maContext.pLog);
     free(ctx);
@@ -130,64 +123,56 @@ void audio_context_destroy(void *self) {
     LOG_INFO("<%p>(audio_context_t *) destroyed.\n", ctx);
 }
 
-static void process_device_list(audio_context_t *self,
-                                ma_device_type deviceType,
-                                ma_device_info *pMaDeviceInfos,
-                                uint32_t deviceCount,
-                                device_info_cache_t *pDevicesCache) {
-    // Free previous devices
-    // if (pDevicesCache->deviceInfo) {
-    //     for (uint32_t i = 0; i < pDevicesCache->count; i++) {
-    //         free(pDevicesCache->deviceInfo[i].id);
-    //     }
+// static void process_device_list(audio_context_t *self,
+//                                 ma_device_type deviceType,
+//                                 ma_device_info *pMaDeviceInfos,
+//                                 uint32_t deviceCount,
+//                                 device_infos_t *pDevicesCache) {
 
-    //     free(pDevicesCache->deviceInfo);
-    // }
+//     pDevicesCache->count = deviceCount;
+//     pDevicesCache->deviceInfo =
+//         (device_info_t *)malloc(deviceCount * sizeof(device_info_t));
 
-    pDevicesCache->count = deviceCount;
-    pDevicesCache->deviceInfo =
-        (device_info_t *)malloc(deviceCount * sizeof(device_info_t));
+//     for (uint32_t i = 0; i < deviceCount; i++) {
+//         ma_result getDeviceInfoResult =
+//             ma_context_get_device_info(&self->maContext,
+//                                        deviceType,
+//                                        &pMaDeviceInfos[i].id,
+//                                        &pMaDeviceInfos[i]);
 
-    for (uint32_t i = 0; i < deviceCount; i++) {
-        ma_result getDeviceInfoResult =
-            ma_context_get_device_info(&self->maContext,
-                                       deviceType,
-                                       &pMaDeviceInfos[i].id,
-                                       &pMaDeviceInfos[i]);
+//         if (getDeviceInfoResult != MA_SUCCESS) {
+//             LOG_ERROR("failed to get device info for %s device - %s.\n",
+//                       deviceType == ma_device_type_playback ? "playback" : "capture",
+//                       ma_result_description(getDeviceInfoResult));
 
-        if (getDeviceInfoResult != MA_SUCCESS) {
-            LOG_ERROR("failed to get device info for %s device - %s.\n",
-                      deviceType == ma_device_type_playback ? "playback" : "capture",
-                      ma_result_description(getDeviceInfoResult));
+//             continue;
+//         }
 
-            continue;
-        }
+//         size_t nameLength = MA_MAX_DEVICE_NAME_LENGTH + 1;
+//         strncpy(pDevicesCache->deviceInfo[i].name, pMaDeviceInfos[i].name, nameLength);
 
-        size_t nameLength = MA_MAX_DEVICE_NAME_LENGTH + 1;
-        strncpy(pDevicesCache->deviceInfo[i].name, pMaDeviceInfos[i].name, nameLength);
+//         pDevicesCache->deviceInfo[i].id = (ma_device_id *)malloc(sizeof(ma_device_id));
 
-        pDevicesCache->deviceInfo[i].id = (ma_device_id *)malloc(sizeof(ma_device_id));
+//         if (!pDevicesCache->deviceInfo[i].id) {
+//             LOG_ERROR("failed to allocate memory for device id.\n", "");
+//             continue;
+//         }
 
-        if (!pDevicesCache->deviceInfo[i].id) {
-            LOG_ERROR("failed to allocate memory for device id.\n", "");
-            continue;
-        }
+//         memcpy(pDevicesCache->deviceInfo[i].id, &pMaDeviceInfos[i].id, sizeof(ma_device_id));
 
-        memcpy(pDevicesCache->deviceInfo[i].id, &pMaDeviceInfos[i].id, sizeof(ma_device_id));
+//         pDevicesCache->deviceInfo[i].isDefault = pMaDeviceInfos[i].isDefault;
+//         pDevicesCache->deviceInfo[i].formatCount = pMaDeviceInfos[i].nativeDataFormatCount;
 
-        pDevicesCache->deviceInfo[i].isDefault = pMaDeviceInfos[i].isDefault;
-        pDevicesCache->deviceInfo[i].formatCount = pMaDeviceInfos[i].nativeDataFormatCount;
-
-        for (uint32_t j = 0; j < pMaDeviceInfos[i].nativeDataFormatCount; j++) {
-            pDevicesCache->deviceInfo[i].audioFormats[j].pcmFormat =
-                (pcm_format_t)pMaDeviceInfos[i].nativeDataFormats[j].format;
-            pDevicesCache->deviceInfo[i].audioFormats[j].channels =
-                pMaDeviceInfos[i].nativeDataFormats[j].channels;
-            pDevicesCache->deviceInfo[i].audioFormats[j].sampleRate =
-                pMaDeviceInfos[i].nativeDataFormats[j].sampleRate;
-        }
-    }
-}
+// for (uint32_t j = 0; j < pMaDeviceInfos[i].nativeDataFormatCount; j++) {
+//     pDevicesCache->deviceInfo[i].audioFormats[j].pcmFormat =
+//         (pcm_format_t)pMaDeviceInfos[i].nativeDataFormats[j].format;
+//     pDevicesCache->deviceInfo[i].audioFormats[j].channels =
+//         pMaDeviceInfos[i].nativeDataFormats[j].channels;
+//     pDevicesCache->deviceInfo[i].audioFormats[j].sampleRate =
+//         pMaDeviceInfos[i].nativeDataFormats[j].sampleRate;
+// }
+//     }
+// }
 
 FFI_PLUGIN_EXPORT
 void audio_context_refresh_devices(const void *self) {
@@ -196,23 +181,15 @@ void audio_context_refresh_devices(const void *self) {
         return;
     }
 
-    ma_device_info *playbackDeviceInfos;
-    ma_uint32 playbackDeviceCount;
-
-    ma_device_info *captureDeviceInfos;
-    ma_uint32 captureDeviceCount;
-
     audio_context_t *ctx = (audio_context_t *)self;
-
-    LOG_INFO("Using context: <%p>.\n", ctx);
 
     // Get playback and capture devices
     ma_result getDevicesResult =
         ma_context_get_devices(&ctx->maContext,
-                               &playbackDeviceInfos,
-                               &playbackDeviceCount,
-                               &captureDeviceInfos,
-                               &captureDeviceCount);
+                               NULL,
+                               NULL,
+                               NULL,
+                               NULL);
 
     if (getDevicesResult != MA_SUCCESS) {
         LOG_ERROR("ma_context_get_devices failed - %s.\n",
@@ -221,69 +198,216 @@ void audio_context_refresh_devices(const void *self) {
         return;
     }
 
-    // Process playback devices
-    process_device_list(ctx,
-                        ma_device_type_playback,
-                        playbackDeviceInfos,
-                        playbackDeviceCount,
-                        &ctx->playbackCache);
+    LOG_INFO("devices refreshed.\n", "");
+}
 
-    // Process capture devices
-    process_device_list(ctx,
-                        ma_device_type_capture,
-                        captureDeviceInfos,
-                        captureDeviceCount,
-                        &ctx->captureCache);
+static void _fill_device_info_list(ma_device_info *pSource,
+                                   device_infos_t **ppDeviceInfos,
+                                   uint32_t count);
+
+static void _fill_device_info_ext(ma_context *maContext,
+                                  ma_device_type deviceType,
+                                  ma_device_id *pDeviceId,
+                                  device_info_ext_t **ppDeviceInfoExt);
+
+FFI_PLUGIN_EXPORT
+device_infos_t *audio_context_get_device_infos(const void *self, audio_device_type_t type) {
+    if (!self) {
+        LOG_ERROR("invalid parameter: `pContext` is NULL.\n", "");
+        return NULL;
+    }
+
+    audio_context_t *ctx = (audio_context_t *)self;
+    uint32_t playbackCount = ctx->maContext.playbackDeviceInfoCount;
+    uint32_t captureCount = ctx->maContext.captureDeviceInfoCount;
+
+    device_infos_t *pDeviceInfos = NULL;
+
+    switch (type) {
+        case device_type_playback:
+
+            LOG_INFO("playback device count: %d.\n", playbackCount);
+            _fill_device_info_list(ctx->maContext.pDeviceInfos,
+                                   &pDeviceInfos,
+                                   playbackCount);
+            break;
+        case device_type_capture:
+            LOG_INFO("capture device count: %d.\n", captureCount);
+            _fill_device_info_list(ctx->maContext.pDeviceInfos + playbackCount,
+                                   &pDeviceInfos,
+                                   captureCount);
+            break;
+
+        default: {
+            LOG_ERROR("invalid device type: %d.\n", type);
+            return NULL;
+        }
+
+        break;
+    }
+
+    if (!pDeviceInfos) {
+        LOG_ERROR("failed to fill device info list.\n", "");
+        return NULL;
+    }
+
+    pDeviceInfos->type = type;
+
+    LOG_DEBUG("device type(%d) infos(%d) retrieved.\n", type, pDeviceInfos->count);
+
+    return pDeviceInfos;
 }
 
 FFI_PLUGIN_EXPORT
-uint32_t audio_context_get_playback_device_count(const void *self) {
+void audio_context_device_infos_destroy(device_infos_t *pDeviceInfos) {
+    if (!pDeviceInfos) {
+        LOG_ERROR("invalid parameter: `pDeviceInfos` is NULL.\n", "");
+
+        return;
+    }
+
+    audio_device_type_t type = pDeviceInfos->type;
+
+    free(pDeviceInfos->list);
+    free(pDeviceInfos);
+
+    LOG_INFO("device type(%d) infos destroyed.\n", type);
+}
+
+FFI_PLUGIN_EXPORT
+device_info_ext_t *audio_context_get_device_info_ext(const void *self, void *deviceId) {
     if (!self) {
         LOG_ERROR("invalid parameter: `self` is NULL.\n", "");
-        return -1;
+        return NULL;
     }
 
-    audio_context_t *ctx = (audio_context_t *)self;
-
-    LOG_DEBUG("playback device count: %d\n", ctx->playbackCache.count);
-
-    return ctx->playbackCache.count;
-}
-
-FFI_PLUGIN_EXPORT
-uint32_t audio_context_get_capture_device_count(const void *self) {
-    if (!self) {
-        LOG_ERROR("invalid parameter: `pContext` is NULL.\n", "");
-        return -1;
-    }
-
-    audio_context_t *ctx = (audio_context_t *)self;
-
-    LOG_DEBUG("capture device count: %d\n", ctx->captureCache.count);
-
-    return ctx->captureCache.count;
-}
-
-FFI_PLUGIN_EXPORT
-device_info_t *audio_context_get_playback_device_infos(const void *self) {
-    if (!self) {
-        LOG_ERROR("invalid parameter: `pContext` is NULL.\n", "");
+    if (!deviceId) {
+        LOG_ERROR("invalid parameter: `deviceId` is NULL.\n", "");
         return NULL;
     }
 
     audio_context_t *ctx = (audio_context_t *)self;
 
-    return ctx->playbackCache.deviceInfo;
+    device_info_ext_t *pDeviceInfoExt = NULL;
+
+    _fill_device_info_ext(&ctx->maContext,
+                          ma_device_type_playback,
+                          deviceId,
+                          &pDeviceInfoExt);
+
+    return pDeviceInfoExt;
 }
 
 FFI_PLUGIN_EXPORT
-device_info_t *audio_context_get_capture_device_infos(const void *self) {
-    if (!self) {
-        LOG_ERROR("invalid parameter: `pContext` is NULL.\n", "");
-        return NULL;
+void audio_context_device_info_ext_destroy(device_info_ext_t *pDeviceInfoExt) {
+    if (!pDeviceInfoExt) {
+        LOG_ERROR("invalid parameter: `pDeviceInfoExt` is NULL.\n", "");
+        return;
     }
 
-    audio_context_t *ctx = (audio_context_t *)self;
+    free(pDeviceInfoExt->list);
+    free(pDeviceInfoExt);
 
-    return ctx->captureCache.deviceInfo;
+    LOG_INFO("device info ext destroyed.\n", "");
+}
+
+static void _fill_device_info_list(ma_device_info *pSource,
+                                   device_infos_t **ppDeviceInfos,
+                                   uint32_t count) {
+    if (!pSource) {
+        LOG_ERROR("invalid parameter: `pSource` is NULL.\n", "");
+        return;
+    }
+
+    if (count == 0) {
+        LOG_WARN("no devices found.\n", "");
+        return;
+    }
+
+    *ppDeviceInfos = malloc(sizeof(device_infos_t));
+
+    if (!(*ppDeviceInfos)) {
+        LOG_ERROR("failed to allocate memory for device info.\n", "");
+        return;
+    }
+
+    device_info_t *list = malloc(count * sizeof(device_info_t));
+
+    if (!list) {
+        LOG_ERROR("failed to allocate memory for device info list.\n", "");
+        free(ppDeviceInfos);
+        *ppDeviceInfos = NULL;
+        return;
+    }
+
+    for (uint32_t i = 0; i < count; i++) {
+        // Copy device name
+        size_t nameLength = MA_MAX_DEVICE_NAME_LENGTH + 1;
+        strncpy(list[i].name, pSource[i].name, nameLength);
+
+        // Copy device id
+
+        memcpy(&list[i].id, &pSource[i].id, sizeof(ma_device_id));
+
+        // Copy device default status
+        list[i].isDefault = pSource[i].isDefault;
+    }
+
+    (*ppDeviceInfos)->list = list;
+    (*ppDeviceInfos)->count = count;
+}
+
+static void _fill_device_info_ext(ma_context *maContext,
+                                  ma_device_type deviceType,
+                                  ma_device_id *pDeviceId,
+                                  device_info_ext_t **ppDeviceInfoExt) {
+    if (!maContext) {
+        LOG_ERROR("invalid parameter: `maContext` is NULL.\n", "");
+        return;
+    }
+
+    if (!pDeviceId) {
+        LOG_ERROR("invalid parameter: `pDeviceId` is NULL.\n", "");
+        return;
+    }
+
+    ma_device_info deviceInfo;
+    ma_result getDeviceInfoResult =
+        ma_context_get_device_info(maContext,
+                                   deviceType,
+                                   pDeviceId,
+                                   &deviceInfo);
+
+    if (getDeviceInfoResult != MA_SUCCESS) {
+        LOG_ERROR("failed to get device info for %s device - %s.\n",
+                  deviceType == ma_device_type_playback ? "playback" : "capture",
+                  ma_result_description(getDeviceInfoResult));
+        return;
+    }
+
+    *ppDeviceInfoExt = malloc(sizeof(device_info_ext_t));
+
+    if (!(*ppDeviceInfoExt)) {
+        LOG_ERROR("failed to allocate memory for device info ext.\n", "");
+        return;
+    }
+
+    audio_format_t *list = malloc(deviceInfo.nativeDataFormatCount * sizeof(audio_format_t));
+
+    if (!list) {
+        LOG_ERROR("failed to allocate memory for audio format list.\n", "");
+        free(ppDeviceInfoExt);
+        *ppDeviceInfoExt = NULL;
+        return;
+    }
+
+    for (uint32_t i = 0; i < deviceInfo.nativeDataFormatCount; i++) {
+        list[i].pcmFormat = (pcm_format_t)deviceInfo.nativeDataFormats[i].format;
+        list[i].channels = deviceInfo.nativeDataFormats[i].channels;
+        list[i].sampleRate = deviceInfo.nativeDataFormats[i].sampleRate;
+        // flag skiped
+    }
+
+    (*ppDeviceInfoExt)->list = list;
+    (*ppDeviceInfoExt)->count = deviceInfo.nativeDataFormatCount;
 }

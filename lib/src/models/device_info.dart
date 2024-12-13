@@ -12,12 +12,10 @@ final class DeviceInfo extends Equatable {
   /// - [id]: The unique identifier of the device.
   /// - [name]: The user-friendly name of the device.
   /// - [isDefault]: Indicates whether this device is the default audio device.
-  /// - [audioFormats]: A list of supported audio data formats for the device.
   const DeviceInfo({
     required this.id,
     required this.name,
     required this.isDefault,
-    required this.audioFormats,
   });
 
   /// The unique identifier of the device.
@@ -30,7 +28,7 @@ final class DeviceInfo extends Equatable {
   /// ```dart
   /// print('Device ID: ${device.id}');
   /// ```
-  final Object id;
+  final DeviceId id;
 
   /// The user-friendly name of the device.
   ///
@@ -69,12 +67,7 @@ final class DeviceInfo extends Equatable {
   ///         '${format.channels} channels, ${format.sampleRate} Hz');
   /// }
   /// ```
-  final List<AudioFormat> audioFormats;
 
-  /// Equatable implementation for comparing [DeviceInfo] instances.
-  ///
-  /// Devices are compared based on their [name] and the list of
-  /// supported [audioFormats].
   @override
-  List<Object?> get props => [name, audioFormats];
+  List<Object?> get props => [name];
 }

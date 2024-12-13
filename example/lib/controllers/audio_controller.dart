@@ -16,18 +16,14 @@ class AudioController extends ChangeNotifier {
 
   final _context = AudioContext();
 
-  bool get dataIsRefreshed => _deviceInfos != null;
+  bool get dataIsRefreshed => _playbackInfos != null;
 
-  ({Set<DeviceInfo> capture, Set<DeviceInfo> playback}) get devicesInfos =>
-      _deviceInfos ?? (capture: {}, playback: {});
+  Set<DeviceInfo> get playbackInfos => _playbackInfos ?? {};
 
-  ({Set<DeviceInfo> capture, Set<DeviceInfo> playback})? _deviceInfos;
+  Set<DeviceInfo>? _playbackInfos;
 
   DeviceInfo? _selectedPlaybackDevice;
   DeviceInfo? get selectedPlaybackDevice => _selectedPlaybackDevice;
-
-  DeviceInfo? _selectedCaptureDevice;
-  DeviceInfo? get selectedCaptureDevice => _selectedCaptureDevice;
 
   bool get useDefaultPlaybackDevice => _useDefaultPlaybackDevice;
   bool _useDefaultPlaybackDevice = false;
@@ -37,45 +33,29 @@ class AudioController extends ChangeNotifier {
   void refreshDevices() {
     _context.refreshDevices();
 
-    final playback = _context.playbackDeviceInfos.toSet();
-    final capture = _context.captureDeviceInfos.toSet();
+    final playback =
+        _context.getDeviceInfos(type: AudioDeviceType.playback).toSet();
 
-    final newPlaybackDevices = playback.difference(devicesInfos.playback);
-    final removedPlaybackDevices = devicesInfos.playback.difference(playback);
+    final newPlaybackInfos = playback.difference(playbackInfos);
+    final removedPlaybackInfos = playbackInfos.difference(playback);
 
-    final newCaptureDevices = capture.difference(devicesInfos.capture);
-    final removedCaptureDevices = devicesInfos.capture.difference(capture);
-
-    final hasChanges = newPlaybackDevices.isNotEmpty ||
-        removedPlaybackDevices.isNotEmpty ||
-        newCaptureDevices.isNotEmpty ||
-        removedCaptureDevices.isNotEmpty;
+    final hasChanges =
+        newPlaybackInfos.isNotEmpty || removedPlaybackInfos.isNotEmpty;
 
     if (!hasChanges) {
       return;
     }
 
-    if (!removedPlaybackDevices.contains(_selectedPlaybackDevice)) {
+    if (!removedPlaybackInfos.contains(_selectedPlaybackDevice)) {
       _selectedPlaybackDevice = null;
     }
 
-    if (!removedCaptureDevices.contains(_selectedCaptureDevice)) {
-      _selectedCaptureDevice = null;
-    }
+    _playbackInfos = newPlaybackInfos;
 
-    _deviceInfos = (capture: newCaptureDevices, playback: newPlaybackDevices);
-
-    _selectedPlaybackDevice ??= newPlaybackDevices.isNotEmpty
+    _selectedPlaybackDevice ??= newPlaybackInfos.isNotEmpty
         ? playback.firstWhere(
             (device) => device.isDefault,
-            orElse: () => newPlaybackDevices.first,
-          )
-        : null;
-
-    _selectedCaptureDevice ??= newCaptureDevices.isNotEmpty
-        ? capture.firstWhere(
-            (device) => device.isDefault,
-            orElse: () => newCaptureDevices.first,
+            orElse: () => newPlaybackInfos.first,
           )
         : null;
 
@@ -102,13 +82,15 @@ class AudioController extends ChangeNotifier {
 
       current.dispose();
 
-      final audioFormat = device.audioFormats.first;
-
       final newDevice = PlaybackWaveformDevice(
         context: _context,
-        deviceInfo:_useDefaultPlaybackDevice ? null : _selectedPlaybackDevice!,
+        deviceId: _useDefaultPlaybackDevice ? null : selectedPlaybackDevice?.id,
         config: PlaybackConfig.basedChunkDuration(
-          format: audioFormat,
+          format: const AudioFormat(
+            channels: 2,
+            pcmFormat: PcmFormat.s16,
+            sampleRate: 44100,
+          ),
           chunkMs: 100,
         ),
       );
@@ -124,12 +106,6 @@ class AudioController extends ChangeNotifier {
     notifyListeners();
   }
 
-  void selectCaptureDevice(DeviceInfo device) {
-    _selectedCaptureDevice = device;
-
-    notifyListeners();
-  }
-
   @override
   void dispose() {
     _context.dispose();
@@ -140,8 +116,11 @@ class AudioController extends ChangeNotifier {
   List<PlaybackWaveformDevice> playbackDevices = [];
 
   void createPlaybackDevice() {
-    final audioFormats = selectedPlaybackDevice!.audioFormats;
-    final audioFormat = audioFormats.first;
+    const audioFormat = AudioFormat(
+      channels: 2,
+      pcmFormat: PcmFormat.s16,
+      sampleRate: 44100,
+    );
 
     playbackDevices.add(
       PlaybackWaveformDevice(
@@ -149,8 +128,8 @@ class AudioController extends ChangeNotifier {
         config: PlaybackConfig.basedChunkDuration(
           format: audioFormat,
           chunkMs: 32,
-        ), //PlaybackConfig.withAudioFormat(audioFormat),
-        deviceInfo:  _useDefaultPlaybackDevice ? null : _selectedPlaybackDevice,
+        ),
+        deviceId: _useDefaultPlaybackDevice ? null : selectedPlaybackDevice?.id,
       ),
     );
 

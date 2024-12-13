@@ -47,7 +47,7 @@ typedef struct {
  */
 FFI_PLUGIN_EXPORT
 void *playback_device_create(void *pContext,
-                             void *pDeviceId,
+                             device_id *pDeviceId,
                              playback_config_t config);
 
 /**
@@ -61,14 +61,15 @@ FFI_PLUGIN_EXPORT
 void playback_device_destroy(void *self);
 
 /**
- * @brief Resets the playback device's internal buffer.
+ * @brief Retrieves the current state of the playback device.
  *
- * Clears any audio data currently in the buffer and ensures that the buffer is ready for new data.
+ * Provides the current operational state of the playback device (e.g., started, stopped).
  *
  * @param self Pointer to the playback device.
+ * @return The current state of the playback device, as a `device_state_t`.
  */
 FFI_PLUGIN_EXPORT
-void playback_device_reset_buffer(void *self);
+device_state_t playback_device_get_state(void *self);
 
 /**
  * @brief Starts audio playback on the specified device.
@@ -104,14 +105,13 @@ FFI_PLUGIN_EXPORT
 void playback_device_push_buffer(void *self, playback_data_t *pData);
 
 /**
- * @brief Retrieves the current state of the playback device.
+ * @brief Resets the playback device's internal buffer.
  *
- * Provides the current operational state of the playback device (e.g., started, stopped).
+ * Clears any audio data currently in the buffer and ensures that the buffer is ready for new data.
  *
  * @param self Pointer to the playback device.
- * @return The current state of the playback device, as a `device_state_t`.
  */
 FFI_PLUGIN_EXPORT
-device_state_t playback_device_get_state(void *self);
+void playback_device_reset_buffer(void *self);
 
 #endif  // PLAYBACK_DEVICE_H

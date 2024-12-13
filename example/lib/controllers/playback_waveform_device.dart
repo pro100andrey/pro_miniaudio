@@ -7,12 +7,12 @@ const _durationInMs = 32;
 class PlaybackWaveformDevice {
   PlaybackWaveformDevice({
     required AudioContext context,
-    required DeviceInfo? deviceInfo,
+    required DeviceId? deviceId,
     required PlaybackConfig config,
   }) {
     _playbackDevice = PlaybackDevice(
       context: context,
-      deviceInfo: deviceInfo,
+      deviceId: deviceId,
       config: config,
     );
 
@@ -24,7 +24,7 @@ class PlaybackWaveformDevice {
   WaveformType get waveformType => _waveformType;
   WaveformType _waveformType = WaveformType.sine;
 
-  String? get name => _playbackDevice.deviceInfo?.name;
+  String? get name => 'unknown';
 
   double get frequency => _frequency;
   double _frequency = 500;

@@ -28,8 +28,10 @@ comments:
 functions:
   symbol-address:
     include:
-      - 'audio_context_destroy'
-      - 'waveform_destroy'
-      - 'close_log'
+      - audio_context_destroy
+      - audio_context_device_infos_destroy
+      - audio_context_device_info_ext_destroy
+      - waveform_destroy
+      - close_log
 
 silence-enum-warning: true

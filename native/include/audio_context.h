@@ -3,6 +3,7 @@
 
 #include <stdbool.h>
 
+#include "audio_device.h"
 #include "constants.h"
 #include "platform.h"
 
@@ -45,12 +46,28 @@ typedef struct {
  * its name, whether it is the default device, and the formats it supports.
  */
 typedef struct {
-    void *id;                              /**< Unique identifier for the device. */
+    device_id id;                          /**< Unique identifier for the device. */
     char name[MAX_DEVICE_NAME_LENGTH + 1]; /**< Null-terminated string representing the device name. */
     bool isDefault;                        /**< Indicates whether this is the default device. */
-    uint32_t formatCount;                  /**< Number of supported audio formats. */
-    audio_format_t audioFormats[64];       /**< Array of supported audio formats. */
 } device_info_t;
+
+typedef struct {
+    audio_device_type_t type;
+    device_info_t *list;
+    uint32_t count;
+} device_infos_t;
+
+/**
+ * @struct device_info_ext_t
+ * @brief Provides extended information about an audio device.
+ *
+ * This structure extends the `device_info_t` structure by including an array
+ * of supported audio formats and the number of formats supported by the device.
+ */
+typedef struct {
+    audio_format_t *list; /**< Array of supported audio formats. */
+    uint32_t count;       /**< Number of supported audio formats. */
+} device_info_ext_t;
 
 /**
  * @brief Creates a new audio context.
@@ -84,46 +101,52 @@ void audio_context_destroy(void *self);
 FFI_PLUGIN_EXPORT
 void audio_context_refresh_devices(const void *self);
 
-/**
- * @brief Retrieves the number of playback devices.
+/*
+ * @brief Retrieves the list of audio devices of the specified type.
+ *
+ * Returns a list of audio devices of the specified type (playback or capture)
+ * that are currently available on the system.
  *
  * @param self Pointer to the `audio_context_t` structure.
- * @return The total number of playback devices currently detected.
+ * @param type The type of audio devices to retrieve (playback or capture).
+ * @return A pointer to the device information structure, or NULL if an error occurred.
  */
+
 FFI_PLUGIN_EXPORT
-uint32_t audio_context_get_playback_device_count(const void *self);
+device_infos_t *audio_context_get_device_infos(const void *self,
+                                               audio_device_type_t type);
 
 /**
- * @brief Retrieves the number of capture devices.
+ * @brief Destroys a device information structure.
  *
- * @param self Pointer to the `audio_context_t` structure.
- * @return The total number of capture devices currently detected.
+ * Frees the memory allocated for the device information structure and its contents.
+ *
+ * @param pDeviceInfos Pointer to the device information structure to destroy.
  */
 FFI_PLUGIN_EXPORT
-uint32_t audio_context_get_capture_device_count(const void *self);
+void audio_context_device_infos_destroy(device_infos_t *pDeviceInfos);
+
+/*
+ * @brief Retrieves extended information about an audio device.
+ *
+ * Retrieves detailed information about an audio device, including the list of
+ * supported audio formats and the number of formats supported by the device.
+ *
+ * @param self Pointer to the `audio_context_t` structure.
+ * @param deviceId Pointer to the unique identifier of the device.
+ * @return A pointer to the extended device information structure, or NULL if an error occurred.
+ */
+FFI_PLUGIN_EXPORT
+device_info_ext_t *audio_context_get_device_info_ext(const void *self,
+                                                     void *deviceId);
 
 /**
- * @brief Gets detailed information about playback devices.
+ * @brief Destroys an extended device information structure.
  *
- * This function provides a pointer to an array of `device_info_t` structures,
- * each describing a detected playback device.
- *
- * @param self Pointer to the `audio_context_t` structure.
- * @return A pointer to an array of `device_info_t` structures for playback devices.
+ * Frees the memory allocated for the extended device information structure and its contents.
+ * @param pDeviceInfoExt Pointer to the extended device information structure to destroy.
  */
 FFI_PLUGIN_EXPORT
-device_info_t *audio_context_get_playback_device_infos(const void *self);
-
-/**
- * @brief Gets detailed information about capture devices.
- *
- * This function provides a pointer to an array of `device_info_t` structures,
- * each describing a detected capture device.
- *
- * @param self Pointer to the `audio_context_t` structure.
- * @return A pointer to an array of `device_info_t` structures for capture devices.
- */
-FFI_PLUGIN_EXPORT
-device_info_t *audio_context_get_capture_device_infos(const void *self);
+void audio_context_device_info_ext_destroy(device_info_ext_t *pDeviceInfoExt);
 
 #endif  // AUDIO_CONTEXT_H

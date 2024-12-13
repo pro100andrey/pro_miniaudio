@@ -40,7 +40,7 @@ final class AudioContext extends NativeResource<Void> {
 
   @protected
   @override
-  NativeFinalizer get finalizer => Library.contextFinalizer;
+  NativeFinalizer get finalizer => Library._contextFinalizer;
 
   @protected
   @override
@@ -66,137 +66,47 @@ final class AudioContext extends NativeResource<Void> {
         ensureIsNotFinalized(),
       );
 
-  /// Gets the number of available playback devices.
-  ///
-  /// Throws:
-  /// - An exception if the context is finalized.
-  ///
-  /// Returns:
-  /// - The count of playback devices available on the system.
-  ///
-  /// ### Example:
-  /// ```dart
-  /// print('Playback Devices: ${context.playbackDeviceCount}');
-  /// ```
-  int get playbackDeviceCount =>
-      _bindings.audio_context_get_playback_device_count(
-        ensureIsNotFinalized(),
-      );
+  List<DeviceInfo> getDeviceInfos({required AudioDeviceType type}) {
+    final devicesInfos = _bindings.audio_context_get_device_infos(
+      ensureIsNotFinalized(),
+      type.toNative(),
+    );
 
-  /// Gets the number of available capture devices.
-  ///
-  /// Throws:
-  /// - An exception if the context is finalized.
-  ///
-  /// Returns:
-  /// - The count of capture devices available on the system.
-  ///
-  /// ### Example:
-  /// ```dart
-  /// print('Capture Devices: ${context.captureDeviceCount}');
-  /// ```
-  int get captureDeviceCount =>
-      _bindings.audio_context_get_capture_device_count(
-        ensureIsNotFinalized(),
-      );
+    final deviceInfos = DeviceInfos._(devicesInfos);
+    final deviceList = deviceInfos.getList();
 
-  /// Retrieves information about all available playback devices.
-  ///
-  /// Throws:
-  /// - An exception if the context is finalized.
-  ///
-  /// Returns:
-  /// - A list of [DeviceInfo] objects representing playback devices.
-  ///
-  /// ### Example:
-  /// ```dart
-  /// final playbackDevices = context.playbackDeviceInfos;
-  /// for (var device in playbackDevices) {
-  ///   print('Playback Device: ${device.name}');
-  /// }
-  /// ```
-  List<DeviceInfo> get playbackDeviceInfos => _extractDeviceInfoList(
-        _bindings.audio_context_get_playback_device_infos(
-          ensureIsNotFinalized(),
-        ),
-        playbackDeviceCount,
-      );
+    return deviceList;
+  }
 
-  /// Retrieves information about all available capture devices.
-  ///
-  /// Throws:
-  /// - An exception if the context is finalized.
-  ///
-  /// Returns:
-  /// - A list of [DeviceInfo] objects representing capture devices.
-  ///
-  /// ### Example:
-  /// ```dart
-  /// final captureDevices = context.captureDeviceInfos;
-  /// for (var device in captureDevices) {
-  ///   print('Capture Device: ${device.name}');
-  /// }
-  /// ```
-  List<DeviceInfo> get captureDeviceInfos => _extractDeviceInfoList(
-        _bindings.audio_context_get_capture_device_infos(
-          ensureIsNotFinalized(),
-        ),
-        captureDeviceCount,
-      );
+  // List<DeviceInfo> _extractDeviceInfoList(
+  //   Pointer<device_info_t> devicesPointer,
+  //   int count,
+  // ) =>
+  //     List.generate(count, (i) {
+  //       final nativeDeviceInfo = devicesPointer[i];
 
-  /// Extracts a list of [DeviceInfo] objects from a native device array.
-  ///
-  /// This helper method converts a pointer to a native device array into
-  /// a list of Dart [DeviceInfo] objects.
-  ///
-  /// - [devicesPointer]: A pointer to the first element of the native device
-  /// array.
-  /// - [count]: The number of devices in the array.
-  ///
-  /// Returns:
-  /// - A list of [DeviceInfo] objects.
-  ///
-  /// Throws:
-  /// - An exception if the pointer is invalid.
-  List<DeviceInfo> _extractDeviceInfoList(
-    Pointer<device_info_t> devicesPointer,
-    int count,
-  ) =>
-      List.generate(count, (i) {
-        final nativeDeviceInfo = devicesPointer[i];
+  //       return DeviceInfo(
+  //         id: nativeDeviceInfo.id,
+  //         name: arrayCharToString(nativeDeviceInfo.name),
+  //         isDefault: nativeDeviceInfo.isDefault,
+  //       );
+  //     });
 
-        return DeviceInfo(
-          id: nativeDeviceInfo.id,
-          name: arrayCharToString(nativeDeviceInfo.name),
-          isDefault: nativeDeviceInfo.isDefault,
-          audioFormats: _extractSupportedFormats(nativeDeviceInfo),
-        );
-      });
+  // List<AudioFormat> _extractSupportedFormats(
+  //   device_info_t nativeDeviceInfo,
+  // ) =>
+  //     List.generate(
+  //       nativeDeviceInfo.formatCount,
+  //       (i) {
+  //         final nativeAudioFormat = nativeDeviceInfo.audioFormats[i];
 
-  /// Converts supported formats from native to Dart.
-  ///
-  /// This helper method iterates over the formats of a native device and
-  /// converts them into Dart [AudioFormat] objects.
-  ///
-  /// - [nativeDeviceInfo]: A native structure containing device information.
-  ///
-  /// Returns:
-  /// - A list of [AudioFormat] objects.
-  List<AudioFormat> _extractSupportedFormats(
-    device_info_t nativeDeviceInfo,
-  ) =>
-      List.generate(
-        nativeDeviceInfo.formatCount,
-        (i) {
-          final nativeAudioFormat = nativeDeviceInfo.audioFormats[i];
-
-          return AudioFormat(
-            pcmFormat: PcmFormat.fromValue(
-              nativeAudioFormat.pcmFormatAsInt,
-            ),
-            channels: nativeAudioFormat.channels,
-            sampleRate: nativeAudioFormat.sampleRate,
-          );
-        },
-      );
+  //         return AudioFormat(
+  //           pcmFormat: PcmFormat.fromValue(
+  //             nativeAudioFormat.pcmFormatAsInt,
+  //           ),
+  //           channels: nativeAudioFormat.channels,
+  //           sampleRate: nativeAudioFormat.sampleRate,
+  //         );
+  //       },
+  //     );
 }

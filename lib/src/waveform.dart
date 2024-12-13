@@ -100,7 +100,7 @@ final class Waveform extends NativeResource<Void> {
 
   @protected
   @override
-  NativeFinalizer get finalizer => Library.waveformFinalizer;
+  NativeFinalizer get finalizer => Library._waveformFinalizer;
 
   @protected
   @override
