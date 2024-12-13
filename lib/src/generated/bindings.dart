@@ -140,7 +140,7 @@ class ProMiniaudioBindings {
 
   /// Sets the current log level.
   void set_log_level(
-    LogLevel level,
+    log_level_t level,
   ) {
     return _set_log_level(
       level.value,
@@ -220,7 +220,7 @@ class ProMiniaudioBindings {
 
   /// Logs a message with the specified severity level.
   void log_message(
-    LogLevel level,
+    log_level_t level,
     ffi.Pointer<ffi.Char> funcName,
     ffi.Pointer<ffi.Char> format,
   ) {
@@ -616,28 +616,28 @@ final class device_info_ext_t extends ffi.Struct {
 }
 
 /// Defines the severity levels for log messages.
-enum LogLevel {
+enum log_level_t {
   /// Debug level: Detailed information for debugging purposes.
-  LOG_LEVEL_DEBUG(0),
+  log_level_debug(0),
 
   /// Info level: General informational messages.
-  LOG_LEVEL_INFO(1),
+  log_level_info(1),
 
   /// Warning level: Potential issues that are non-critical.
-  LOG_LEVEL_WARNING(2),
+  log_level_warning(2),
 
   /// Error level: Critical issues requiring immediate attention.
-  LOG_LEVEL_ERROR(3);
+  log_level_error(3);
 
   final int value;
-  const LogLevel(this.value);
+  const log_level_t(this.value);
 
-  static LogLevel fromValue(int value) => switch (value) {
-        0 => LOG_LEVEL_DEBUG,
-        1 => LOG_LEVEL_INFO,
-        2 => LOG_LEVEL_WARNING,
-        3 => LOG_LEVEL_ERROR,
-        _ => throw ArgumentError("Unknown value for LogLevel: $value"),
+  static log_level_t fromValue(int value) => switch (value) {
+        0 => log_level_debug,
+        1 => log_level_info,
+        2 => log_level_warning,
+        3 => log_level_error,
+        _ => throw ArgumentError("Unknown value for log_level_t: $value"),
       };
 }
 

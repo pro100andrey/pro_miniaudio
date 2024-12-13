@@ -10,7 +10,8 @@ Future<void> main() async {
   final temp = await getTemporaryDirectory();
   final path = '${temp.path}/log.txt';
   FileLogger.instance.enable(path, level: FileLogLevel.debug);
-  print('Log path: $path');
+
+  debugPrint('Log path: $path');
 
   runApp(const MyApp());
 }

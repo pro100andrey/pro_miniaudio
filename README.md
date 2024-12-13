@@ -21,7 +21,7 @@ Add `pro_miniaudio` to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  pro_miniaudio: 0.0.10
+  pro_miniaudio: 0.0.11
 ```
 
 Then, run:
@@ -47,8 +47,8 @@ void main() {
   // Refresh devices
   context.refreshDevices();
 
-  final playbackDevices = context.playbackDeviceInfos;
-  final captureDevices = context.captureDeviceInfos;
+  final playbackDevices = context.getDeviceInfos(type: DeviceType.playback);
+  final captureDevices = context.getDeviceInfos(type: DeviceType.capture);
 
   print('Playback Devices: $playbackDevices');
   print('Capture Devices: $captureDevices');
@@ -72,14 +72,13 @@ void main() {
 
   final context = AudioContext()..refreshDevices();
 
-  final deviceInfo = context.playbackDeviceInfos.first;
-  final audioFormat = deviceInfo.audioFormats.first;
+  final deviceInfos = context.getDeviceInfos(type: DeviceType.playback);
 
   final chunkDuration = 100; // ms
 
   final device = PlaybackDevice(
     context: context,
-    deviceInfo: deviceInfo,
+    id: deviceInfos.first.id,
     config: PlaybackConfig.basedChunkDuration(
       audioFormat: audioFormat,
       chunkMs: chunkDuration,

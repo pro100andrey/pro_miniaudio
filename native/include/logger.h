@@ -10,11 +10,11 @@
  * @brief Defines the severity levels for log messages.
  */
 typedef enum {
-    LOG_LEVEL_DEBUG,   /**< Debug level: Detailed information for debugging purposes. */
-    LOG_LEVEL_INFO,    /**< Info level: General informational messages. */
-    LOG_LEVEL_WARNING, /**< Warning level: Potential issues that are non-critical. */
-    LOG_LEVEL_ERROR    /**< Error level: Critical issues requiring immediate attention. */
-} LogLevel;
+    log_level_debug,   /**< Debug level: Detailed information for debugging purposes. */
+    log_level_info,    /**< Info level: General informational messages. */
+    log_level_warning, /**< Warning level: Potential issues that are non-critical. */
+    log_level_error    /**< Error level: Critical issues requiring immediate attention. */
+} log_level_t;
 
 /**
  * @brief Sets the current log level.
@@ -24,7 +24,7 @@ typedef enum {
  * @param level The log level to set (DEBUG, INFO, WARNING, ERROR).
  */
 FFI_PLUGIN_EXPORT
-void set_log_level(LogLevel level);
+void set_log_level(log_level_t level);
 
 /**
  * @brief Enables or disables logging to a file.
@@ -85,7 +85,7 @@ void set_log_to_console_enabled(bool enabled);
  * @param ... Additional arguments for the format string.
  */
 FFI_PLUGIN_EXPORT
-void log_message(LogLevel level, const char *funcName, const char *format, ...);
+void log_message(log_level_t level, const char *funcName, const char *format, ...);
 
 /**
  * @brief Logs a debug-level message.
@@ -95,7 +95,7 @@ void log_message(LogLevel level, const char *funcName, const char *format, ...);
  * @param fmt The format string (similar to printf).
  * @param ... Additional arguments for the format string.
  */
-#define LOG_DEBUG(fmt, ...) log_message(LOG_LEVEL_DEBUG, __func__, fmt __VA_OPT__(, ) __VA_ARGS__)
+#define LOG_DEBUG(fmt, ...) log_message(log_level_debug, __func__, fmt __VA_OPT__(, ) __VA_ARGS__)
 
 /**
  * @brief Logs an info-level message.
@@ -105,7 +105,7 @@ void log_message(LogLevel level, const char *funcName, const char *format, ...);
  * @param fmt The format string (similar to printf).
  * @param ... Additional arguments for the format string.
  */
-#define LOG_INFO(fmt, ...) log_message(LOG_LEVEL_INFO, __func__, fmt __VA_OPT__(, ) __VA_ARGS__)
+#define LOG_INFO(fmt, ...) log_message(log_level_info, __func__, fmt __VA_OPT__(, ) __VA_ARGS__)
 
 /**
  * @brief Logs a warning-level message.
@@ -115,7 +115,7 @@ void log_message(LogLevel level, const char *funcName, const char *format, ...);
  * @param fmt The format string (similar to printf).
  * @param ... Additional arguments for the format string.
  */
-#define LOG_WARN(fmt, ...) log_message(LOG_LEVEL_WARNING, __func__, fmt __VA_OPT__(, ) __VA_ARGS__)
+#define LOG_WARN(fmt, ...) log_message(log_level_warning, __func__, fmt __VA_OPT__(, ) __VA_ARGS__)
 
 /**
  * @brief Logs an error-level message.
@@ -125,6 +125,6 @@ void log_message(LogLevel level, const char *funcName, const char *format, ...);
  * @param fmt The format string (similar to printf).
  * @param ... Additional arguments for the format string.
  */
-#define LOG_ERROR(fmt, ...) log_message(LOG_LEVEL_ERROR, __func__, fmt __VA_OPT__(, ) __VA_ARGS__)
+#define LOG_ERROR(fmt, ...) log_message(log_level_error, __func__, fmt __VA_OPT__(, ) __VA_ARGS__)
 
 #endif  // LOGGER_H

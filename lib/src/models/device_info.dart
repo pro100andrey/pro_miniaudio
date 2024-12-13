@@ -69,5 +69,5 @@ final class DeviceInfo extends Equatable {
   /// ```
 
   @override
-  List<Object?> get props => [name];
+  List<Object?> get props => [name, id.hash];
 }

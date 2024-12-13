@@ -1,6 +1,6 @@
 name: pro_miniaudio
 description: "A Flutter plugin for miniaudio."
-version: 0.0.10
+version: 0.0.11
 
 repository: https://github.com/pro100andrey/pro_miniaudio
 issue_tracker: https://github.com/pro100andrey/pro_miniaudio/issues

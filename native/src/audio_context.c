@@ -8,7 +8,7 @@
 #include "../include/logger.h"
 #include "../include/miniaudio.h"
 
-void _onLog(void *pUserData, ma_uint32 level, const char *pMessage) {
+void _ma_(void *pUserData, ma_uint32 level, const char *pMessage) {
     (void)pUserData;
 
     switch (level) {
@@ -40,8 +40,6 @@ void *audio_context_create(void) {
 
     context->audioDevices = NULL;
     context->deviceCount = 0;
-    // context->playbackCache.count = 0;
-    // context->captureCache.count = 0;
 
     ma_context_config config = ma_context_config_init();
     config.coreaudio.sessionCategory =
@@ -57,7 +55,7 @@ void *audio_context_create(void) {
             &context->maContext.allocationCallbacks,
             log) == MA_SUCCESS) {
         ma_log_callback log_callback;
-        log_callback.onLog = _onLog;
+        log_callback.onLog = _ma_;
         ma_log_register_callback(log, log_callback);
         config.pLog = log;
     }
@@ -123,57 +121,6 @@ void audio_context_destroy(void *self) {
     LOG_INFO("<%p>(audio_context_t *) destroyed.\n", ctx);
 }
 
-// static void process_device_list(audio_context_t *self,
-//                                 ma_device_type deviceType,
-//                                 ma_device_info *pMaDeviceInfos,
-//                                 uint32_t deviceCount,
-//                                 device_infos_t *pDevicesCache) {
-
-//     pDevicesCache->count = deviceCount;
-//     pDevicesCache->deviceInfo =
-//         (device_info_t *)malloc(deviceCount * sizeof(device_info_t));
-
-//     for (uint32_t i = 0; i < deviceCount; i++) {
-//         ma_result getDeviceInfoResult =
-//             ma_context_get_device_info(&self->maContext,
-//                                        deviceType,
-//                                        &pMaDeviceInfos[i].id,
-//                                        &pMaDeviceInfos[i]);
-
-//         if (getDeviceInfoResult != MA_SUCCESS) {
-//             LOG_ERROR("failed to get device info for %s device - %s.\n",
-//                       deviceType == ma_device_type_playback ? "playback" : "capture",
-//                       ma_result_description(getDeviceInfoResult));
-
-//             continue;
-//         }
-
-//         size_t nameLength = MA_MAX_DEVICE_NAME_LENGTH + 1;
-//         strncpy(pDevicesCache->deviceInfo[i].name, pMaDeviceInfos[i].name, nameLength);
-
-//         pDevicesCache->deviceInfo[i].id = (ma_device_id *)malloc(sizeof(ma_device_id));
-
-//         if (!pDevicesCache->deviceInfo[i].id) {
-//             LOG_ERROR("failed to allocate memory for device id.\n", "");
-//             continue;
-//         }
-
-//         memcpy(pDevicesCache->deviceInfo[i].id, &pMaDeviceInfos[i].id, sizeof(ma_device_id));
-
-//         pDevicesCache->deviceInfo[i].isDefault = pMaDeviceInfos[i].isDefault;
-//         pDevicesCache->deviceInfo[i].formatCount = pMaDeviceInfos[i].nativeDataFormatCount;
-
-// for (uint32_t j = 0; j < pMaDeviceInfos[i].nativeDataFormatCount; j++) {
-//     pDevicesCache->deviceInfo[i].audioFormats[j].pcmFormat =
-//         (pcm_format_t)pMaDeviceInfos[i].nativeDataFormats[j].format;
-//     pDevicesCache->deviceInfo[i].audioFormats[j].channels =
-//         pMaDeviceInfos[i].nativeDataFormats[j].channels;
-//     pDevicesCache->deviceInfo[i].audioFormats[j].sampleRate =
-//         pMaDeviceInfos[i].nativeDataFormats[j].sampleRate;
-// }
-//     }
-// }
-
 FFI_PLUGIN_EXPORT
 void audio_context_refresh_devices(const void *self) {
     if (!self) {
@@ -199,6 +146,8 @@ void audio_context_refresh_devices(const void *self) {
     }
 
     LOG_INFO("devices refreshed.\n", "");
+    LOG_DEBUG("  playback device count: %d.\n", ctx->maContext.playbackDeviceInfoCount);
+    LOG_DEBUG("  capture device count: %d.\n", ctx->maContext.captureDeviceInfoCount);
 }
 
 static void _fill_device_info_list(ma_device_info *pSource,
@@ -226,13 +175,12 @@ device_infos_t *audio_context_get_device_infos(const void *self, audio_device_ty
     switch (type) {
         case device_type_playback:
 
-            LOG_INFO("playback device count: %d.\n", playbackCount);
             _fill_device_info_list(ctx->maContext.pDeviceInfos,
                                    &pDeviceInfos,
                                    playbackCount);
             break;
         case device_type_capture:
-            LOG_INFO("capture device count: %d.\n", captureCount);
+
             _fill_device_info_list(ctx->maContext.pDeviceInfos + playbackCount,
                                    &pDeviceInfos,
                                    captureCount);
@@ -271,7 +219,7 @@ void audio_context_device_infos_destroy(device_infos_t *pDeviceInfos) {
     free(pDeviceInfos->list);
     free(pDeviceInfos);
 
-    LOG_INFO("device type(%d) infos destroyed.\n", type);
+    LOG_DEBUG("device type(%d) infos destroyed.\n", type);
 }
 
 FFI_PLUGIN_EXPORT

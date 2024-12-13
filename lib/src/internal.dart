@@ -28,12 +28,13 @@ String arrayCharToString(Array<Char> array, {int maxLength = 256}) {
   return String.fromCharCodes(charCodes);
 }
 
-/// Converts a Dart string to a native `Pointer<Char>`.
-/// The returned pointer must be freed using `malloc.free(pointer)`.
+/// Converts a Dart string to a `AutoFreePointer<Char>.
+/// The returned pointer should not be freed manually. It will be released when
+/// the associated `AutoFreePointer` is garbage collected.
 
 /// - [string]: The Dart string to convert.
-/// Returns a native `Pointer<Char>`.
-Pointer<Char> stringToCharPointer(String string) {
+/// Returns a native `AutoFreePointer<Char>`.
+AutoFreePointer<Char> stringToCharPointer(String string) {
   final pointer = malloc<Char>(string.length + 1);
 
   for (var i = 0; i < string.length; i++) {
@@ -42,11 +43,11 @@ Pointer<Char> stringToCharPointer(String string) {
 
   (pointer + string.length).value = 0;
 
-  return pointer;
+  return AutoFreePointer._(pointer);
 }
 
 extension PlaybackConfigExt on PlaybackConfig {
-  WrappedResource<playback_config_t> toNative() {
+  AutoFreePointer<playback_config_t> toNative() {
     final nativePlaybackConfig = malloc.allocate<playback_config_t>(
       sizeOf<playback_config_t>(),
     );
@@ -58,7 +59,7 @@ extension PlaybackConfigExt on PlaybackConfig {
     nativePlaybackConfig.ref.rbMaxThreshold = ringBufferMaxThreshold;
     nativePlaybackConfig.ref.rbSizeInBytes = ringBufferSizeInBytes;
 
-    return WrappedResource._(
+    return AutoFreePointer._(
       nativePlaybackConfig,
     );
   }
@@ -73,9 +74,39 @@ extension WaveformTypeExt on WaveformType {
 }
 
 extension LogLevelExt on FileLogLevel {
-  LogLevel toNative() => LogLevel.values[index];
+  log_level_t toNative() => log_level_t.values[index];
 }
 
 extension AudioDeviceTypeExt on AudioDeviceType {
   audio_device_type_t toNative() => audio_device_type_t.values[index];
+}
+
+base mixin AutoFreePointerHash<T extends NativeType> on AutoFreePointer<T> {
+
+  /// A prime number used in hash computation.
+  int get prime;
+
+  /// Precomputed hash value.
+  late final int hash = _calculateHash();
+
+  /// The length of the data to hash.
+  int get dataLeigh => 256;
+
+  /// Calculates the hash value for the pointer data.
+  int _calculateHash() {
+    var hash = 0;
+
+    final data = Pointer<Uint8>.fromAddress(_resource.address);
+
+    for (var i = 0; i < dataLeigh; i++) {
+      final value = data[i];
+      hash = (hash * prime + value) & 0xFFFFFFFF;
+
+      if (value == 0) {
+        break;
+      }
+    }
+
+    return hash;
+  }
 }

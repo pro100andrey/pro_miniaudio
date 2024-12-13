@@ -13,10 +13,10 @@ static pthread_mutex_t g_logMutex = PTHREAD_MUTEX_INITIALIZER;
 static bool g_logToFileEnabled = false;
 static bool g_logToConsoleEnabled = false;
 static FILE *g_logFile = NULL;
-static LogLevel g_logLevel = LOG_LEVEL_INFO;
+static log_level_t g_logLevel = log_level_info;
 
 FFI_PLUGIN_EXPORT
-void set_log_level(LogLevel level) {
+void set_log_level(log_level_t level) {
     g_logLevel = level;
 }
 
@@ -65,7 +65,7 @@ void set_log_to_console_enabled(bool enabled) {
 }
 
 FFI_PLUGIN_EXPORT
-void log_message(LogLevel level, const char *funcName, const char *format, ...) {
+void log_message(log_level_t level, const char *funcName, const char *format, ...) {
     if (level < g_logLevel) {
         return;
     }
@@ -88,16 +88,16 @@ void log_message(LogLevel level, const char *funcName, const char *format, ...) 
     // Determine log level
     const char *levelStr = NULL;
     switch (level) {
-        case LOG_LEVEL_DEBUG:
+        case log_level_debug:
             levelStr = "[DEBUG]";
             break;
-        case LOG_LEVEL_INFO:
+        case log_level_info:
             levelStr = "[INFO]";
             break;
-        case LOG_LEVEL_ERROR:
+        case log_level_error:
             levelStr = "[ERROR]";
             break;
-        case LOG_LEVEL_WARNING:
+        case log_level_warning:
             levelStr = "[WARNING]";
             break;
         default:

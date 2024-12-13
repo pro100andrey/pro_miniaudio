@@ -13,7 +13,7 @@ part of 'library.dart';
 /// Example usage:
 /// ```dart
 /// part of 'library.dart';
-/// 
+///
 /// class MyResource extends NativeResource<MyResource> {
 ///   MyResource._(super.ptr) : super._();
 ///
@@ -158,21 +158,21 @@ abstract class ManagedResource<T extends NativeType> {
 ///
 /// Automatically frees memory allocated via `malloc` when the Dart object
 /// is garbage collected.
-class WrappedResource<T extends NativeType> {
+class AutoFreePointer<T extends NativeType> {
   /// Constructs a wrapped resource.
   ///
   /// Throws an [ArgumentError] if [ptr] is `nullptr`.
-  WrappedResource._(Pointer<T> ptr) : _resource = ptr {
+  AutoFreePointer._(Pointer<T> ptr) : _resource = ptr {
     if (ptr == nullptr) {
       throw ArgumentError.notNull('ptr');
     }
+
     _finalizer.attach(this, ptr, detach: this);
   }
 
   /// Finalizer for freeing memory.
-  static final Finalizer<Pointer> _finalizer = Finalizer((ptr) {
-    malloc.free(ptr);
-  });
+  static final Finalizer<Pointer> _finalizer =
+      Finalizer((ptr) => malloc.free(ptr));
 
   /// Pointer to the native resource.
   final Pointer<T> _resource;
@@ -184,6 +184,7 @@ class WrappedResource<T extends NativeType> {
     if (_resource == nullptr) {
       throw StateError('Resource is finalized');
     }
+    
     return _resource;
   }
 }

@@ -39,7 +39,7 @@ final class PlaybackDevice extends ManagedResource<Void> {
   /// Creates a new playback device instance.
   ///
   /// - [context]: The [AudioContext] that manages this device.
-  /// - [deviceInfo]: Information about the playback device. If not provided,
+  /// - [id]: The unique identifier of the playback device. If `null`,
   ///   the default playback device will be used.
   /// - [config]: The playback configuration specifying sample format,
   ///   channels, sample rate, and buffer properties.
@@ -49,7 +49,7 @@ final class PlaybackDevice extends ManagedResource<Void> {
   /// - [Exception] if the device creation fails.
   factory PlaybackDevice({
     required AudioContext context,
-    required DeviceId? deviceId,
+    required DeviceId? id,
     required PlaybackConfig config,
   }) {
     final nativeConfig = config.toNative();
@@ -57,7 +57,7 @@ final class PlaybackDevice extends ManagedResource<Void> {
 
     final device = _bindings.playback_device_create(
       pContext,
-      deviceId == null ? nullptr : deviceId._resource,
+      id == null ? nullptr : id._resource,
       nativeConfig.ensureIsNotFinalized().ref,
     );
 
@@ -69,7 +69,7 @@ final class PlaybackDevice extends ManagedResource<Void> {
       device,
       context: context,
       config: config,
-      deviceId: deviceId,
+      id: id,
     );
   }
 
@@ -78,14 +78,14 @@ final class PlaybackDevice extends ManagedResource<Void> {
     super.ptr, {
     required this.context,
     required this.config,
-    required this.deviceId,
+    required this.id,
   }) : super._();
 
   /// The playback configuration for this device.
   final PlaybackConfig config;
 
   /// Information about the playback device.
-  final DeviceId? deviceId;
+  final DeviceId? id;
 
   /// The [AudioContext] that manages this device.
   final AudioContext context;

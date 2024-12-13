@@ -26,7 +26,7 @@ int main(int argc, char const* argv[]) {
     signal(SIGINT, handle_signal);
 
     set_log_to_console_enabled(true);
-    set_log_level(LOG_LEVEL_DEBUG);
+    set_log_level(log_level_debug);
 
     void* pContext = audio_context_create();
 
@@ -81,7 +81,7 @@ int main(int argc, char const* argv[]) {
     config.rbMaxThreshold = bufferSizeInBytes / 2;
     config.rbMinThreshold = framesCount * 2;
 
-    void* pPlaybackDevice = playback_device_create(pContext, &playbackId, config);
+    void* pPlaybackDevice = playback_device_create(pContext, NULL, config);
 
     if (!pPlaybackDevice) {
         audio_context_destroy(pContext);
@@ -119,9 +119,7 @@ int main(int argc, char const* argv[]) {
 
     playback_device_start(pPlaybackDevice);
 
-    device_state_t deviceState =
-        playback_device_get_state(
-            pPlaybackDevice);
+    device_state_t deviceState =playback_device_get_state(pPlaybackDevice);
 
     size_t tik = 0;
 

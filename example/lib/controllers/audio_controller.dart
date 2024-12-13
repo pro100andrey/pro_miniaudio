@@ -69,6 +69,10 @@ class AudioController extends ChangeNotifier {
   }
 
   void selectPlaybackDevice(DeviceInfo device) {
+    if (device == _selectedPlaybackDevice) {
+      return;
+    }
+
     _selectedPlaybackDevice = device;
 
     notifyListeners();
@@ -84,7 +88,7 @@ class AudioController extends ChangeNotifier {
 
       final newDevice = PlaybackWaveformDevice(
         context: _context,
-        deviceId: _useDefaultPlaybackDevice ? null : selectedPlaybackDevice?.id,
+        id: _useDefaultPlaybackDevice ? null : selectedPlaybackDevice?.id,
         config: PlaybackConfig.basedChunkDuration(
           format: const AudioFormat(
             channels: 2,
@@ -129,7 +133,7 @@ class AudioController extends ChangeNotifier {
           format: audioFormat,
           chunkMs: 32,
         ),
-        deviceId: _useDefaultPlaybackDevice ? null : selectedPlaybackDevice?.id,
+        id: _useDefaultPlaybackDevice ? null : selectedPlaybackDevice?.id,
       ),
     );
 

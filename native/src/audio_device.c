@@ -1,9 +1,9 @@
 #include "../include/audio_device.h"
 
+#include <string.h>
+
 #include "../include/logger.h"
 #include "../include/miniaudio.h"
-
-#include <string.h>
 
 static audio_device_vtable_t g_audio_device_vtable = {
     .start = audio_device_start,
@@ -14,7 +14,10 @@ static audio_device_vtable_t g_audio_device_vtable = {
 void audio_device_create(audio_device_t *dev, device_id *id, void *owner, audio_device_type_t type) {
     dev->vtable = &g_audio_device_vtable;
 
-    memcpy(&dev->id, id, sizeof(device_id));
+    if (id) {
+        memcpy(&dev->id, id, sizeof(device_id));
+    }
+
     dev->owner = owner;
     dev->type = type;
 }

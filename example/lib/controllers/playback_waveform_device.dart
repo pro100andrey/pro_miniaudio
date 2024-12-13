@@ -7,12 +7,12 @@ const _durationInMs = 32;
 class PlaybackWaveformDevice {
   PlaybackWaveformDevice({
     required AudioContext context,
-    required DeviceId? deviceId,
+    required DeviceId? id,
     required PlaybackConfig config,
   }) {
     _playbackDevice = PlaybackDevice(
       context: context,
-      deviceId: deviceId,
+      id: id,
       config: config,
     );
 
@@ -52,6 +52,7 @@ class PlaybackWaveformDevice {
     _frequency = value;
 
     _applyConfig();
+    _playbackDevice.resetBuffer();
   }
 
   void setAmplitude(double value) {
@@ -156,8 +157,10 @@ class PlaybackWaveformDevice {
   }
 
   void stop() {
-    _playbackDevice.stop();
     _timer?.cancel();
     _timer = null;
+    _playbackDevice
+      ..stop()
+      ..resetBuffer();
   }
 }
