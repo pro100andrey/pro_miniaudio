@@ -2,7 +2,6 @@
 name: ProMiniaudioBindings
 description: |
   Bindings for `src/pro_miniaudio.h`.
-
   Regenerate bindings with `dart run ffigen --config ffigen.yaml`.
 output: 'lib/src/generated/bindings.dart'
 headers:
@@ -11,11 +10,13 @@ headers:
     - 'native/include/logger.h'
     - 'native/include/playback_device.h'
     - 'native/include/waveform.h'
+    - 'native/include/encoder.h'
   include-directives:
     - 'native/include/audio_context.h'
     - 'native/include/logger.h'
     - 'native/include/playback_device.h'
     - 'native/include/waveform.h'
+    - 'native/include/encoder.h'
 
 preamble: |
   // ignore_for_file: always_specify_types
@@ -33,5 +34,6 @@ functions:
       - audio_context_device_info_ext_destroy
       - waveform_destroy
       - close_log
+      - encoder_destroy
 
 silence-enum-warning: true

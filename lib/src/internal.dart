@@ -59,9 +59,21 @@ extension PlaybackConfigExt on PlaybackConfig {
     nativePlaybackConfig.ref.rbMaxThreshold = ringBufferMaxThreshold;
     nativePlaybackConfig.ref.rbSizeInBytes = ringBufferSizeInBytes;
 
-    return AutoFreePointer._(
-      nativePlaybackConfig,
+    return AutoFreePointer._(nativePlaybackConfig);
+  }
+}
+
+extension WavEncoderConfigExt on WavEncoderConfig {
+  AutoFreePointer<encoder_config_t> toNative() {
+    final nativeWavEncoderConfig = malloc.allocate<encoder_config_t>(
+      sizeOf<encoder_config_t>(),
     );
+
+    nativeWavEncoderConfig.ref.channels = channels;
+    nativeWavEncoderConfig.ref.sampleRate = sampleRate;
+    nativeWavEncoderConfig.ref.pcmFormatAsInt = pcmFormat.index;
+
+    return AutoFreePointer._(nativeWavEncoderConfig);
   }
 }
 
@@ -82,7 +94,6 @@ extension AudioDeviceTypeExt on AudioDeviceType {
 }
 
 base mixin AutoFreePointerHash<T extends NativeType> on AutoFreePointer<T> {
-
   /// A prime number used in hash computation.
   int get prime;
 
@@ -96,7 +107,9 @@ base mixin AutoFreePointerHash<T extends NativeType> on AutoFreePointer<T> {
   int _calculateHash() {
     var hash = 0;
 
-    final data = Pointer<Uint8>.fromAddress(_resource.address);
+    final data = Pointer<Uint8>.fromAddress(
+      ensureIsNotFinalized().address,
+    );
 
     for (var i = 0; i < dataLeigh; i++) {
       final value = data[i];

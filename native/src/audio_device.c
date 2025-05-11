@@ -11,7 +11,11 @@ static audio_device_vtable_t g_audio_device_vtable = {
     .destroy = audio_device_destroy,
     .get_state = audio_device_get_state};
 
-void audio_device_create(audio_device_t *dev, device_id *id, void *owner, audio_device_type_t type) {
+void audio_device_create(audio_device_t *dev,
+                         device_id *id,
+                         void *owner,
+                         audio_device_type_t type) {
+                            
     dev->vtable = &g_audio_device_vtable;
 
     if (id) {

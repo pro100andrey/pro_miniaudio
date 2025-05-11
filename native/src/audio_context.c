@@ -45,10 +45,13 @@ void *audio_context_create(void) {
     config.coreaudio.sessionCategory =
         ma_ios_session_category_play_and_record;
     config.coreaudio.sessionCategoryOptions =
-        ma_ios_session_category_option_allow_bluetooth |
+        ma_ios_session_category_option_allow_air_play |
         ma_ios_session_category_option_allow_bluetooth_a2dp |
-        ma_ios_session_category_option_default_to_speaker |
-        ma_ios_session_category_option_mix_with_others;
+            ma_ios_session_category_option_allow_bluetooth |
+        ma_ios_session_category_option_default_to_speaker;
+
+    config.coreaudio.noAudioSessionDeactivate = MA_TRUE;
+
 
     ma_log *log = malloc(sizeof(ma_log));
     if (ma_log_init(

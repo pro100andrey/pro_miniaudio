@@ -9,7 +9,8 @@ documentation: https://github.com/pro100andrey/pro_miniaudio/blob/main/README.md
 
 environment:
   sdk: ^3.6.0
-  flutter: '>=3.3.0'
+
+resolution: workspace
 
 dependencies:
   equatable: ^2.0.7
@@ -23,7 +24,7 @@ dev_dependencies:
   ffigen: ^16.0.0
   flutter_test:
     sdk: flutter
-  pro_lints: ^3.0.0
+  pro_lints: ^3.0.1
 
 platforms:
   android:

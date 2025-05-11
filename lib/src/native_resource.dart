@@ -184,7 +184,7 @@ class AutoFreePointer<T extends NativeType> {
     if (_resource == nullptr) {
       throw StateError('Resource is finalized');
     }
-    
+
     return _resource;
   }
 }

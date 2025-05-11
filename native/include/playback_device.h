@@ -42,13 +42,15 @@ typedef struct {
  *
  * @param pContext Pointer to the `audio_context_t` instance managing the audio devices.
  * @param pDeviceId Pointer to the device ID for the playback device.
- * @param config Configuration for the playback device, specified as a `playback_config_t`.
+ * @param pConfig Pointer to the configuration structure for the playback device.
+ * @param pEncoder Pointer to the decoder instance for the audio data.
  * @return A pointer to the created playback device, or NULL if creation fails.
  */
 FFI_PLUGIN_EXPORT
 void *playback_device_create(void *pContext,
                              device_id *pDeviceId,
-                             playback_config_t config);
+                             playback_config_t *pConfig,
+                             void *pEncoder);
 
 /**
  * @brief Destroys a playback device and releases its resources.

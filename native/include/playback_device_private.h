@@ -18,6 +18,7 @@ typedef struct {
     ma_device device;         /**< Miniaudio device for handling playback. */
     ma_rb rb;                 /**< Ring buffer for managing audio data. */
     bool isReadingEnabled;    /**< Indicates whether the playback device can read from the buffer. */
+    void *encoder;            /**< Pointer to the encoder instance. */
 } playback_device_t;
 
 #endif  // PLAYBACK_DEVICE_PRIVATE_H

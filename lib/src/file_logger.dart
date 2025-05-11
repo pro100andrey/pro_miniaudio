@@ -45,11 +45,11 @@ final class FileLogger {
   /// }
   /// ```
   void enable(String path, {FileLogLevel level = FileLogLevel.info}) {
-    final filepath = stringToCharPointer(path);
+    final filePath = stringToCharPointer(path);
     _bindings
       ..set_log_to_file_enabled(true)
       ..set_log_level(level.toNative())
-      ..init_file_log(filepath._resource);
+      ..init_file_log(filePath.ensureIsNotFinalized());
   }
 
   /// Disables logging to a file.

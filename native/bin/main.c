@@ -6,6 +6,7 @@
 #include <string.h>
 
 #include "../include/audio_context.h"
+#include "../include/encoder.h"
 #include "../include/internal.h"
 #include "../include/logger.h"
 #include "../include/miniaudio.h"
@@ -70,7 +71,7 @@ int main(int argc, char const* argv[]) {
     playback_config_t config;
     config.channels = 1;
     config.sampleRate = 32000;
-    config.pcmFormat = pcm_format_s16;
+    config.pcmFormat = pcm_format_f32;
 
     uint32_t bpf = ma_get_bytes_per_frame((ma_format)config.pcmFormat, config.channels);
     uint32_t framesCount = calculateFrameCount(config.sampleRate, 100);
@@ -81,9 +82,19 @@ int main(int argc, char const* argv[]) {
     config.rbMaxThreshold = bufferSizeInBytes / 2;
     config.rbMinThreshold = framesCount * 2;
 
-    void* pPlaybackDevice = playback_device_create(pContext, NULL, config);
+    encoder_config_t encoderConfig;
+    encoderConfig.channels = config.channels;
+    encoderConfig.sampleRate = config.sampleRate;
+    encoderConfig.pcmFormat = config.pcmFormat;
 
+    void* pEncoder = encoder_create("output.wav", &encoderConfig);
+
+    void* pPlaybackDevice = playback_device_create(pContext,
+                                                   NULL,
+                                                   &config,
+                                                   pEncoder);
     if (!pPlaybackDevice) {
+        encoder_destroy(pEncoder);
         audio_context_destroy(pContext);
 
         return 1;
@@ -95,8 +106,10 @@ int main(int argc, char const* argv[]) {
                         config.sampleRate,
                         waveform_type_sine,
                         1.0,
-                        300);
+                        12000);
     if (!pWaveform) {
+        encoder_destroy(pEncoder);
+        playback_device_destroy(pPlaybackDevice);
         audio_context_destroy(pContext);
 
         return 1;
@@ -119,14 +132,14 @@ int main(int argc, char const* argv[]) {
 
     playback_device_start(pPlaybackDevice);
 
-    device_state_t deviceState =playback_device_get_state(pPlaybackDevice);
+    device_state_t deviceState = playback_device_get_state(pPlaybackDevice);
 
     size_t tik = 0;
 
     while (running) {
         tik++;
 
-        if (tik == 400) {
+        if (tik == 20) {
             break;
         }
 
@@ -148,6 +161,7 @@ int main(int argc, char const* argv[]) {
     }
 
     audio_context_destroy(pContext);
+    encoder_destroy(pEncoder);
     playback_device_destroy(pPlaybackDevice);
     waveform_destroy(pWaveform);
 

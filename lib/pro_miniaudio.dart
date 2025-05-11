@@ -14,9 +14,12 @@ export 'src/library.dart'
         PcmFormat,
         PlaybackConfig,
         PlaybackDevice,
+        WavEncoder,
+        WavEncoderConfig,
         Waveform,
         WaveformSawtoothConfig,
         WaveformSineConfig,
         WaveformSquareConfig,
         WaveformTriangleConfig,
-        WaveformType;
+        WaveformType,
+        bufferSizeWith;
