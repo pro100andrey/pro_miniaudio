@@ -6,3 +6,4 @@
 #include "../../native/src/miniaudio.c"
 #include "../../native/src/playback_device.c"
 #include "../../native/src/waveform.c"
+#include "../../native/src/encoder.c"

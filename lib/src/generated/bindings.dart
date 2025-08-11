@@ -9,7 +9,6 @@
 import 'dart:ffi' as ffi;
 
 /// Bindings for `src/pro_miniaudio.h`.
-///
 /// Regenerate bindings with `dart run ffigen --config ffigen.yaml`.
 ///
 class ProMiniaudioBindings {
@@ -242,12 +241,14 @@ class ProMiniaudioBindings {
   ffi.Pointer<ffi.Void> playback_device_create(
     ffi.Pointer<ffi.Void> pContext,
     ffi.Pointer<device_id> pDeviceId,
-    playback_config_t config,
+    ffi.Pointer<playback_config_t> pConfig,
+    ffi.Pointer<ffi.Void> pEncoder,
   ) {
     return _playback_device_create(
       pContext,
       pDeviceId,
-      config,
+      pConfig,
+      pEncoder,
     );
   }
 
@@ -256,10 +257,14 @@ class ProMiniaudioBindings {
           ffi.Pointer<ffi.Void> Function(
               ffi.Pointer<ffi.Void>,
               ffi.Pointer<device_id>,
-              playback_config_t)>>('playback_device_create');
+              ffi.Pointer<playback_config_t>,
+              ffi.Pointer<ffi.Void>)>>('playback_device_create');
   late final _playback_device_create = _playback_device_createPtr.asFunction<
       ffi.Pointer<ffi.Void> Function(
-          ffi.Pointer<ffi.Void>, ffi.Pointer<device_id>, playback_config_t)>();
+          ffi.Pointer<ffi.Void>,
+          ffi.Pointer<device_id>,
+          ffi.Pointer<playback_config_t>,
+          ffi.Pointer<ffi.Void>)>();
 
   /// Destroys a playback device and releases its resources.
   void playback_device_destroy(
@@ -421,6 +426,40 @@ class ProMiniaudioBindings {
           void Function(ffi.Pointer<ffi.Void>, ffi.Pointer<ffi.Void>, int,
               ffi.Pointer<ffi.Uint64>)>();
 
+  /// Creates a new encoder instance.
+  ffi.Pointer<ffi.Void> encoder_create(
+    ffi.Pointer<ffi.Char> path,
+    ffi.Pointer<encoder_config_t> pConfig,
+  ) {
+    return _encoder_create(
+      path,
+      pConfig,
+    );
+  }
+
+  late final _encoder_createPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Pointer<ffi.Void> Function(ffi.Pointer<ffi.Char>,
+              ffi.Pointer<encoder_config_t>)>>('encoder_create');
+  late final _encoder_create = _encoder_createPtr.asFunction<
+      ffi.Pointer<ffi.Void> Function(
+          ffi.Pointer<ffi.Char>, ffi.Pointer<encoder_config_t>)>();
+
+  /// Destroys an encoder instance.
+  void encoder_destroy(
+    ffi.Pointer<ffi.Void> self,
+  ) {
+    return _encoder_destroy(
+      self,
+    );
+  }
+
+  late final _encoder_destroyPtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Void>)>>(
+          'encoder_destroy');
+  late final _encoder_destroy =
+      _encoder_destroyPtr.asFunction<void Function(ffi.Pointer<ffi.Void>)>();
+
   late final addresses = _SymbolAddresses(this);
 }
 
@@ -439,6 +478,8 @@ class _SymbolAddresses {
           _library._audio_context_device_info_ext_destroyPtr;
   ffi.Pointer<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Void>)>>
       get waveform_destroy => _library._waveform_destroyPtr;
+  ffi.Pointer<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Void>)>>
+      get encoder_destroy => _library._encoder_destroyPtr;
 }
 
 /// Enumeration to represent common audio sample formats.
@@ -738,3 +779,19 @@ enum waveform_type_t {
 
 typedef u_int32_t = ffi.UnsignedInt;
 typedef Dartu_int32_t = int;
+
+final class encoder_config_t extends ffi.Struct {
+  /// Number of audio channels (e.g., 2 for stereo).
+  @ffi.Uint32()
+  external int channels;
+
+  /// Sample rate in Hertz (e.g., 44100 Hz).
+  @ffi.Uint32()
+  external int sampleRate;
+
+  /// PCM format of the audio data (e.g., `pcm_format_s16`).
+  @ffi.UnsignedInt()
+  external int pcmFormatAsInt;
+
+  pcm_format_t get pcmFormat => pcm_format_t.fromValue(pcmFormatAsInt);
+}

@@ -14,6 +14,9 @@
 #else
     #include <pthread.h> /**< Include pthread for thread handling. */
     #include <unistd.h>  /**< Include POSIX standard API. */
+    #include <stdint.h>
+    #include <stdbool.h>
+    #include <sys/types.h>
     #if defined(__GNUC__) || defined(__clang__)
         #define FFI_PLUGIN_EXPORT __attribute__((visibility("default"))) /**< Export symbol for GCC/Clang. */
     #else

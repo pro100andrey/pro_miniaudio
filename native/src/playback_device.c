@@ -25,11 +25,33 @@ static playback_device_vtable_t g_playback_device_vtable = {
     .pushBuffer = playback_device_push_buffer,
     .resetBuffer = playback_device_reset_buffer};
 
+static void _encode(playback_device_t *playback, void *pData, ma_uint64 framesCount) {
+    ma_encoder *encoder = (ma_encoder *)playback->encoder;
+
+    if (encoder) {
+        ma_uint64 writeFramesCount = framesCount;
+        ma_uint64 framesWritten = framesCount;
+
+        while (writeFramesCount > 0) {
+            ma_encoder_write_pcm_frames(encoder,
+                                        pData,
+                                        writeFramesCount,
+                                        &framesWritten);
+
+            writeFramesCount -= framesWritten;
+
+            if (writeFramesCount != 0) {
+                pData = (char *)pData + framesWritten;
+            }
+        }
+    }
+}
+
 // Playback device data callback
-void data_callback(ma_device *pDevice,
-                   void *pOutput,
-                   const void *pInput,
-                   ma_uint32 frameCount) {
+static void _data_callback(ma_device *pDevice,
+                           void *pOutput,
+                           const void *pInput,
+                           ma_uint32 frameCount) {
     (void)pInput;
 
     playback_device_t *playback = (playback_device_t *)pDevice->pUserData;
@@ -41,6 +63,7 @@ void data_callback(ma_device *pDevice,
 
     if (!playback->isReadingEnabled) {
         LOG_DEBUG("Reading is disabled. Buffer not sufficiently filled.\n", "");
+        _encode(playback, pOutput, frameCount);
         return;
     }
 
@@ -49,12 +72,13 @@ void data_callback(ma_device *pDevice,
     if (availableRead < playback->config.rbMinThreshold) {
         LOG_DEBUG("Reading is disabled. Buffer not sufficiently filled.\n", "");
         playback->isReadingEnabled = false;
+        _encode(playback, pOutput, frameCount);
         return;
     }
 
     if (availableRead == 0) {
         LOG_WARN("No data available for playback.\n", "");
-
+        _encode(playback, pOutput, frameCount);
         return;
     }
     ma_uint32 bpf =
@@ -88,6 +112,8 @@ void data_callback(ma_device *pDevice,
         memcpy(pOutput, bufferOut, chunkSize);
         // Move the output pointer
         pOutput = (char *)pOutput + chunkSize;
+
+        _encode(playback, bufferOut, chunkSize / bpf);
         // Move the input pointer
         bytesToRead -= chunkSize;
 
@@ -139,7 +165,8 @@ void notification_callback(const ma_device_notification *pNotification) {
 FFI_PLUGIN_EXPORT
 void *playback_device_create(void *pContext,
                              device_id *pDeviceId,
-                             playback_config_t config) {
+                             playback_config_t *pConfig,
+                             void *pEncoder) {
     if (!pContext) {
         LOG_ERROR("invalid parameter: `pContext` is NULL.\n", "");
         return NULL;
@@ -149,7 +176,14 @@ void *playback_device_create(void *pContext,
         LOG_WARN("`pDeviceId` is NULL. Using default device.\n", "");
     }
 
+    if (!pConfig) {
+        LOG_ERROR("invalid parameter: `pConfig` is NULL.\n", "");
+        return NULL;
+    }
+
     playback_device_t *playback = malloc(sizeof(playback_device_t));
+
+    playback->encoder = NULL;
 
     if (!playback) {
         LOG_ERROR("Failed to allocate memory for `playback_device_t`.\n", "");
@@ -157,24 +191,28 @@ void *playback_device_create(void *pContext,
         return NULL;
     }
 
+    if (pEncoder) {
+        LOG_INFO("Using ma_encoder <%p>.\n", pEncoder);
+        playback->encoder = pEncoder;
+    }
+
     LOG_INFO("<%p>(playback_device_t *) creating.\n", playback);
 
     // Copy the config
-    memcpy(&playback->config, &config, sizeof(config));
-    uint32_t bpf = ma_get_bytes_per_frame(
-        (ma_format)config.pcmFormat,
-        config.channels);
+    memcpy(&playback->config, pConfig, sizeof(playback_config_t));
+    uint32_t bpf = ma_get_bytes_per_frame((ma_format)pConfig->pcmFormat,
+                                          pConfig->channels);
 
     float bufferSizeInSec =
-        (float)config.rbSizeInBytes / (config.sampleRate * bpf);
+        (float)pConfig->rbSizeInBytes / (pConfig->sampleRate * bpf);
 
     LOG_INFO("Config.\n", "");
-    LOG_INFO("  format: %s\n", describe_ma_format((ma_format)config.pcmFormat));
-    LOG_INFO("  channels: %d\n", config.channels);
-    LOG_INFO("  sampleRate: %d\n", config.sampleRate);
-    LOG_INFO("  rbSizeInBytes: %d\n", config.rbSizeInBytes);
-    LOG_INFO("  rbMaxThreshold: %d\n", config.rbMaxThreshold);
-    LOG_INFO("  rbMinThreshold: %d\n", config.rbMinThreshold);
+    LOG_INFO("  format: %s\n", describe_ma_format((ma_format)pConfig->pcmFormat));
+    LOG_INFO("  channels: %d\n", pConfig->channels);
+    LOG_INFO("  sampleRate: %d\n", pConfig->sampleRate);
+    LOG_INFO("  rbSizeInBytes: %d\n", pConfig->rbSizeInBytes);
+    LOG_INFO("  rbMaxThreshold: %d\n", pConfig->rbMaxThreshold);
+    LOG_INFO("  rbMinThreshold: %d\n", pConfig->rbMinThreshold);
     LOG_INFO("  bufferSizeInSec: %f\n", bufferSizeInSec);
 
     // Initialize the playback playbackDevice
@@ -182,13 +220,19 @@ void *playback_device_create(void *pContext,
         ma_device_config_init(ma_device_type_playback);
 
     deviceConfig.playback.pDeviceID = (ma_device_id *)pDeviceId;
-    deviceConfig.playback.format = (ma_format)config.pcmFormat;
-    deviceConfig.playback.channels = config.channels;
-    deviceConfig.sampleRate = config.sampleRate;
+    deviceConfig.playback.format = (ma_format)pConfig->pcmFormat;
+    deviceConfig.playback.channels = pConfig->channels;
+    deviceConfig.sampleRate = pConfig->sampleRate;
 
-    deviceConfig.dataCallback = data_callback;
+    deviceConfig.dataCallback = _data_callback;
     deviceConfig.notificationCallback = notification_callback;
     deviceConfig.pUserData = playback;
+
+    deviceConfig.opensl.enableCompatibilityWorkarounds = MA_TRUE;
+    deviceConfig.opensl.recordingPreset = ma_opensl_recording_preset_voice_communication;
+
+    deviceConfig.aaudio.enableCompatibilityWorkarounds = MA_TRUE;
+    deviceConfig.aaudio.inputPreset = ma_aaudio_input_preset_voice_communication;
 
     audio_context_t *context = (audio_context_t *)pContext;
 
@@ -208,7 +252,7 @@ void *playback_device_create(void *pContext,
 
     // Initialize the ring buffer
     ma_result maRbInitResult =
-        ma_rb_init(config.rbSizeInBytes,
+        ma_rb_init(pConfig->rbSizeInBytes,
                    NULL,
                    NULL,
                    &playback->rb);

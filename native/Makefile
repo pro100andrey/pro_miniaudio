@@ -11,11 +11,15 @@ MINIAUDIO_CFLAGS = -Itest -Isrc -Wextra
 # Source files
 SRCS = test/test_runner.c \
        test/unity/unity.c \
-       src/context.c \
+       src/audio_context.c \
 	   src/waveform.c \
        src/logger.c \
        src/miniaudio.c \
-	   src/playback_device.c
+	   src/audio_device.c \
+	   src/playback_device.c \
+	   src/audio_context_private.c \
+	   src/internal.c \
+	   src/encoder.c
 
 # Build directory
 BUILD_DIR = test/build

@@ -13,7 +13,7 @@
  * and manage audio devices within the system.
  */
 typedef struct {
-    ma_context maContext;          /**< Miniaudio context for initializing the audio system. */
+    ma_context maContext;          /**< Miniaudio context for initializing the audio system. Make this the first member so we can cast between ma_context and audio_context_t*/
     audio_device_t **audioDevices; /**< Dynamic array of pointers to all audio devices. */
     size_t deviceCount;            /**< Number of devices currently managed by the context. */
 } audio_context_t;

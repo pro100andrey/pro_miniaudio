@@ -14,6 +14,7 @@ class PlaybackWaveformDevice {
       context: context,
       id: id,
       config: config,
+      wavEncoder: null,
     );
 
     _applyConfig();

@@ -17,6 +17,11 @@ headers:
     - 'native/include/playback_device.h'
     - 'native/include/waveform.h'
 
+compiler-opts:
+  - -I/usr/lib/clang/20/include
+  - -I/usr/local/include
+  - -I/usr/include
+
 preamble: |
   // ignore_for_file: always_specify_types
   // ignore_for_file: camel_case_types

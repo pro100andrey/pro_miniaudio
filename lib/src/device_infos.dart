@@ -17,7 +17,7 @@ class DeviceInfos extends NativeResource<device_infos_t> {
   ///
   /// This property returns the number of audio devices in the system.
   /// The value is obtained by querying the internal data structure.
-  int get count => _resource.ref.count;
+  int get count => ensureIsNotFinalized().ref.count;
 
   /// Retrieves a list of audio devices.
   ///
@@ -26,7 +26,7 @@ class DeviceInfos extends NativeResource<device_infos_t> {
   /// the internal data structure and extracting information from each device.
   ///
   List<DeviceInfo> getList() {
-    final devices = _resource.ref.list;
+    final devices = ensureIsNotFinalized().ref.list;
 
     return List.generate(count, (i) {
       final nativeDeviceInfo = devices[i];
@@ -49,6 +49,8 @@ class DeviceInfos extends NativeResource<device_infos_t> {
   /// This method releases the native resource and frees any associated memory.
   @override
   void releaseResource() {
-    _bindings.audio_context_device_infos_destroy(_resource);
+    _bindings.audio_context_device_infos_destroy(
+      ensureIsNotFinalized(),
+    );
   }
 }

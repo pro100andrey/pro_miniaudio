@@ -48,17 +48,19 @@ final class PlaybackDevice extends ManagedResource<Void> {
   /// - [StateError] if the [AudioContext] is not initialized.
   /// - [Exception] if the device creation fails.
   factory PlaybackDevice({
-    required AudioContext context,
     required DeviceId? id,
+    required AudioContext context,
     required PlaybackConfig config,
+    required WavEncoder? wavEncoder,
   }) {
     final nativeConfig = config.toNative();
     final pContext = context.ensureIsNotFinalized();
 
     final device = _bindings.playback_device_create(
       pContext,
-      id == null ? nullptr : id._resource,
-      nativeConfig.ensureIsNotFinalized().ref,
+      id == null ? nullptr : id.ensureIsNotFinalized(),
+      nativeConfig.ensureIsNotFinalized(),
+      wavEncoder == null ? nullptr : wavEncoder.ensureIsNotFinalized(),
     );
 
     if (device == nullptr) {
